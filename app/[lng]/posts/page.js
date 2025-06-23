@@ -2,14 +2,16 @@ import { allPosts } from 'contentlayer/generated'
 import Link from 'next/link'
 import dayjs from 'dayjs'
 import { useTranslation } from '@/app/i18n'
+import Like from './like'
 
-export const genereteMetadata = ({ params }) => {
+export const genereteMetadata = async ({ params }) => {
   const { lng } = params
+  const { t } = await useTranslation(lng, 'posts')
   return {
-    title: '博客列表',
-    description: '这是博客列表页面',
+    title: t('title'),
+    description: t('description'),
     openGraph: {
-      title: '博客列表',
+      title: t('title'),
       description: '这是博客列表页面',
     },
   }
@@ -29,6 +31,7 @@ function PostCard({ lng, ...post }) {
       <time dateTime={post.date} className="mb-2 block text-xs text-gray-600">
         {dayjs(post.date).format('DD/MM/YYYY')}
       </time>
+      <Like lng={lng} />
     </div>
   )
 }
