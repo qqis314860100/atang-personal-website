@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useRef, Fragment, useEffect } from 'react'
+import { useState, Fragment } from 'react'
 import {
-  usePathname,
   useParams,
   useRouter,
   useSelectedLayoutSegments,
@@ -16,24 +15,32 @@ const LangSwitch = () => {
   const urlSegments = useSelectedLayoutSegments()
   const router = useRouter()
   const params = useParams()
-  const [locale, setLocal] = useState(params?.lng)
+  const [locale, setLocale] = useState(params?.locale as string)
 
-  const handleLocaleChange = (newLocale) => {
+  const handleLocaleChange = (newLocale: string) => {
     const newUrl = `/${newLocale}/${urlSegments.join('/')}`
     return newUrl
   }
 
-  const handleLinkClick = (newLocale) => {
+  const handleLinkClick = (newLocale: string) => {
     const resolvedUrl = handleLocaleChange(newLocale)
     router.push(resolvedUrl)
   }
 
   return (
-    <div className="relative inline-block text-left mr-5">
+    <div className="relative inline-block text-left">
       <Menu>
         <div>
-          <Menu.Button>
-            {locale.charAt(0).toUpperCase() + locale.slice(1)}
+          <Menu.Button
+            id="dropdown-menu-icon"
+            type="button"
+            className="dropdown-toggle btn btn-text btn-primary btn-sm"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            aria-label="Dropdown"
+          >
+            <span className="icon-[solar--planet-bold-duotone] size-6"></span>
+            {/* {locale?.charAt(0).toUpperCase() + locale?.slice(1)} */}
           </Menu.Button>
         </div>
         <Transition
@@ -48,12 +55,12 @@ const LangSwitch = () => {
           <Menu.Items className="absolute right-0 z-50 mt-2 w-12 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800">
             <RadioGroup value={locale} onChange={handleLinkClick}>
               <div className="py-1">
-                {languages.map((newLocale) => (
+                {languages.map((newLocale: string) => (
                   <RadioGroup.Option key={newLocale} value={newLocale}>
-                    <Menu.Item>
-                      <button className="group flex w-full items-center rounded-md px-2 py-2 text-sm">
+                    <Menu.Item as="div">
+                      <div className="group flex w-full items-center rounded-md px-2 py-2 text-sm cursor-pointer">
                         {newLocale.charAt(0).toUpperCase() + newLocale.slice(1)}
-                      </button>
+                      </div>
                     </Menu.Item>
                   </RadioGroup.Option>
                 ))}

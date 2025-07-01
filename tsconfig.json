@@ -1,42 +1,57 @@
 {
   "compilerOptions": {
-    "declaration": true, // 生成.d.ts类型声明文件
-    "target": "es2015", // 编译目标为es2015（es6）
-    "module": "ESNext", // 使用最新的es模块系统
-    "allowSyntheticDefaultImports": true,
-    "moduleResolution": "bundler", //使用nodejs风格的模块解析
-    "resolveJsonModule": true, // 允许导入json文件
-    "isolatedModules": true, //确保每个文件都可以安全独立编译
-    "jsx": "preserve", // 使用新的jsx转换，不需要在文件中导入react
-    "lib": ["ES2020", "DOM", "DOM.Iterable"], // 包含的类型库，支持现代js、dom操作
-    "allowImportingTsExtensions": null, //允许从没有默认导出的模块中导入
-    "strict": true, // 启用严格的类型检查选项
-    "skipLibCheck": true, // 跳过对声明文件(d.ts)的类型检查，提高编译速度
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
     "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
     "plugins": [
       {
         "name": "next"
       }
     ],
-    "paths": {
-      "contentlayer/generated": ["./.contentlayer/generated"],
-      "@/data/": ["data/*"],
-      "@/*": ["./*"],
-      "@/components/*": ["./app/components/*"]
-    },
     "baseUrl": ".",
-    "allowJs": true,
-    "incremental": true,
-    "esModuleInterop": true
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "@/components/*": [
+        "./app/components/*"
+      ],
+      "@/data/*": [
+        "data/*"
+      ],
+      "@/css/*": [
+        "css/*"
+      ],
+      "@/layout/*": [
+        "layout/*"
+      ],
+      "pliny/*": [
+        "node_modules/pliny/*"
+      ]
+    },
+    "target": "ES2017"
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "contentlayer.config.js",
-    "app/posts/[slug]/page.js",
-    "app/[lng]/posts/page.js"
+    "app/AuthProvider.tsx"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }
