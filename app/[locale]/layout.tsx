@@ -1,15 +1,22 @@
 import siteMetadata from '@/data/siteMetadata'
-import { ThemeProviders } from '@/app/theme.providers'
-import Header from '@/components/Header'
 import { Metadata } from 'next'
 import Footer from '@/components/Footer'
-import NextTopLoader from 'nextjs-toploader'
-import { Toaster } from 'react-hot-toast'
-import { Inter } from 'next/font/google'
-import FlyonuiScript from '@/components/FlyonuiScript'
-
+import { ClientTopLoader } from '@/components/client-toploader'
+import { ClientToaster } from '@/components/client-toaster'
+// import { Inter } from 'next/font/google'
+import { notFound } from 'next/navigation'
+import { NextIntlClientProvider, hasLocale } from 'next-intl'
+import { routing } from '@/i18n/routing'
+// import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+// import { AppSidebar } from '@/components/app-sidebar'
+import Header from '@/components/Header'
+import { ThemeProvider } from '@/components/provider/ThemeProvider'
 import '../globals.css'
-const inter = Inter({ subsets: ['latin'] })
+import SessionProvider from '@/components/provider/SessionProvider'
+import { cn } from '@/lib/utils'
+import { fontSans } from '@/lib/fonts'
+
+// const inter = Inter({ subsets: ['latin'] })
 
 interface RootLayoutProps extends React.PropsWithChildren {
   params: {
@@ -64,22 +71,53 @@ export default async function RootLayout({
 }: RootLayoutProps) {
   const paramsData = await Promise.resolve(params)
   const { locale } = paramsData
-
+  if (!hasLocale(routing.locales, locale)) {
+    notFound()
+  }
   return (
     <html
       lang={locale}
       className="touch-pan-x touch-pan-y"
       suppressHydrationWarning
     >
-      <body className={inter.className}>
-        <ThemeProviders>
-          <NextTopLoader showSpinner={false} color="#fff" />
-          <Toaster />
-          <Header locale={locale} />
-          <main className="mb-auto">{children}</main>
-          <Footer />
-          <FlyonuiScript />
-        </ThemeProviders>
+      <body
+        className={cn(
+          'min-h-screen bg-background antialiased font-sans',
+          fontSans.variable
+        )}
+      >
+        <SessionProvider>
+          {/* <SidebarProvider> */}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <NextIntlClientProvider>
+              {/* 侧边栏 */}
+              {/* <AppSidebar /> */}
+
+              {/* 主内容区 */}
+              <div className="flex w-full  flex-col">
+                <Header />
+
+                <ClientTopLoader />
+                <ClientToaster />
+
+                {/* <SidebarTrigger className="fixed left-4 bottom-12 z-50" /> */}
+
+                {/* 内容区域 */}
+                <main className="flex-1  transition-all duration-200 ease-in-out">
+                  <div className="py-6">{children}</div>
+                </main>
+
+                <Footer />
+              </div>
+            </NextIntlClientProvider>
+          </ThemeProvider>
+          {/* </SidebarProvider> */}
+        </SessionProvider>
       </body>
     </html>
   )

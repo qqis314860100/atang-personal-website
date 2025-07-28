@@ -1,0 +1,18 @@
+{
+  "attachmentManagement": "附件管理",
+  "resumeContent": "简历内容",
+  "uploadSuccess": "简历上传成功！",
+  "deleteSuccess": "简历文件已删除。",
+  "confirmDeleteFile": "确定要删除您的简历文件吗？",
+  "uploadFailed": "上传失败，请重试。",
+  "deleteFailed": "删除失败。",
+  "onlyPDFAllowed": "请上传PDF格式的文件",
+  "fileTooLarge": "文件大小不能超过10MB",
+  "noPdfUploaded": "暂无PDF文件",
+  "uploadPdfFirst": "请先在上方上传PDF文件，然后可以在此查看和编辑",
+  "annotationSaved": "注释已保存到云端",
+  "annotationDeleted": "注释已删除",
+  "annotationLoadFailed": "加载注释失败，使用本地备份",
+  "syncInProgress": "正在同步注释...",
+  "syncFailed": "同步失败，请检查网络连接"
+}

@@ -1,0 +1,18 @@
+{
+  "attachmentManagement": "Attachment Management",
+  "resumeContent": "Resume Content",
+  "uploadSuccess": "Resume uploaded successfully!",
+  "deleteSuccess": "Resume file deleted.",
+  "confirmDeleteFile": "Are you sure you want to delete your resume file?",
+  "uploadFailed": "Upload failed. Please try again.",
+  "deleteFailed": "Delete failed.",
+  "onlyPDFAllowed": "Please upload PDF files only",
+  "fileTooLarge": "File size cannot exceed 10MB",
+  "noPdfUploaded": "No PDF file uploaded",
+  "uploadPdfFirst": "Please upload a PDF file above, then you can view and edit it here",
+  "annotationSaved": "Annotation saved to cloud",
+  "annotationDeleted": "Annotation deleted",
+  "annotationLoadFailed": "Failed to load annotations, using local backup",
+  "syncInProgress": "Syncing annotations...",
+  "syncFailed": "Sync failed, please check network connection"
+}

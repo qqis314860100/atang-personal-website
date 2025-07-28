@@ -1,0 +1,25 @@
+{
+  "home": "主页",
+  "about": "关于",
+  "contact": "联系",
+  "signIn": "登录",
+  "register": "注册",
+  "account": "账户",
+  "miscellaneous": "其他",
+  "privacyPolicy": "隐私政策",
+  "termsOfUse": "使用条款",
+  "supportOurWork": "支持我们的工作",
+  "supportDescription": "帮助支持开发，保持免费，并扩展功能！",
+  "supportNow": "立即支持",
+  "myProfile": "我的资料",
+  "settings": "设置",
+  "billing": "账单",
+  "faqs": "常见问题",
+  "logout": "退出",
+  "search": "搜索",
+  "profileDropdown": {
+    "profile": "您的资料",
+    "logout": "退出",
+    "language": "语言"
+  }
+}

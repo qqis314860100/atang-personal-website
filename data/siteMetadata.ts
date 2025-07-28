@@ -2,7 +2,7 @@
 
 const siteMetadata = {
   siteUrl: 'https://tomtong.xyz',
-  title: 'aTang Blogs',
+  title: 'aTang小站',
   description: 'aTang的技术博客，分享技术、个人成长等内容',
   author: 'aTang',
   locale: 'zh-CN',
@@ -10,8 +10,7 @@ const siteMetadata = {
   fallbackLanguage: 'zh',
   email: '314860100@qq.com',
   github: 'https://github.com',
-  siteLogo: '/static/images/logo.png',
-  headerLogo: '/static/images/logo.png',
+  avatar: '/images/avatar.png',
   headerNavLinks: [
     { href: '/', title: 'Home' },
     { href: '/blog', title: '博客' },

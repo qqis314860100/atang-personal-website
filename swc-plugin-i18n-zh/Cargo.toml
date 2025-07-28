@@ -1,0 +1,17 @@
+[package]
+name = "swc-plugin-i18n-zh"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+serde = "1.0"
+serde_json = "1.0"
+swc_core = { version = "0.90.*", features = ["ecma_plugin_transform"] }
+
+[profile.release]
+lto = true
+opt-level = 3
+codegen-units = 1 

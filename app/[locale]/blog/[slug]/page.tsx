@@ -1,13 +1,24 @@
+import { Metadata } from 'next'
+
 interface PageProps {
   params: {
     slug: string
+    locale: string
   }
 }
 
-const Page = ({ params }: PageProps) => {
-  const { slug } = params
-  console.log(slug)
-  return <div>Hello World</div>
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  return {
+    title: `Blog - ${params.slug}`,
+  }
 }
 
-export default Page
+export default function BlogPost({ params }: PageProps) {
+  return (
+    <div>
+      <h1>Blog Post: {params.slug}</h1>
+    </div>
+  )
+}

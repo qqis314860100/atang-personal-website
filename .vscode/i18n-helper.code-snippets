@@ -1,0 +1,12 @@
+{
+  "i18n Comment": {
+    "scope": "typescript,typescriptreact,javascript,javascriptreact",
+    "prefix": "i18n",
+    "body": [
+      "// 🌐 ${1:中文描述}",
+      "const t = useTranslations('${2:namespace}')",
+      "$0"
+    ],
+    "description": "Add i18n translation with Chinese comment"
+  }
+} 

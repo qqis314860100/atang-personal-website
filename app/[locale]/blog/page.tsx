@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import Loading from '@/app/[locale]/blog/loading'
 import { Metadata } from 'next'
-import PostsList from '@/app/components/PostList'
+import PostsList from '@/components/PostList'
 
 export const metadata: Metadata = {
   title: 'Blog',

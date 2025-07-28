@@ -7,5 +7,5 @@ export async function generateMetadata() {
 }
 
 export default async function Page() {
-  return redirect('/zh/blog')
+  return redirect('/zh/dashboard')
 }

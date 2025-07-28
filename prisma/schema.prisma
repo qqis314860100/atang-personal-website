@@ -1,0 +1,75 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["public"]
+}
+
+model Post {
+  id         String      @id @default(uuid())
+  title      String
+  body       String
+  author     String?
+  userId     String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  user       UserProfile @relation(fields: [userId], references: [id])
+  categories Category[]  @relation("PostCategories")
+
+  @@schema("public")
+}
+
+model UserProfile {
+  id              String          @id
+  email           String          @unique
+  username        String?
+  bio             String?
+  avatar          String?
+  isAdmin         Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  date            String?
+  gender          String?
+  signature       String?
+  techStack       String?
+  resume_content  String?
+  resume_url      String?
+  resume_filename String?
+  resume_size     Int?
+  annotations     PDFAnnotation[]
+  posts           Post[]
+
+  @@schema("public")
+}
+
+model PDFAnnotation {
+  id        String      @id @default(uuid())
+  createdAt DateTime    @default(now())
+  page      Int
+  pdfUrl    String
+  text      String
+  timestamp DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  userId    String
+  x         Float
+  y         Float
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([pdfUrl])
+  @@index([userId])
+  @@index([userId, pdfUrl])
+  @@schema("public")
+}
+
+model Category {
+  id    String @id
+  name  String
+  posts Post[] @relation("PostCategories")
+
+  @@schema("public")
+}

@@ -1,0 +1,11 @@
+{
+  "idleText": "点击或拖拽文件至此区域上传",
+  "fileTooLarge": "文件过大，最大允许",
+  "uploadFile": "上传文件",
+  "uploading": "上传中...",
+  "preview": "预览",
+  "download": "下载",
+  "rename": "重命名",
+  "edit": "编辑",
+  "delete": "删除"
+}
