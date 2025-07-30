@@ -19,6 +19,7 @@ export default function ResumePage() {
   const [annotationData, setAnnotationData] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
+  console.log('user', user)
   useEffect(() => {
     // 尝试从localStorage恢复注释数据
     const savedAnnotations = localStorage.getItem(`annotations_${user?.id}`)

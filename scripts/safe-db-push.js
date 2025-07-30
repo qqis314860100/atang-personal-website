@@ -14,7 +14,7 @@ console.log('========================')
 // 检查是否有 --force-reset 参数
 const args = process.argv.slice(2)
 const hasForceReset = args.includes('--force-reset')
-
+console.log('args===========================', args)
 if (hasForceReset) {
   console.log('❌ 检测到 --force-reset 参数')
   console.log('⚠️  此操作将删除所有数据！')

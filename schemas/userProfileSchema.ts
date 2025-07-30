@@ -15,17 +15,18 @@ export const userProfileSchema = z.object({
     ])
     .optional(),
   // 技术栈
-  techStack: z
-    .union([
-      z.array(z.string()),
-      z.string().transform((str) =>
-        str
-          .split(',')
-          .map((item) => item.trim())
-          .filter(Boolean)
-      ),
-    ])
-    .optional(),
+  // techStack: z
+  //   .union([
+  //     z.array(z.string()),
+  //     z.string().transform((str) =>
+  //       str
+  //         .split(',')
+  //         .map((item) => item.trim())
+  //         .filter(Boolean)
+  //     ),
+  //   ])
+  //   .optional(),
+  techStack: z.string().optional(),
   // 个人简历
   bio: z.string().optional(),
 })

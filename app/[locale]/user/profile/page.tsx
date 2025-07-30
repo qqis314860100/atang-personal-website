@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { redirect, useParams } from 'next/navigation'
-import { useUserStore } from '@/lib/store/user-store'
+import { useStableUser } from '@/lib/reactQuery/use-auth'
+import { useUpdateUser } from '@/lib/reactQuery/use-user'
+import { CardLoading } from '@/components/ui/loading-spinner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -22,7 +24,6 @@ import toast from 'react-hot-toast'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { userProfileSchema, TUserProfile } from '@/schemas/userProfileSchema'
-import { updateUser } from '@/app/actions/updateUser'
 import {
   Popover,
   PopoverContent,
@@ -38,7 +39,8 @@ const localeMap = {
 }
 
 export default function ProfilePage() {
-  const { user, setUser, isLoading: userLoading } = useUserStore()
+  const { user, isLoading: userLoading } = useStableUser()
+  const updateUserMutation = useUpdateUser()
   const [isLoading, setIsLoading] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [date, setDate] = useState<Date>()
@@ -62,35 +64,18 @@ export default function ProfilePage() {
 
       setIsLoading(true)
 
-      // 确保技术栈是数组
-      const techStackArray = Array.isArray(data.techStack)
-        ? data.techStack
-        : typeof data.techStack === 'string' && data.techStack
-        ? [data.techStack]
-        : []
-
       // 准备要更新的数据
       const updateData = {
         ...data,
         date: date ? date.toISOString().split('T')[0] : undefined,
-        techStack: techStackArray,
       }
+      console.log('updateData', updateData, 'data', data)
 
-      const updateResult = await updateUser(updateData)
-      console.log('updateResult', updateResult)
-      if (updateResult.success) {
-        // 更新本地状态
-        setUser({
-          ...user,
-          ...updateData,
-        })
-        toast.success('个人资料更新成功')
-      } else {
-        toast.error(updateResult.message || '更新失败，请稍后再试')
-      }
+      await updateUserMutation.mutateAsync(updateData)
+      // 成功处理已经在 mutation 中完成
     } catch (error: any) {
       console.error('更新用户资料失败:', error)
-      toast.error(`更新失败: ${error.message || '未知错误'}`)
+      // 错误处理已经在 mutation 中完成
     } finally {
       setIsLoading(false)
     }
@@ -191,7 +176,6 @@ export default function ProfilePage() {
 
       // 更新本地状态
       setAvatarUrl(avatarUrl)
-      setUser({ ...user, avatar: avatarUrl })
       // 更新表单状态
       setValue('avatar', avatarUrl)
       toast.success('头像上传成功')
@@ -203,21 +187,30 @@ export default function ProfilePage() {
     }
   }
 
+  // 使用 useEffect 来处理重定向，避免在渲染过程中调用
+  useEffect(() => {
+    if (!userLoading && !user) {
+      toast.error('请您先登录~')
+      window.location.href = `/${locale}/dashboard`
+    }
+  }, [userLoading, locale]) // 移除 user 依赖，避免循环
+
   // 如果用户未登录
   if (userLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin mr-2">
-          <UpdateIcon className="h-6 w-6" />
-        </div>
-        <span>加载中...</span>
+      <div className="container py-8 px-4 max-w-3xl mx-auto">
+        <CardLoading text="正在加载用户资料..." />
       </div>
     )
   }
 
-  if (!user) {
-    toast.error('请您先登录~')
-    return redirect(`/${locale}/dashboard`)
+  // 如果用户未登录且不在加载中，显示加载状态（避免闪烁）
+  if (!userLoading && !user) {
+    return (
+      <div className="container py-8 px-4 max-w-3xl mx-auto">
+        <CardLoading text="正在跳转..." />
+      </div>
+    )
   }
 
   return (
@@ -296,24 +289,27 @@ export default function ProfilePage() {
                     <Controller
                       name="gender"
                       control={control}
-                      render={({ field }) => (
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex gap-4"
-                        >
-                          <Label className="flex items-center gap-2 cursor-pointer">
-                            <RadioGroupItem value="male" />男
-                          </Label>
-                          <Label className="flex items-center gap-2 cursor-pointer">
-                            <RadioGroupItem value="female" />女
-                          </Label>
-                          <Label className="flex items-center gap-2 cursor-pointer">
-                            <RadioGroupItem value="other" />
-                            其他
-                          </Label>
-                        </RadioGroup>
-                      )}
+                      render={({ field }) => {
+                        console.log('field', field)
+                        return (
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            value={field.value || ''}
+                            className="flex gap-4"
+                          >
+                            <Label className="flex items-center gap-2 cursor-pointer">
+                              <RadioGroupItem value="male" />男
+                            </Label>
+                            <Label className="flex items-center gap-2 cursor-pointer">
+                              <RadioGroupItem value="female" />女
+                            </Label>
+                            <Label className="flex items-center gap-2 cursor-pointer">
+                              <RadioGroupItem value="other" />
+                              其他
+                            </Label>
+                          </RadioGroup>
+                        )
+                      }}
                     />
                   </div>
                   <div>

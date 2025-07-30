@@ -30,8 +30,7 @@ import {
 } from './ui/dropdown-menu'
 import { GlobeIcon } from '@radix-ui/react-icons'
 import { useLocale } from 'next-intl'
-import Logon from './Logon'
-import { useUserStore } from '@/lib/store/user-store'
+import { Logon } from './Logon'
 
 interface NavMenuItem {
   title: string
@@ -48,7 +47,6 @@ const Header = () => {
   const pathname = usePathname()
   const currentLocale = useLocale()
   const [mounted, setMounted] = useState(false)
-  const user = useUserStore((state) => state.user)
 
   // 防止水和不一致
   useEffect(() => {

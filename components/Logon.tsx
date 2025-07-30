@@ -1,3 +1,4 @@
+'use client'
 import {
   Dialog,
   DialogContent,
@@ -17,15 +18,20 @@ import {
   ExitIcon,
   ChevronRightIcon,
 } from '@radix-ui/react-icons'
-import { register, signIn, resendVerificationEmail } from '@/app/actions/auth'
-import { createClient } from '@/utils/supabase/client'
 import { useForm } from 'react-hook-form'
 import { registerSchema, TRegisterSchema } from '@/schemas/registerSchema'
 import { zodResolver } from '@hookform/resolvers/zod'
-import toast from 'react-hot-toast'
 import { signInSchema, TSignInSchema } from '@/schemas/signInSchema'
 import { useLocale } from 'next-intl'
-import { useUserStore } from '@/lib/store/user-store'
+import {
+  useStableUser,
+  useSignIn,
+  useSignOut,
+  useRegister,
+  useResendVerificationEmail,
+  useForgotPassword,
+} from '@/lib/reactQuery/use-auth'
+import { InlineLoading } from '@/components/ui/loading-spinner'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,18 +43,21 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import Link from 'next/link'
 
 export const Logon = () => {
-  const [isLoggingIn, setIsLoggingIn] = useState(false)
   const [loginOpen, setLoginOpen] = useState(false)
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false)
   const [registerOpen, setRegisterOpen] = useState(false)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const { setUser, user, isLoggedIn, logout, isLoading } = useUserStore(
-    (state) => state
-  )
 
   const locale = useLocale()
 
-  const supabase = createClient()
+  // 使用 React Query hooks
+  const { user, isLoading } = useStableUser()
+  const signInMutation = useSignIn()
+  const signOutMutation = useSignOut()
+  const registerMutation = useRegister()
+  const resendEmailMutation = useResendVerificationEmail()
+  const forgotPasswordMutation = useForgotPassword()
+
+  const isLoggedIn = !!user
 
   const {
     register: formRegister,
@@ -64,106 +73,60 @@ export const Logon = () => {
     formState: { errors: signInErrors },
   } = useForm<TSignInSchema>({ resolver: zodResolver(signInSchema) })
 
-  const handleSingIn = async (data: TSignInSchema) => {
-    setIsLoggingIn(true)
+  const handleSignIn = async (data: TSignInSchema) => {
     try {
-      const signInResult = await signIn(data, locale)
-      console.log('signInResult', signInResult)
-      if (
-        signInResult &&
-        signInResult.status === 'success' /*  */ &&
-        signInResult.user
-      ) {
-        setUser(signInResult.user)
+      const result = await signInMutation.mutateAsync({ data, locale })
+
+      if (result.status === 'success') {
         setLoginOpen(false)
         resetSignIn()
-        toast.success(signInResult.message || '登录成功')
-      } else {
-        // 检查是否是“邮件未验证”的特定错误
-        if (signInResult.message === 'Email not confirmed') {
-          // 使用 toast.custom 创建一个带按钮的自定义提示
-          toast.custom((t) => (
-            <div
-              className={`${
-                t.visible ? 'animate-enter' : 'animate-leave'
-              } max-w-md w-full bg-background shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
-            >
-              <div className="flex-1 w-0 p-4">
-                <div className="flex items-start">
-                  <div className="ml-3 flex-1">
-                    <p className="text-sm font-medium text-foreground">
-                      邮箱尚未验证
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      请检查收件箱或点击下方按钮重发邮件。
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex border-l border-border">
-                <button
-                  onClick={async () => {
-                    await resendVerificationEmail(data.email)
-                    toast.dismiss(t.id)
-                  }}
-                  className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-primary hover:text-primary/80 focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  重发邮件
-                </button>
-              </div>
-            </div>
-          ))
-        } else {
-          toast.error(signInResult.message || '登录失败')
-        }
       }
+      // 错误处理已经在 mutation 中完成
     } catch (error) {
       console.error('登录失败:', error)
-    } finally {
-      setIsLoggingIn(false)
     }
   }
+
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    logout()
-    toast.success('您已成功退出登录')
+    try {
+      await signOutMutation.mutateAsync()
+    } catch (error) {
+      console.error('登出失败:', error)
+    }
   }
 
   const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setIsProcessing(true)
+    const formData = new FormData(e.currentTarget)
+    const email = formData.get('email') as string
+
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await forgotPasswordMutation.mutateAsync(email)
       setForgotPasswordOpen(false)
-      // 可以显示一个成功提示
-      alert('重置密码链接已发送到您的邮箱')
     } catch (error) {
       console.error('发送重置密码邮件失败:', error)
-    } finally {
-      setIsProcessing(false)
     }
   }
 
   const handleRegister = async (data: TRegisterSchema) => {
-    setIsProcessing(true)
     try {
-      const result = await register(data)
-      if (result) {
-        if (result.status === 'success') {
-          await supabase.auth.signOut()
-          setRegisterOpen(false)
-          toast.success(result.message || '注册成功,请查收验证邮件~')
-          reset()
-        } else {
-          toast.error(result.message || '登录失败,请重试~')
-        }
+      const result = await registerMutation.mutateAsync(data)
+
+      if (result.status === 'success') {
+        setRegisterOpen(false)
+        reset()
       }
+      // 错误处理已经在 mutation 中完成
     } catch (error) {
-      const err = error as Error
-      console.log(err.message)
-      toast.error('注册失败:' + err.message)
-    } finally {
-      setIsProcessing(false)
+      console.error('注册失败:', error)
+    }
+  }
+
+  const handleResendEmail = async (email: string) => {
+    try {
+      await resendEmailMutation.mutateAsync(email)
+    } catch (error) {
+      console.error('重发验证邮件失败:', error)
     }
   }
 
@@ -188,7 +151,7 @@ export const Logon = () => {
   if (isLoading) {
     return (
       <Button variant="ghost" size="sm" className="h-9 w-9 px-0">
-        <ReloadIcon className="h-4 w-4 animate-spin" />
+        <InlineLoading text="" />
       </Button>
     )
   }
@@ -197,7 +160,7 @@ export const Logon = () => {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+          <Button variant="ghost" className="relative h-8 w-8 rounded-full ">
             <Avatar className="h-8 w-8">
               <AvatarImage
                 src={user?.avatar || undefined}
@@ -231,20 +194,31 @@ export const Logon = () => {
             </div>
           </div>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="cursor-pointer flex w-full justify-between items-center py-2">
-            <div className="flex items-center">
-              <PersonIcon className="mr-2 h-4 w-4" />
-              <Link href={`/${locale}/user/profile`}>个人中心</Link>
-            </div>
-            <ChevronRightIcon className="h-4 w-4" />
+          <DropdownMenuItem
+            className="cursor-pointer flex w-full justify-between items-center py-2"
+            asChild
+          >
+            <Link
+              className="flex items-center"
+              href={`/${locale}/user/profile`}
+            >
+              <div className="flex">
+                <PersonIcon className="mr-2 h-4 w-4" />
+                个人中心
+              </div>
+              <ChevronRightIcon className="h-4 w-4" />
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={handleLogout}
+            disabled={signOutMutation.isPending}
             className="cursor-pointer flex w-full justify-between items-center py-2"
           >
             <div className="flex items-center">
               <ExitIcon className="mr-2 h-4 w-4" />
-              <span>退出登录</span>
+              <span>
+                {signOutMutation.isPending ? '退出中...' : '退出登录'}
+              </span>
             </div>
             <ChevronRightIcon className="h-4 w-4" />
           </DropdownMenuItem>
@@ -273,7 +247,7 @@ export const Logon = () => {
             <DialogTitle>账号登录</DialogTitle>
             <DialogDescription>请输入您的账号信息以登录系统</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSignInSubmit(handleSingIn)}>
+          <form onSubmit={handleSignInSubmit(handleSignIn)}>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="email">邮箱</Label>
@@ -284,6 +258,11 @@ export const Logon = () => {
                   required
                   {...formSignIn('email')}
                 />
+                {signInErrors.email && (
+                  <p className="text-sm text-red-500">
+                    {signInErrors.email.message}
+                  </p>
+                )}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">密码</Label>
@@ -293,11 +272,16 @@ export const Logon = () => {
                   required
                   {...formSignIn('password')}
                 />
+                {signInErrors.password && (
+                  <p className="text-sm text-red-500">
+                    {signInErrors.password.message}
+                  </p>
+                )}
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" disabled={isLoggingIn}>
-                {isLoggingIn ? (
+              <Button type="submit" disabled={signInMutation.isPending}>
+                {signInMutation.isPending ? (
                   <>
                     <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                     登录中...
@@ -348,6 +332,7 @@ export const Logon = () => {
                 <Label htmlFor="reset-email">电子邮箱</Label>
                 <Input
                   id="reset-email"
+                  name="email"
                   type="email"
                   placeholder="hello@example.com"
                   required
@@ -358,8 +343,8 @@ export const Logon = () => {
               <Button type="button" variant="outline" onClick={openLogin}>
                 返回登录
               </Button>
-              <Button type="submit" disabled={isProcessing}>
-                {isProcessing ? (
+              <Button type="submit" disabled={forgotPasswordMutation.isPending}>
+                {forgotPasswordMutation.isPending ? (
                   <>
                     <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                     处理中...
@@ -396,6 +381,11 @@ export const Logon = () => {
                   {...formRegister('username')}
                   required
                 />
+                {errors.username && (
+                  <p className="text-sm text-red-500">
+                    {errors.username.message}
+                  </p>
+                )}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="register-email">电子邮箱</Label>
@@ -406,6 +396,9 @@ export const Logon = () => {
                   {...formRegister('email')}
                   required
                 />
+                {errors.email && (
+                  <p className="text-sm text-red-500">{errors.email.message}</p>
+                )}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="register-password">密码</Label>
@@ -419,6 +412,11 @@ export const Logon = () => {
                 <p className="text-xs text-muted-foreground">
                   密码至少包含8个字符
                 </p>
+                {errors.password && (
+                  <p className="text-sm text-red-500">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="register-password-confirm">确认密码</Label>
@@ -428,14 +426,19 @@ export const Logon = () => {
                   {...formRegister('confirmPassword')}
                   required
                 />
+                {errors.confirmPassword && (
+                  <p className="text-sm text-red-500">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
               </div>
             </div>
             <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
               <Button type="button" variant="outline" onClick={openLogin}>
                 已有账号? 登录
               </Button>
-              <Button type="submit" disabled={isProcessing}>
-                {isProcessing ? (
+              <Button type="submit" disabled={registerMutation.isPending}>
+                {registerMutation.isPending ? (
                   <>
                     <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                     注册中...

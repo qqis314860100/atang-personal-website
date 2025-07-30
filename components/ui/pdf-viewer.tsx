@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { PDFAnnotation } from '@/types/pdf'
+import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import {
-  getAnnotations,
-  createAnnotation,
-  updateAnnotation,
-  deleteAnnotation,
-} from '@/app/actions/annotation'
+  useAnnotations,
+  useCreateAnnotation,
+  useUpdateAnnotation,
+  useDeleteAnnotation,
+} from '@/lib/reactQuery/use-annotations'
 
 import {
   ChevronLeft,
@@ -103,7 +104,6 @@ export function PDFViewer({
   onSave,
   initialText = '',
 }: PDFViewerProps) {
-  console.log('initialText', initialText)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [pdfBytes, setPdfBytes] = useState<Uint8Array | null>(null)
@@ -116,44 +116,20 @@ export function PDFViewer({
     x: number
     y: number
   } | null>(null)
-  const [annotations, setAnnotations] = useState<PDFAnnotation[]>([])
   const [showAnnotations, setShowAnnotations] = useState(true)
   const [showAnnotationList, setShowAnnotationList] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [isLoadingAnnotations, setIsLoadingAnnotations] = useState(false)
   const [activeAnnotationId, setActiveAnnotationId] = useState<string | null>(
     null
   )
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const [showDetail, setShowDetail] = useState<string | null>(null)
 
-  // 初始化注释数据 - 从云端加载
-  useEffect(() => {
-    const loadAnnotations = async () => {
-      setIsLoadingAnnotations(true)
-      try {
-        const cloudAnnotations = await getAnnotations(pdfUrl)
-        setAnnotations(cloudAnnotations)
-      } catch (error) {
-        console.error('加载云端注释失败:', error)
-        // 如果云端加载失败，尝试从localStorage恢复
-        if (initialText) {
-          try {
-            const savedAnnotations = JSON.parse(initialText)
-            if (Array.isArray(savedAnnotations)) {
-              setAnnotations(savedAnnotations)
-            }
-          } catch (localError) {
-            console.warn('解析本地注释数据失败:', localError)
-          }
-        }
-      } finally {
-        setIsLoadingAnnotations(false)
-      }
-    }
-
-    loadAnnotations()
-  }, [pdfUrl, initialText])
+  // 使用 React Query hooks
+  const { data: annotations = [], isLoading: isLoadingAnnotations } =
+    useAnnotations(pdfUrl)
+  const createAnnotationMutation = useCreateAnnotation()
+  const updateAnnotationMutation = useUpdateAnnotation()
+  const deleteAnnotationMutation = useDeleteAnnotation()
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isRendering, setIsRendering] = useState(false)
@@ -206,6 +182,34 @@ export function PDFViewer({
       document.head.removeChild(styleElement)
     }
   }, [])
+
+  // 初始化 canvas 尺寸
+  useEffect(() => {
+    if (canvasRef.current && !pdfBytes) {
+      const canvas = canvasRef.current
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        // 设置默认尺寸 - 更合适的尺寸
+        canvas.width = 500
+        canvas.height = 300
+
+        // 绘制占位符
+        ctx.fillStyle = '#f8fafc'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        // 绘制边框
+        ctx.strokeStyle = '#e2e8f0'
+        ctx.lineWidth = 1
+        ctx.strokeRect(0, 0, canvas.width, canvas.height)
+
+        // 绘制占位符文本
+        ctx.fillStyle = '#94a3b8'
+        ctx.font = '16px system-ui, -apple-system, sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText('PDF 加载中...', canvas.width / 2, canvas.height / 2)
+      }
+    }
+  }, [pdfBytes])
 
   // 加载PDF文件
   useEffect(() => {
@@ -346,7 +350,8 @@ export function PDFViewer({
 
   // 处理画布点击事件
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!canvasRef.current || isSaving || isEditing) return
+    if (!canvasRef.current || createAnnotationMutation.isPending || isEditing)
+      return
 
     const rect = canvasRef.current.getBoundingClientRect()
     const x = e.clientX - rect.left
@@ -358,13 +363,12 @@ export function PDFViewer({
 
   // 保存注释
   const handleSave = async () => {
-    if (!editPosition || !text.trim() || isSaving) return
-
-    setIsSaving(true)
+    if (!editPosition || !text.trim() || createAnnotationMutation.isPending)
+      return
 
     try {
       // 创建新注释到云端
-      const newAnnotation = await createAnnotation({
+      const newAnnotation = await createAnnotationMutation.mutateAsync({
         pdfUrl,
         x: editPosition.x,
         y: editPosition.y,
@@ -373,12 +377,10 @@ export function PDFViewer({
       })
 
       if (newAnnotation) {
-        // 添加到本地注释列表
-        setAnnotations((prev) => [...prev, newAnnotation])
-
         // 如果有onSave回调，调用它
         if (onSave && pdfBytes) {
-          onSave(pdfBytes, JSON.stringify([...annotations, newAnnotation]))
+          const updatedAnnotations = [...annotations, newAnnotation]
+          onSave(pdfBytes, JSON.stringify(updatedAnnotations))
         }
 
         // 清空编辑状态
@@ -392,8 +394,6 @@ export function PDFViewer({
       }
     } catch (error) {
       console.error('保存注释失败:', error)
-    } finally {
-      setIsSaving(false)
     }
   }
 
@@ -407,12 +407,8 @@ export function PDFViewer({
   // 删除注释
   const handleDeleteAnnotation = async (id: string) => {
     try {
-      const success = await deleteAnnotation(id)
+      const success = await deleteAnnotationMutation.mutateAsync(id)
       if (success) {
-        setAnnotations((prev) =>
-          prev.filter((annotation) => annotation.id !== id)
-        )
-
         // 如果有onSave回调，调用它
         if (onSave && pdfBytes) {
           const updatedAnnotations = annotations.filter(
@@ -503,35 +499,39 @@ export function PDFViewer({
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-96">
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 max-w-md">
-          <div className="flex items-center justify-center mb-4">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-              <svg
-                className="w-5 h-5 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col h-full">
+        <div className="flex flex-col items-center justify-center flex-1 min-h-[600px]">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 max-w-md">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-5 h-5 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
             </div>
-          </div>
-          <p className="text-gray-700 text-center mb-4 font-medium">{error}</p>
-          <div className="flex justify-center">
-            <Button
-              onClick={handleRetryRender}
-              variant="outline"
-              size="sm"
-              className="bg-white hover:bg-blue-50 border-blue-200 text-blue-700"
-            >
-              重新加载
-            </Button>
+            <p className="text-gray-700 text-center mb-4 font-medium">
+              {error}
+            </p>
+            <div className="flex justify-center">
+              <Button
+                onClick={handleRetryRender}
+                variant="outline"
+                size="sm"
+                className="bg-white hover:bg-blue-50 border-blue-200 text-blue-700"
+              >
+                重新加载
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -539,9 +539,9 @@ export function PDFViewer({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-      {/* 工具栏 */}
-      <div className="bg-gray-50 px-4 sm:px-4 py-2 border-b border-gray-200">
+    <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col h-full">
+      {/* 工具栏 - 固定在顶部，不参与滚动 */}
+      <div className="bg-gray-50 px-4 sm:px-4 py-2 border-b border-gray-200 flex-shrink-0">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
           <div className="flex items-center justify-center sm:justify-start space-x-4">
             <Button
@@ -630,7 +630,11 @@ export function PDFViewer({
                 variant="outline"
                 size="sm"
                 onClick={() => setShowAnnotations(!showAnnotations)}
-                disabled={isSaving}
+                disabled={
+                  createAnnotationMutation.isPending ||
+                  updateAnnotationMutation.isPending ||
+                  deleteAnnotationMutation.isPending
+                }
                 className="toolbar-button flex items-center space-x-1 h-7"
                 title={showAnnotations ? '隐藏注释' : '显示注释'}
               >
@@ -651,7 +655,11 @@ export function PDFViewer({
                     variant="outline"
                     size="sm"
                     onClick={() => setShowAnnotationList(!showAnnotationList)}
-                    disabled={isSaving}
+                    disabled={
+                      createAnnotationMutation.isPending ||
+                      updateAnnotationMutation.isPending ||
+                      deleteAnnotationMutation.isPending
+                    }
                     className="toolbar-button flex items-center space-x-1 h-7"
                     title={showAnnotationList ? '隐藏注释列表' : '显示注释列表'}
                   >
@@ -664,23 +672,31 @@ export function PDFViewer({
         </div>
       </div>
 
-      {/* PDF显示区域 */}
+      {/* PDF显示区域 - 占据剩余空间，可滚动 */}
       <div
         ref={containerRef}
-        className="pdf-container relative overflow-auto bg-gray-100 p-2"
-        style={{ height: '100%', minHeight: '400px' }}
+        className="pdf-container relative overflow-auto bg-gray-100 p-2 flex-1"
+        style={{ minHeight: '300px' }}
       >
-        <div className="flex justify-center">
+        <div className="flex justify-center items-start py-2">
           <div className="relative">
             <canvas
               ref={canvasRef}
               onClick={handleCanvasClick}
               className={`pdf-canvas rounded-lg transition-all ${
-                isSaving ? 'cursor-not-allowed opacity-50' : 'cursor-crosshair'
+                createAnnotationMutation.isPending ||
+                updateAnnotationMutation.isPending ||
+                deleteAnnotationMutation.isPending
+                  ? 'cursor-not-allowed opacity-50'
+                  : 'cursor-crosshair'
               }`}
               style={{
                 maxWidth: '100%',
                 height: 'auto',
+                minWidth: '500px',
+                minHeight: '300px',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
               }}
             />
 
@@ -688,7 +704,9 @@ export function PDFViewer({
             <div className="absolute top-6 right-6 bg-blue-600 text-white px-4 py-2 rounded-full text-sm flex items-center space-x-2 shadow-lg">
               <Edit3 className="w-4 h-4" />
               <span>
-                {isSaving
+                {createAnnotationMutation.isPending ||
+                updateAnnotationMutation.isPending ||
+                deleteAnnotationMutation.isPending
                   ? '保存中...'
                   : isLoadingAnnotations
                   ? '加载注释中...'
@@ -709,7 +727,9 @@ export function PDFViewer({
                   <div
                     key={annotation.id}
                     className={`absolute w-6 h-6 bg-yellow-400 border-2 border-yellow-600 rounded-full transition-colors shadow-lg ${
-                      isSaving
+                      createAnnotationMutation.isPending ||
+                      updateAnnotationMutation.isPending ||
+                      deleteAnnotationMutation.isPending
                         ? 'cursor-not-allowed opacity-50'
                         : 'cursor-pointer hover:bg-yellow-300'
                     }`}
@@ -718,7 +738,11 @@ export function PDFViewer({
                       top: annotation.y - 12,
                     }}
                     onClick={() => {
-                      if (!isSaving) {
+                      if (
+                        !createAnnotationMutation.isPending &&
+                        !updateAnnotationMutation.isPending &&
+                        !deleteAnnotationMutation.isPending
+                      ) {
                         setShowAnnotationList(true)
                         setActiveAnnotationId(annotation.id)
                         setShowDetail(annotation.id)
@@ -734,9 +758,15 @@ export function PDFViewer({
 
             {/* 渲染状态指示器 */}
             {isRendering && (
-              <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm flex items-center space-x-2 shadow-sm">
-                <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-gray-700">渲染中...</span>
+              <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full text-sm flex items-center space-x-2 shadow-lg">
+                <LoadingSpinner size="sm" text="渲染中..." variant="wave" />
+              </div>
+            )}
+
+            {/* 加载状态指示器 */}
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-lg">
+                <LoadingSpinner size="lg" text="正在加载PDF..." />
               </div>
             )}
           </div>
@@ -756,7 +786,7 @@ export function PDFViewer({
           <div
             className="fixed z-50 bg-white rounded-2xl shadow-2xl border border-gray-200 max-w-md w-full mx-4"
             style={{
-              left: Math.min(editPosition.x, window.innerWidth - 450),
+              left: (document.documentElement.clientWidth - 350) / 2,
               top: Math.min(editPosition.y, window.innerHeight - 300),
             }}
           >
@@ -804,10 +834,17 @@ export function PDFViewer({
                 </Button>
                 <Button
                   onClick={handleSave}
-                  disabled={!text.trim() || isSaving}
+                  disabled={
+                    !text.trim() ||
+                    createAnnotationMutation.isPending ||
+                    updateAnnotationMutation.isPending ||
+                    deleteAnnotationMutation.isPending
+                  }
                   className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSaving ? (
+                  {createAnnotationMutation.isPending ||
+                  updateAnnotationMutation.isPending ||
+                  deleteAnnotationMutation.isPending ? (
                     <div className="flex items-center space-x-2">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       <span>保存中...</span>
@@ -824,10 +861,10 @@ export function PDFViewer({
 
       {/* 注释列表侧边栏 */}
       <div
-        className={`fixed top-20 right-0 w-80 bg-white border-l border-gray-200 shadow-lg z-50 transition-transform duration-300 ${
+        className={`fixed top-0 right-0 w-80 bg-white border-l border-gray-200 shadow-lg z-50 transition-transform duration-300 ${
           showAnnotationList ? 'translate-x-0' : 'translate-x-full'
         }`}
-        style={{ height: 'calc(100vh - 80px)', overflowY: 'auto' }}
+        style={{ height: '100vh', overflowY: 'auto' }}
       >
         {annotations.length > 0 && (
           <>
@@ -863,7 +900,7 @@ export function PDFViewer({
             </div>
             <div
               className="overflow-y-auto"
-              style={{ maxHeight: 'calc(100vh - 160px)' }}
+              style={{ maxHeight: 'calc(100vh - 120px)' }}
             >
               {annotations
                 .sort(

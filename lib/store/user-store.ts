@@ -27,28 +27,36 @@ type UserState = {
   setUser: (user: TUser | null) => void
   logout: () => void
   setLoading: (loading: boolean) => void
+  // 添加与 React Query 同步的方法
+  syncWithReactQuery: (user: TUser | null) => void
 }
 
 // 创建 Store，添加persist中间件实现持久化
 export const useUserStore = create<UserState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       // 初始状态
       user: null,
-      isLoggedIn:
-        typeof window !== 'undefined' && !localStorage.getItem('user-storage')
-          ? true // 只有在没有缓存数据时才显示加载状态
-          : false,
-      isLoading: true, // 默认为加载中
+      isLoggedIn: false,
+      isLoading: true,
 
       // Actions
-      setUser: (user) =>
-        set({ user: user, isLoggedIn: !!user, isLoading: false }),
+      setUser: (user) => {
+        set({ user: user, isLoggedIn: !!user, isLoading: false })
+      },
       logout: () => {
-        set({ user: null, isLoggedIn: false })
-        localStorage.removeItem('user-storage')
+        set({ user: null, isLoggedIn: false, isLoading: false })
       },
       setLoading: (loading) => set({ isLoading: loading }),
+      // 与 React Query 同步的方法
+      syncWithReactQuery: (user) => {
+        const currentUser = get().user
+        if (user && (!currentUser || currentUser.id !== user.id)) {
+          get().setUser(user)
+        } else if (!user && currentUser) {
+          get().logout()
+        }
+      },
     }),
     {
       name: 'user-storage', // 存储在localStorage中的键名
