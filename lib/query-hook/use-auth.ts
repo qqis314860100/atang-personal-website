@@ -7,100 +7,107 @@ import { createClient } from '@/utils/supabase/client'
 import { toast } from 'react-hot-toast'
 import { TSignInSchema } from '@/schemas/signInSchema'
 import { TRegisterSchema } from '@/schemas/registerSchema'
-import { useRef, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useUserStore } from '@/lib/store/user-store'
 
-// 获取当前用户数据
-export function useCurrentUser() {
-  return useQuery({
+// 优化后的用户认证 hook
+export function useStableUser() {
+  // 使用一个统一的查询
+  const query = useQuery({
     queryKey: queryKeys.user.session(),
     queryFn: async () => {
-      // 这个函数只有在以下情况才会执行：
-      // 1. 首次调用且没有缓存数据
-      // 2. 缓存数据已过期（超过 staleTime）
-      // 3. 手动触发重新获取
+      console.log('🔄 useUser queryFn 被调用')
       const supabase = createClient()
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser()
 
-      if (error) {
-        console.error('获取用户会话失败:', error)
-        throw error
-      }
+      try {
+        // 获取当前用户会话
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession()
 
-      if (!user) {
-        console.log('用户未登录')
+        console.log('📋 获取到的 session:', session)
+
+        // 处理会话错误或无会话情况
+        if (sessionError || !session) {
+          if (sessionError) {
+            console.error('❌ 获取用户会话失败:', sessionError)
+          } else {
+            console.log('👤 用户未登录')
+          }
+          return null
+        }
+
+        // 获取用户详细信息
+        const { data: profile, error: profileError } = await supabase
+          .from('UserProfile')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+
+        console.log('📊 获取到的 profile:', profile)
+
+        if (profileError) {
+          console.error('❌ 获取用户资料失败:', profileError)
+          // 返回基本用户信息
+          return {
+            id: session.user.id,
+            email: session.user.email,
+            username: session.user.email?.split('@')[0] || 'User',
+            avatar: null,
+            created_at: session.user.created_at,
+          }
+        }
+
+        console.log('✅ 获取到用户资料:', profile)
+        return profile
+      } catch (error) {
+        // 捕获所有可能的错误
+        console.error('❌ 用户数据获取失败:', error)
         return null
       }
-
-      // 获取用户详细信息
-      const { data: profile, error: profileError } = await supabase
-        .from('UserProfile')
-        .select('*')
-        .eq('id', user.id)
-        .single()
-
-      if (profileError) {
-        console.error('获取用户资料失败:', profileError)
-        // 如果获取资料失败，至少返回基本信息
-        return {
-          id: user.id,
-          email: user.email,
-          username: user.email?.split('@')[0] || 'User',
-          avatar: null,
-          created_at: user.created_at,
-        }
-      }
-
-      console.log('获取到用户资料:', profile)
-      return profile
     },
-    staleTime: 10 * 60 * 1000, // 10分钟数据保持新鲜
+    staleTime: 5 * 60 * 1000, // 5分钟数据保持新鲜
     gcTime: 30 * 60 * 1000, // 30分钟垃圾回收时间
     retry: false, // 认证失败不重试
     refetchOnWindowFocus: false, // 窗口聚焦时不重新获取
-    refetchOnMount: false, // 组件挂载时不重新获取
-    refetchOnReconnect: false, // 网络重连时不重新获取
-    // 移除 initialData，让 React Query 正常获取数据
-    // Zustand 已经处理了持久化，不需要重复逻辑
   })
-}
 
-// 第一次调用 useStableUser
-// ├── useCurrentUser() 执行
-// │   ├── 检查缓存 → 无缓存
-// │   ├── 执行 queryFn → 网络请求获取用户数据
-// │   └── 缓存数据
-// ├── useEffect 执行 → 更新 Zustand
-// └── 返回用户数据
-
-// 第二次调用 useStableUser（10分钟内）
-// ├── useCurrentUser() 执行
-// │   ├── 检查缓存 → 有缓存且未过期
-// │   ├── 直接返回缓存数据 → 无网络请求
-// │   └── 保持缓存
-// ├── useEffect 不执行 → user 未变化
-// └── 返回缓存的用户数据
-
-// 简化的用户状态 hook，主要使用 React Query 缓存,自动检测认证状态变化，保持与服务器同步
-export function useStableUser() {
-  const { data: user, isLoading, error } = useCurrentUser()
+  const { data: user, isLoading, error, refetch } = query
   const { setUser } = useUserStore()
 
-  // 只在用户数据变化时更新 Zustand（用于持久化）
+  // 监听认证状态变化
   useEffect(() => {
+    const supabase = createClient()
+
+    // 同步到 Zustand 存储
     if (user) {
       setUser(user)
     }
-  }, [user, setUser])
+
+    // 设置认证状态监听器
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        refetch() // 重新获取用户数据
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null) // 清除用户数据
+      }
+    })
+
+    // 清理函数
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [user, setUser, refetch])
 
   return {
     user,
     isLoading,
     error,
     isAuthenticated: !!user,
+    refetch,
   }
 }
 

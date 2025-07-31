@@ -13,6 +13,8 @@ import SessionProvider from '@/components/provider/SessionProvider'
 import { QueryProvider } from '@/components/provider/QueryProvider'
 import { UserStateDebugger } from '@/components/debug/UserStateDebugger'
 import { UserStatePreloader } from '@/components/provider/UserStatePreloader'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+
 import { cn } from '@/lib/utils'
 import { fontSans } from '@/lib/fonts'
 
@@ -84,34 +86,36 @@ export default async function RootLayout({
           fontSans.variable
         )}
       >
-        <QueryProvider>
-          <SessionProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <NextIntlClientProvider>
-                <UserStatePreloader>
-                  {/* 主内容区 */}
-                  <div className="flex w-full  flex-col">
-                    <Header />
-                    <ClientTopLoader />
-                    <ClientToaster />
-                    {/* 内容区域 */}
-                    <main className="flex-1  transition-all duration-200 ease-in-out">
-                      <div className="py-6">{children}</div>
-                    </main>
+        <ErrorBoundary>
+          <QueryProvider>
+            <SessionProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <NextIntlClientProvider>
+                  <UserStatePreloader>
+                    {/* 主内容区 */}
+                    <div className="flex w-full  flex-col">
+                      <Header />
+                      <ClientTopLoader />
+                      <ClientToaster />
+                      {/* 内容区域 */}
+                      <main className="flex-1  transition-all duration-200 ease-in-out">
+                        <div className="py-6">{children}</div>
+                      </main>
 
-                    <Footer />
-                  </div>
-                  <UserStateDebugger />
-                </UserStatePreloader>
-              </NextIntlClientProvider>
-            </ThemeProvider>
-          </SessionProvider>
-        </QueryProvider>
+                      <Footer />
+                    </div>
+                    <UserStateDebugger />
+                  </UserStatePreloader>
+                </NextIntlClientProvider>
+              </ThemeProvider>
+            </SessionProvider>
+          </QueryProvider>
+        </ErrorBoundary>
       </body>
     </html>
   )

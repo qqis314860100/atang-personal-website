@@ -6,61 +6,6 @@ import { updateUser } from '@/app/actions/profile'
 import { toast } from 'react-hot-toast'
 import { createClient } from '@/utils/supabase/client'
 
-// 获取用户会话
-export function useUserSession() {
-  return useQuery({
-    queryKey: queryKeys.user.session(),
-    queryFn: async () => {
-      console.log('🔄 useUserSession queryFn 被调用')
-      const supabase = createClient()
-
-      // 获取当前用户会话
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession()
-
-      console.log('📋 获取到的 session:', session)
-
-      if (error) {
-        console.error('❌ 获取用户会话失败:', error)
-        throw error
-      }
-
-      if (!session) {
-        console.log('👤 用户未登录')
-        return null
-      }
-
-      // 获取用户详细信息
-      const { data: profile, error: profileError } = await supabase
-        .from('UserProfile')
-        .select('*')
-        .eq('id', session.user.id)
-        .single()
-
-      console.log('📊 获取到的 profile:', profile)
-
-      if (profileError) {
-        console.error('❌ 获取用户资料失败:', profileError)
-        return {
-          id: session.user.id,
-          email: session.user.email,
-          username: session.user.email?.split('@')[0] || 'User',
-          avatar: null,
-          created_at: session.user.created_at,
-        }
-      }
-
-      console.log('✅ 获取到用户会话:', profile)
-      return profile
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: false,
-    refetchOnWindowFocus: false,
-  })
-}
-
 // 获取用户资料
 export function useUserProfile() {
   return useQuery({
