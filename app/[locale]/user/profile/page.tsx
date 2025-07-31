@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { redirect, useParams } from 'next/navigation'
-import { useStableUser } from '@/lib/reactQuery/use-auth'
-import { useUpdateUser } from '@/lib/reactQuery/use-user'
+import { useStableUser } from '@/lib/query-hook/use-auth'
+import { useUpdateUser } from '@/lib/query-hook/use-user'
 import { CardLoading } from '@/components/ui/loading-spinner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'

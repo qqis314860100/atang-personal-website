@@ -11,7 +11,7 @@ import {
   useCreateAnnotation,
   useUpdateAnnotation,
   useDeleteAnnotation,
-} from '@/lib/reactQuery/use-annotations'
+} from '@/lib/query-hook/use-annotations'
 
 import {
   ChevronLeft,

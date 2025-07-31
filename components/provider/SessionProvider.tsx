@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useQueryClient } from '@tanstack/react-query'
-import { queryKeys } from '@/lib/reactQuery'
+import { queryKeys } from '@/lib/query-hook'
 
 export default function SessionProvider({
   children,

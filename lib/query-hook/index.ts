@@ -69,4 +69,9 @@ export const queryKeys = {
     all: ['uploads'] as const,
     resume: () => [...queryKeys.uploads.all, 'resume'] as const,
   },
+  // 设置相关
+  setting: {
+    all: ['setting'] as const,
+    password: () => [...queryKeys.setting.all, 'password'] as const,
+  },
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { queryKeys } from '@/lib/reactQuery'
+import { queryKeys } from '@/lib/query-hook'
 import { fetchPosts } from '@/app/actions/fetchPosts'
 import { toast } from 'react-hot-toast'
 

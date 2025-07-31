@@ -1,6 +1,6 @@
 export type Locale = 'zh' | 'en'
 
-export type Namespace = 'common' | 'navbar' | 'resume' | 'dashboard'
+export type Namespace = 'common' | 'navbar' | 'resume' | 'dashboard' | 'setting'
 
 export type Translations = Record<Namespace, (zhKey: string) => string>
 

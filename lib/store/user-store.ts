@@ -31,7 +31,7 @@ type UserState = {
   syncWithReactQuery: (user: TUser | null) => void
 }
 
-// 创建 Store，添加persist中间件实现持久化
+// 创建 Store，添加persist中间件实现持久化,用户在其他地方登出后，本地状态仍然显示已登录
 export const useUserStore = create<UserState>()(
   persist(
     (set, get) => ({

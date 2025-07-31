@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { queryKeys } from '@/lib/reactQuery'
+import { queryKeys } from '@/lib/query-hook'
 import { signIn, register, resendVerificationEmail } from '@/app/actions/auth'
 import { createClient } from '@/utils/supabase/client'
 import { toast } from 'react-hot-toast'
@@ -84,7 +84,7 @@ export function useCurrentUser() {
 // ├── useEffect 不执行 → user 未变化
 // └── 返回缓存的用户数据
 
-// 简化的用户状态 hook，主要使用 React Query 缓存
+// 简化的用户状态 hook，主要使用 React Query 缓存,自动检测认证状态变化，保持与服务器同步
 export function useStableUser() {
   const { data: user, isLoading, error } = useCurrentUser()
   const { setUser } = useUserStore()

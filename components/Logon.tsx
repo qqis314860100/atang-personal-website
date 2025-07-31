@@ -30,7 +30,7 @@ import {
   useRegister,
   useResendVerificationEmail,
   useForgotPassword,
-} from '@/lib/reactQuery/use-auth'
+} from '@/lib/query-hook/use-auth'
 import { InlineLoading } from '@/components/ui/loading-spinner'
 import {
   DropdownMenu,

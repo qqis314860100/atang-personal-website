@@ -6,4 +6,5 @@ export const namespaces: Namespace[] = [
   'navbar',
   'resume',
   'dashboard',
+  'setting',
 ]

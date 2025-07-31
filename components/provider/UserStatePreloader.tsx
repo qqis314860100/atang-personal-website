@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useStableUser } from '@/lib/reactQuery/use-auth'
+import { useStableUser } from '@/lib/query-hook/use-auth'
 import { useUserStore } from '@/lib/store/user-store'
 import { SkeletonScreen } from '@/components/ui/skeleton-screen'
 

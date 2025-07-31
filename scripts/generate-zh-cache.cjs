@@ -1,7 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 
-const namespaces = ['common', 'navbar', 'resume', 'dashboard']
+const namespaces = ['common', 'navbar', 'resume', 'dashboard', 'setting']
 
 async function generateZhCache() {
   const cache = {}

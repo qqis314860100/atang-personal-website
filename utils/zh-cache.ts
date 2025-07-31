@@ -33,12 +33,16 @@ export const zhToEnCache: Record<string, { namespace: Namespace; key: string }> 
     "key": "rename"
   },
   "编辑": {
-    "namespace": "resume",
+    "namespace": "common",
     "key": "edit"
   },
   "删除": {
     "namespace": "common",
     "key": "delete"
+  },
+  "更新中...": {
+    "namespace": "common",
+    "key": "updating"
   },
   "主页": {
     "namespace": "navbar",
@@ -120,26 +124,6 @@ export const zhToEnCache: Record<string, { namespace: Namespace; key: string }> 
     "namespace": "resume",
     "key": "resumeContent"
   },
-  "保存": {
-    "namespace": "resume",
-    "key": "save"
-  },
-  "保存中...": {
-    "namespace": "resume",
-    "key": "saving"
-  },
-  "取消": {
-    "namespace": "resume",
-    "key": "cancel"
-  },
-  "删除内容": {
-    "namespace": "resume",
-    "key": "deleteContent"
-  },
-  "暂无内容，点击“编辑”开始。": {
-    "namespace": "resume",
-    "key": "noContent"
-  },
   "简历上传成功！": {
     "namespace": "resume",
     "key": "uploadSuccess"
@@ -148,21 +132,9 @@ export const zhToEnCache: Record<string, { namespace: Namespace; key: string }> 
     "namespace": "resume",
     "key": "deleteSuccess"
   },
-  "简历内容已保存。": {
-    "namespace": "resume",
-    "key": "saveContentSuccess"
-  },
-  "简历内容已删除。": {
-    "namespace": "resume",
-    "key": "deleteContentSuccess"
-  },
   "确定要删除您的简历文件吗？": {
     "namespace": "resume",
     "key": "confirmDeleteFile"
-  },
-  "确定要删除简历内容吗？": {
-    "namespace": "resume",
-    "key": "confirmDeleteContent"
   },
   "上传失败，请重试。": {
     "namespace": "resume",
@@ -172,10 +144,6 @@ export const zhToEnCache: Record<string, { namespace: Namespace; key: string }> 
     "namespace": "resume",
     "key": "deleteFailed"
   },
-  "保存失败。": {
-    "namespace": "resume",
-    "key": "saveFailed"
-  },
   "请上传PDF格式的文件": {
     "namespace": "resume",
     "key": "onlyPDFAllowed"
@@ -184,10 +152,6 @@ export const zhToEnCache: Record<string, { namespace: Namespace; key: string }> 
     "namespace": "resume",
     "key": "fileTooLarge"
   },
-  "PDF处理失败，请确保文件格式正确": {
-    "namespace": "resume",
-    "key": "pdfProcessFailed"
-  },
   "暂无PDF文件": {
     "namespace": "resume",
     "key": "noPdfUploaded"
@@ -195,5 +159,57 @@ export const zhToEnCache: Record<string, { namespace: Namespace; key: string }> 
   "请先在上方上传PDF文件，然后可以在此查看和编辑": {
     "namespace": "resume",
     "key": "uploadPdfFirst"
+  },
+  "注释已保存到云端": {
+    "namespace": "resume",
+    "key": "annotationSaved"
+  },
+  "注释已删除": {
+    "namespace": "resume",
+    "key": "annotationDeleted"
+  },
+  "加载注释失败，使用本地备份": {
+    "namespace": "resume",
+    "key": "annotationLoadFailed"
+  },
+  "正在同步注释...": {
+    "namespace": "resume",
+    "key": "syncInProgress"
+  },
+  "同步失败，请检查网络连接": {
+    "namespace": "resume",
+    "key": "syncFailed"
+  },
+  "安全设置": {
+    "namespace": "setting",
+    "key": "settingTile"
+  },
+  "更新密码": {
+    "namespace": "setting",
+    "key": "updatePassword"
+  },
+  "当前密码": {
+    "namespace": "setting",
+    "key": "currentPassword"
+  },
+  "新密码": {
+    "namespace": "setting",
+    "key": "newPassword"
+  },
+  "确认密码": {
+    "namespace": "setting",
+    "key": "confirmPassword"
+  },
+  "密码更新成功": {
+    "namespace": "setting",
+    "key": "passwordUpdateSuccess"
+  },
+  "密码更新失败": {
+    "namespace": "setting",
+    "key": "passwordUpdateFailed"
+  },
+  "密码更新错误": {
+    "namespace": "setting",
+    "key": "passwordUpdateError"
   }
 }

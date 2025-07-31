@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useUserStore } from '@/lib/store/user-store'
+import { useStableUser } from '@/lib/query-hook/use-auth'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/utils/supabase/client'
@@ -15,7 +15,7 @@ import { useI18n } from '@/utils/i18n'
 
 export default function ResumePage() {
   const t = useI18n()
-  const { user, setUser } = useUserStore()
+  const { user, isLoading: userLoading } = useStableUser()
   const [annotationData, setAnnotationData] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -92,14 +92,8 @@ export default function ResumePage() {
         throw new Error('Failed to update your profile. Please try again.')
       }
 
-      // 更新本地状态
-      setUser({
-        ...user,
-        resume_url: urlData.publicUrl,
-        resume_filename: originalFileName,
-        resume_size: file.size,
-        updatedAt: new Date().toISOString(),
-      })
+      // 数据已通过数据库更新，React Query 会在下次获取时自动更新缓存
+      // 如果需要立即更新，可以调用 queryClient.invalidateQueries
 
       toast.success(t.resume('简历上传成功！'))
     } catch (error: any) {
@@ -139,13 +133,7 @@ export default function ResumePage() {
         .eq('id', user.id)
       if (dbError) throw new Error(dbError.message)
 
-      setUser({
-        ...user,
-        resume_url: null,
-        resume_filename: null,
-        resume_size: null,
-        updatedAt: new Date().toISOString(),
-      })
+      // 数据已通过数据库更新，React Query 会在下次获取时自动更新缓存
 
       toast.success(t.resume('简历文件已删除。'))
     } catch (error: any) {

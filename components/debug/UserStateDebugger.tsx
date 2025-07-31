@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useStableUser } from '@/lib/reactQuery/use-auth'
+import { useStableUser } from '@/lib/query-hook/use-auth'
 
 export function UserStateDebugger() {
   const { user, isLoading, error, isAuthenticated } = useStableUser()

@@ -1,12 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { debugAuth } from '@/app/actions/debug-auth'
-import { testSupabaseConnection } from '@/app/actions/test-supabase-connection'
-import { checkDatabaseConnection } from '@/app/actions/check-database-connection'
-import { testNetwork } from '@/app/actions/test-network'
-import { checkSupabaseProject } from '@/app/actions/check-supabase-project'
-import { testSimpleQuery } from '@/app/actions/test-simple-query'
+import { debugAuth } from '@/app/actions/test/debug-auth'
+import { testSupabaseConnection } from '@/app/actions/test/test-supabase-connection'
+import { checkDatabaseConnection } from '@/app/actions/test/check-database-connection'
+import { testNetwork } from '@/app/actions/test/test-network'
+import { checkSupabaseProject } from '@/app/actions/test/check-supabase-project'
+import { testSimpleQuery } from '@/app/actions/test/test-simple-query'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 

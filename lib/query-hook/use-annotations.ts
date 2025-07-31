@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { queryKeys } from '@/lib/reactQuery'
+import { queryKeys } from '@/lib/query-hook'
 import {
   getAnnotations,
   createAnnotation,

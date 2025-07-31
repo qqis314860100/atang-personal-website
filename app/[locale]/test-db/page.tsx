@@ -1,13 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { testDatabaseConnection } from '@/app/actions/test-db'
-import { testAdminConnection } from '@/app/actions/test-admin'
-import { testOtherTables } from '@/app/actions/test-other-tables'
-import { testServiceRoleConnection } from '@/app/actions/test-service-role'
-import { debugEnvironmentVariables } from '@/app/actions/debug-env'
-import { testTableNames } from '@/app/actions/test-table-names'
-import { testOtherTablesServiceRole } from '@/app/actions/test-other-tables-service-role'
+import { testDatabaseConnection } from '@/app/actions/test/test-db'
+import { testAdminConnection } from '@/app/actions/test/test-admin'
+import { testOtherTables } from '@/app/actions/test/test-other-tables'
+import { testServiceRoleConnection } from '@/app/actions/test/test-service-role'
+import { debugEnvironmentVariables } from '@/app/actions/test/debug-env'
+import { testTableNames } from '@/app/actions/test/test-table-names'
+import { testOtherTablesServiceRole } from '@/app/actions/test/test-other-tables-service-role'
 
 export default function TestDBPage() {
   const [result, setResult] = useState<any>(null)
