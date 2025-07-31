@@ -83,47 +83,16 @@ const Header = () => {
           <NavigationMenu>
             <NavigationMenuList>
               {(navMenuData as NavMenuItem[]).map((parent) => {
-                if (parent.children?.length) {
-                  return (
-                    <NavigationMenuItem key={parent.href}>
-                      <NavigationMenuTrigger>
-                        {parent.title}
-                      </NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        <ul className="grid w-full gap-3 p-4 md:w-[400px] lg:w-[500px] md:grid-cols-2">
-                          <li className="row-span-3">
-                            <ListItem
-                              href={parent.href}
-                              title={parent.title}
-                              className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                            >
-                              {parent.description}
-                            </ListItem>
-                          </li>
-                          {parent.children.map((child) => (
-                            <ListItem
-                              key={parent.href + child.href}
-                              href={parent.href + child.href}
-                              title={child.title}
-                            >
-                              {child.description}
-                            </ListItem>
-                          ))}
-                        </ul>
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                  )
-                } else {
-                  return (
-                    <NavigationMenuItem key={parent.href}>
-                      <NavigationMenuLink
-                        className={navigationMenuTriggerStyle()}
-                      >
-                        {parent.title}
-                      </NavigationMenuLink>
-                    </NavigationMenuItem>
-                  )
-                }
+                return (
+                  <NavigationMenuItem key={parent.href}>
+                    <NavigationMenuLink
+                      href={parent.href}
+                      className={navigationMenuTriggerStyle()}
+                    >
+                      {parent.title}
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                )
               })}
             </NavigationMenuList>
           </NavigationMenu>
