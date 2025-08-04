@@ -1,6 +1,5 @@
 import siteMetadata from '@/data/siteMetadata'
 import { Metadata } from 'next'
-import Footer from '@/components/Footer'
 import { ClientTopLoader } from '@/components/client-toploader'
 import { ClientToaster } from '@/components/client-toaster'
 import { notFound } from 'next/navigation'
@@ -11,12 +10,11 @@ import { ThemeProvider } from '@/components/provider/ThemeProvider'
 import '../globals.css'
 import SessionProvider from '@/components/provider/SessionProvider'
 import { QueryProvider } from '@/components/provider/QueryProvider'
-import { UserStateDebugger } from '@/components/debug/UserStateDebugger'
 import { UserStatePreloader } from '@/components/provider/UserStatePreloader'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 
-import { cn } from '@/lib/utils'
-import { fontSans } from '@/lib/fonts'
+import { cn } from '@/utils/utils'
+import { fontSans } from '@/utils/fonts'
 
 interface RootLayoutProps extends React.PropsWithChildren {
   params: {
@@ -82,40 +80,37 @@ export default async function RootLayout({
     >
       <body
         className={cn(
-          'min-h-screen bg-background antialiased font-sans',
+          'h-screen bg-gray-100 antialiased font-sans',
           fontSans.variable
         )}
       >
-        <ErrorBoundary>
-          <QueryProvider>
-            <SessionProvider>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-              >
-                <NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <ErrorBoundary>
+            <QueryProvider>
+              <SessionProvider>
+                <ThemeProvider
+                  attribute="class"
+                  defaultTheme="system"
+                  enableSystem
+                  disableTransitionOnChange
+                >
                   <UserStatePreloader>
-                    {/* 主内容区 */}
-                    <div className="flex w-full  flex-col">
+                    {/* 主面板容器 */}
+                    <ClientTopLoader />
+                    <ClientToaster />
+                    {/* 内容区域 - Header 和主体融合 */}
+                    <div className="h-full flex flex-col">
                       <Header />
-                      <ClientTopLoader />
-                      <ClientToaster />
-                      {/* 内容区域 */}
-                      <main className="flex-1  transition-all duration-200 ease-in-out">
-                        <div className="py-6">{children}</div>
+                      <main className="flex-1 overflow-y-auto h-[calc(100vh-64px)] bg-gradient-to-br from-gray-50 via-white to-gray-50">
+                        {children}
                       </main>
-
-                      <Footer />
                     </div>
-                    <UserStateDebugger />
                   </UserStatePreloader>
-                </NextIntlClientProvider>
-              </ThemeProvider>
-            </SessionProvider>
-          </QueryProvider>
-        </ErrorBoundary>
+                </ThemeProvider>
+              </SessionProvider>
+            </QueryProvider>
+          </ErrorBoundary>
+        </NextIntlClientProvider>
       </body>
     </html>
   )

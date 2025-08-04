@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query-hook'
 import { updateUser } from '@/app/actions/profile'
 import { toast } from 'react-hot-toast'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 
 // 获取用户资料
 export function useUserProfile() {

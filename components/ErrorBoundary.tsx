@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { Button } from './ui/button'
 import { Alert, AlertDescription, AlertTitle } from './ui/alert'
 import { AlertCircle, RefreshCcw } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/navigation'
 
 interface ErrorBoundaryProps {
   children: React.ReactNode

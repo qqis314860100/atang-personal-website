@@ -3,12 +3,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query-hook'
 import { signIn, register, resendVerificationEmail } from '@/app/actions/auth'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import { toast } from 'react-hot-toast'
 import { TSignInSchema } from '@/schemas/signInSchema'
 import { TRegisterSchema } from '@/schemas/registerSchema'
 import { useEffect } from 'react'
-import { useUserStore } from '@/lib/store/user-store'
+import { TUser, useUserStore } from '@/lib/store/user-store'
 
 // 优化后的用户认证 hook
 export function useStableUser() {
@@ -18,7 +18,6 @@ export function useStableUser() {
     queryFn: async () => {
       console.log('🔄 useUser queryFn 被调用')
       const supabase = createClient()
-
       try {
         // 获取当前用户会话
         const {
@@ -45,22 +44,22 @@ export function useStableUser() {
           .eq('id', session.user.id)
           .single()
 
-        console.log('📊 获取到的 profile:', profile)
+        // console.log('📊 获取到的 profile:', profile)
 
         if (profileError) {
-          console.error('❌ 获取用户资料失败:', profileError)
+          console.error('❌ 获取用户资料失败:', profileError, session)
           // 返回基本用户信息
           return {
             id: session.user.id,
             email: session.user.email,
-            username: session.user.email?.split('@')[0] || 'User',
+            username: session.user.user_metadata.username || 'User',
             avatar: null,
             created_at: session.user.created_at,
-          }
+          } as TUser
         }
 
         console.log('✅ 获取到用户资料:', profile)
-        return profile
+        return profile as TUser
       } catch (error) {
         // 捕获所有可能的错误
         console.error('❌ 用户数据获取失败:', error)

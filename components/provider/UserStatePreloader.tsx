@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useStableUser } from '@/lib/query-hook/use-auth'
-import { useUserStore } from '@/lib/store/user-store'
+import { TUser, useUserStore } from '@/lib/store/user-store'
 import { SkeletonScreen } from '@/components/ui/skeleton-screen'
 
 interface UserStatePreloaderProps {
@@ -21,7 +21,7 @@ export function UserStatePreloader({ children }: UserStatePreloaderProps) {
         // 等待用户状态加载完成
         if (!isLoading) {
           // 同步到 Zustand
-          syncWithReactQuery(user)
+          syncWithReactQuery(user as TUser)
 
           // 标记预加载完成
           setIsPreloaded(true)

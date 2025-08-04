@@ -14,12 +14,13 @@ model Post {
   id         String      @id @default(uuid())
   title      String
   body       String
-  author     String?
+  author     String?     @default("")
   userId     String
+  categoryId String? // 外键：指向分类
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
   user       UserProfile @relation(fields: [userId], references: [id])
-  categories Category[]  @relation("PostCategories")
+  category   Category?   @relation(fields: [categoryId], references: [id])
 
   @@schema("public")
 }
@@ -27,7 +28,6 @@ model Post {
 model UserProfile {
   id              String          @id
   email           String          @unique
-  username        String?
   bio             String?
   avatar          String?
   isAdmin         Boolean         @default(false)
@@ -41,8 +41,10 @@ model UserProfile {
   resume_url      String?
   resume_filename String?
   resume_size     Int?
+  username        String          @unique
   annotations     PDFAnnotation[]
   posts           Post[]
+  categories      Category[]
 
   @@schema("public")
 }
@@ -67,9 +69,15 @@ model PDFAnnotation {
 }
 
 model Category {
-  id    String @id
-  name  String
-  posts Post[] @relation("PostCategories")
+  id          String       @id @default(uuid())
+  name        String
+  createdAt   DateTime     @default(now())
+  description String       @default("")
+  updatedAt   DateTime     @default(now())
+  posts       Post[] // 一对多：一个分类有多个文章
+  user        UserProfile? @relation(fields: [userId], references: [id])
+  userId      String?
+  author      String?      @default("")
 
   @@schema("public")
 }

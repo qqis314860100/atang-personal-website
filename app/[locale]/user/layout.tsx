@@ -4,7 +4,7 @@ import { Suspense } from 'react'
 import { usePathname } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { useParams } from 'next/navigation'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/utils'
 
 export default function UserLayout({
   children,

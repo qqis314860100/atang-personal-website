@@ -2,7 +2,7 @@
 
 import { registerSchema, type TRegisterSchema } from '@/schemas/registerSchema'
 import { signInSchema, TSignInSchema } from '@/schemas/signInSchema'
-import { createAdminClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export const register = async (credentials: TRegisterSchema) => {

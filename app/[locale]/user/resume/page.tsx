@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useStableUser } from '@/lib/query-hook/use-auth'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import toast from 'react-hot-toast'
 import { FileText } from 'lucide-react'
 import dayjs from 'dayjs'
@@ -233,13 +233,13 @@ export default function ResumePage() {
       <div className="flex-1 flex flex-col overflow-hidden p-2">
         <div className="max-w-7xl mx-auto w-full flex flex-col h-full space-y-2">
           {/* 附件管理卡片 - 固定高度 */}
-          <Card className="bg-white rounded-xl shadow-sm border-gray-200 flex-shrink-0 py-2 gap-1">
+          <Card className="bg-white rounded-xl shadow-sm border-gray-200 flex-shrink-0 py-1 gap-1">
             <CardHeader className="flex flex-row items-center justify-between pb-0 py-0.5">
               <CardTitle className="text-sm font-semibold text-gray-800">
                 {t.resume('附件管理')}
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-6 pb-3">
+            <CardContent className="px-4 pb-2">
               <div className="space-y-3">
                 {user?.resume_url ? (
                   <div className="group flex items-center gap-4 p-3 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-400 transition-all duration-200 cursor-pointer">
@@ -268,11 +268,15 @@ export default function ResumePage() {
                     <AttachmentMenu />
                   </div>
                 ) : (
-                  <div className="py-3">
+                  <div className="py-2">
                     <UploadArea
                       onUpload={handleResumeUpload}
                       accept=".pdf"
                       maxSize={10 * 1024 * 1024}
+                      fileType="pdf"
+                      fileIconColor="bg-red-500"
+                      uploadButtonText="上传简历"
+                      uploadingText="上传中..."
                       disabled={isLoading}
                     />
                   </div>

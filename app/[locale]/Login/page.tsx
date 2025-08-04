@@ -12,7 +12,8 @@ import {
   useForgotPassword,
   useStableUser,
 } from '@/lib/query-hook/use-auth'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+import { useRouter } from '@/i18n/navigation'
 import { useLocale } from 'next-intl'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'

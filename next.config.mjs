@@ -27,6 +27,8 @@ const nextConfig = {
   env: {
     NEXT_TELEMETRY_DISABLED: '1',
   },
+  // 确保客户端导航正常工作
+  reactStrictMode: true,
   // 移除 webpack 配置以避免与 Turbopack 冲突
 }
 

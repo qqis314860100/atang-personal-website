@@ -19,7 +19,7 @@ import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Textarea } from '@/components/ui/textarea'
 import { CalendarIcon, UpdateIcon } from '@radix-ui/react-icons'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@/lib/supabase/client'
 import toast from 'react-hot-toast'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -89,7 +89,7 @@ export default function ProfilePage() {
         avatar: user.avatar || '',
         gender: user.gender || '',
         signature: user.signature || '',
-        techStack: user.techStack || [],
+        techStack: user.techStack || '',
         bio: user.bio || '',
       })
       setAvatarUrl(user.avatar || null)
@@ -205,7 +205,7 @@ export default function ProfilePage() {
   }
 
   // 如果用户未登录且不在加载中，显示加载状态（避免闪烁）
-  if (!userLoading && !user) {
+  if (!userLoading || !user) {
     return (
       <div className="container py-8 px-4 max-w-3xl mx-auto">
         <CardLoading text="正在跳转..." />

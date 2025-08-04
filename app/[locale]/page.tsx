@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 
 export async function generateMetadata() {
   return {
-    title: 'Redirecting...',
+    title: '正在努力加载中...',
   }
 }
 

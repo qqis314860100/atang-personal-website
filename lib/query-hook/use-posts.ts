@@ -1,49 +1,103 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { queryKeys } from '@/lib/query-hook'
-import { fetchPosts } from '@/app/actions/fetchPosts'
-import { toast } from 'react-hot-toast'
+import {
+  fetchBlogPosts,
+  fetchBlogPost,
+  createBlogPost,
+  updateBlogPost,
+  deleteBlogPost,
+  fetchPopularPosts,
+} from '@/app/actions/blog'
+import { queryKeys } from './index'
 
-// 获取博客文章列表
-export function usePosts(skip: number = 0, take: number = 10) {
+// 获取文章列表
+export function usePosts({
+  page = 1,
+  limit = 10,
+  search,
+  categoryId,
+}: {
+  page?: number
+  limit?: number
+  search?: string
+  categoryId?: string
+} = {}) {
   return useQuery({
-    queryKey: queryKeys.posts.list(),
-    queryFn: () => fetchPosts(skip, take),
-    staleTime: 5 * 60 * 1000, // 5分钟数据保持新鲜
-  })
-}
-
-// 获取单篇博客文章
-export function usePost(slug: string) {
-  return useQuery({
-    queryKey: queryKeys.posts.detail(slug),
+    queryKey: queryKeys.posts.list({ page, limit, search, categoryId }),
     queryFn: async () => {
-      // 这里可以调用获取单篇文章的 API
-      // 暂时返回 null，实际使用时需要实现具体的获取逻辑
-      return null
+      const result = await fetchBlogPosts({ page, limit, search, categoryId })
+      if (result.success) {
+        return {
+          posts: result.posts,
+          total: result.total,
+          totalPages: result.totalPages,
+          currentPage: result.currentPage,
+        }
+      } else {
+        throw new Error(result.error || '获取文章失败')
+      }
     },
-    enabled: !!slug, // 只有当 slug 存在时才执行查询
-    staleTime: 10 * 60 * 1000, // 10分钟数据保持新鲜
   })
 }
 
-// 创建博客文章（暂时注释掉，因为 createPost 函数不存在）
-// export function useCreatePost() {
-//   const queryClient = useQueryClient()
+// 获取单个文章
+export function usePost(id: string) {
+  return useQuery({
+    queryKey: queryKeys.posts.detail(id),
+    queryFn: async () => {
+      const result = await fetchBlogPost(id)
+      if (result.success && result.post) {
+        return result.post
+      } else {
+        throw new Error(result.error || '获取文章失败')
+      }
+    },
+    enabled: !!id,
+  })
+}
 
-//   return useMutation({
-//     mutationFn: createPost,
-//     onSuccess: (data) => {
-//       // 成功后使相关查询失效，触发重新获取
-//       queryClient.invalidateQueries({
-//         queryKey: queryKeys.posts.list(),
-//       })
-//       toast.success('文章创建成功')
-//     },
-//     onError: (error) => {
-//       console.error('创建文章失败:', error)
-//       toast.error('创建文章失败')
-//     },
-//   })
-// }
+// 获取热门文章
+export function usePopularPosts(limit: number = 5) {
+  return useQuery({
+    queryKey: queryKeys.posts.popular(limit),
+    queryFn: () => fetchPopularPosts(limit),
+  })
+}
+
+// 创建文章
+export function useCreatePost() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createBlogPost,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all })
+    },
+  })
+}
+
+// 更新文章
+export function useUpdatePost() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: updateBlogPost,
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all })
+      const id = variables.id
+      if (id) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(id) })
+      }
+    },
+  })
+}
+
+// 删除文章
+export function useDeletePost() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteBlogPost,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all })
+    },
+  })
+}

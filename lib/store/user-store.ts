@@ -11,7 +11,8 @@ export type TUser = {
   signature?: string | null
   school?: string | null
   date?: string | null
-  techStack?: string[] | null
+  isAdmin?: boolean | null
+  techStack?: string | null
   bio?: string | null
   resume_url?: string | null
   resume_filename?: string | null

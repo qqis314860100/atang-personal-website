@@ -60,8 +60,20 @@ export const queryKeys = {
   // 博客文章相关
   posts: {
     all: ['posts'] as const,
-    list: () => [...queryKeys.posts.all, 'list'] as const,
-    detail: (slug: string) => [...queryKeys.posts.all, 'detail', slug] as const,
+    list: (params?: {
+      page?: number
+      limit?: number
+      search?: string
+      categoryId?: string
+    }) => [...queryKeys.posts.all, 'list', params] as const,
+    detail: (id: string) => [...queryKeys.posts.all, 'detail', id] as const,
+    popular: (limit?: number) =>
+      [...queryKeys.posts.all, 'popular', limit] as const,
+  },
+  // 分类相关
+  category: {
+    all: ['category'] as const,
+    list: () => [...queryKeys.category.all, 'list'] as const,
   },
 
   // 文件上传相关

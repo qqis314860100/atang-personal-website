@@ -31,6 +31,12 @@ export function ClientTopLoader() {
       initialPosition={0.08}
       height={3}
       shadow="0 0 10px #2563eb,0 0 5px #2563eb"
+      easing="ease"
+      speed={200}
+      crawl={true}
+      crawlSpeed={200}
+      showAtBottom={false}
+      zIndex={1600}
     />
   )
 }

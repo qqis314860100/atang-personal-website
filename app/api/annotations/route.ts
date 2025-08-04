@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 
 // 获取用户的所有注释
 export const GET = async (req: NextRequest) => {
