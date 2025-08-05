@@ -31,38 +31,49 @@ export function useSocket() {
   // 连接 Socket
   const connect = useCallback(() => {
     if (!socketRef.current) {
-      socketRef.current = io('http://localhost:3001', {
+      // 根据环境动态设置Socket服务器地址
+      const socketUrl =
+        process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001'
+      console.log('🔌 尝试连接到Socket服务器:', socketUrl)
+
+      socketRef.current = io(socketUrl, {
         transports: ['websocket', 'polling'],
+        timeout: 10000,
+        forceNew: true,
       })
 
       // 连接成功
       socketRef.current.on('connect', () => {
-        console.log('Socket 连接成功')
+        console.log('✅ Socket 连接成功')
         setIsConnected(true)
 
         // 加入聊天室
         socketRef.current?.emit('join')
+        console.log('📝 已发送join事件')
       })
 
       // 连接断开
-      socketRef.current.on('disconnect', () => {
-        console.log('Socket 连接断开')
+      socketRef.current.on('disconnect', (reason) => {
+        console.log('❌ Socket 连接断开，原因:', reason)
         setIsConnected(false)
       })
 
       // 接收新消息
       socketRef.current.on('new_message', (message: SocketMessage) => {
+        console.log('📨 收到新消息:', message)
         setMessages((prev) => [...prev, message])
       })
 
       // 接收在线用户列表
       socketRef.current.on('online_users', (users: SocketUser[]) => {
+        console.log('👥 收到在线用户列表:', users)
         setOnlineUsers(users)
         setUserCount(users.length)
       })
 
       // 接收用户数量更新
       socketRef.current.on('user_count', (count: number) => {
+        console.log('📊 收到用户数量更新:', count)
         setUserCount(count)
       })
 
@@ -94,7 +105,7 @@ export function useSocket() {
       socketRef.current.on(
         'your_ip',
         (data: { ip: string; info?: any; formatted?: string }) => {
-          console.log('your_ip', data)
+          console.log('🌐 收到IP信息:', data)
           setMyIp(data.ip)
 
           // 如果有IP详细信息，也存储起来
@@ -103,6 +114,12 @@ export function useSocket() {
           }
         }
       )
+
+      // 连接错误处理
+      socketRef.current.on('connect_error', (error) => {
+        console.error('❌ Socket连接错误:', error.message)
+        setIsConnected(false)
+      })
     }
   }, [])
 

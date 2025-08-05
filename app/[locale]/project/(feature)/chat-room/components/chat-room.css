@@ -1,0 +1,118 @@
+/* 聊天室专用样式 */
+
+/* 自定义滚动条样式 */
+.chat-scroll-area {
+  --scrollbar-size: 4px;
+}
+
+.chat-scroll-area [data-radix-scroll-area-viewport] {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.chat-scroll-area [data-radix-scroll-area-viewport]::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+}
+
+.chat-scroll-area [data-radix-scroll-area-viewport]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-scroll-area [data-radix-scroll-area-viewport]::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+.chat-scroll-area [data-radix-scroll-area-viewport]::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* 消息气泡动画 */
+.message-bubble {
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 输入状态动画 */
+.typing-indicator {
+  animation: typingPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes typingPulse {
+
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* 连接状态指示器 */
+.connection-indicator {
+  animation: connectionPulse 2s ease-in-out infinite;
+}
+
+@keyframes connectionPulse {
+
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* 消息时间戳样式 */
+.message-timestamp {
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+
+/* 输入框聚焦效果 */
+.chat-input:focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* 按钮悬停效果 */
+.chat-button:hover {
+  transform: translateY(-1px);
+  transition: transform 0.2s ease;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .chat-container {
+    height: calc(100vh - 120px);
+  }
+
+  .message-bubble {
+    max-width: 85% !important;
+  }
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .chat-scroll-area [data-radix-scroll-area-viewport]::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .chat-scroll-area [data-radix-scroll-area-viewport]::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+}
