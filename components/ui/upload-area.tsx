@@ -2,7 +2,7 @@ import React, { useState, useRef, ReactNode } from 'react'
 import { cn } from '@/utils/utils'
 import { Button } from '@/components/ui/button'
 import { UploadCloud, File as FileIcon, X } from 'lucide-react'
-import { useI18n } from '@/utils/i18n'
+import { useI18n } from '@/lib/hooks/use-i18n'
 
 type UploadAreaProps = {
   onUpload: (file: File) => Promise<void>

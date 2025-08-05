@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react'
 import { Button } from './ui/button'
 import { Alert, AlertDescription, AlertTitle } from './ui/alert'
 import { AlertCircle, RefreshCcw } from 'lucide-react'
-import { useRouter } from '@/i18n/navigation'
 
 interface ErrorBoundaryProps {
   children: React.ReactNode
@@ -13,7 +12,6 @@ interface ErrorBoundaryProps {
 
 export function ErrorBoundary({ children }: ErrorBoundaryProps) {
   const [hasError, setHasError] = useState(false)
-  const router = useRouter()
 
   useEffect(() => {
     // 监听全局未捕获的错误
@@ -86,9 +84,10 @@ export function ErrorBoundary({ children }: ErrorBoundaryProps) {
 
             <Button
               onClick={() => {
-                // 重定向到登录页面
-                router.push('/login?reason=session_expired')
-                setHasError(false)
+                // 使用原生方法重定向到登录页面
+                const currentPath = window.location.pathname
+                const locale = currentPath.split('/')[1] || 'zh'
+                window.location.href = `/${locale}/login?reason=session_expired`
               }}
               className="w-full"
               variant="outline"

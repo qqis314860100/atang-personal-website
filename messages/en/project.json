@@ -1,0 +1,22 @@
+{
+  "title": "Projects",
+  "description": "Explore my various project works",
+  "viewProject": "View Project",
+  "demo": "Demo",
+  "sourceCode": "Source Code",
+  "category": "Category",
+  "technologies": "Technologies",
+  "status": {
+    "completed": "Completed",
+    "in-progress": "In Progress",
+    "planned": "Planned"
+  },
+  "categories": {
+    "web": "Web Development",
+    "mobile": "Mobile Development",
+    "ai": "Artificial Intelligence",
+    "data": "Data Analysis",
+    "multimedia": "Multimedia",
+    "collaboration": "Collaboration Tools"
+  }
+}

@@ -6,6 +6,7 @@ import { usePost } from '@/lib/query-hook/use-posts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Calendar, User, Edit, Trash2 } from 'lucide-react'
+import ViewCounter from '@/components/view-counter'
 import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { useDeletePost } from '@/lib/query-hook/use-posts'
@@ -242,6 +243,10 @@ export default function BlogDetailPage() {
                       })}
                     </span>
                   </div>
+                  <ViewCounter
+                    postId={post.id}
+                    initialViewCount={post.viewCount || 0}
+                  />
                   {post.category && (
                     <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
                       {post.category.name}

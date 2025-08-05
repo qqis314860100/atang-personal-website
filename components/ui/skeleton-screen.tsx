@@ -19,13 +19,9 @@ export function Skeleton({ className }: SkeletonProps) {
 
 interface SkeletonScreenProps {
   children?: React.ReactNode
-  showOverlay?: boolean
 }
 
-export function SkeletonScreen({
-  children,
-  showOverlay = true,
-}: SkeletonScreenProps) {
+export function SkeletonScreen({ children }: SkeletonScreenProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* 顶部导航骨架屏 */}
@@ -101,27 +97,6 @@ export function SkeletonScreen({
 
       {/* 自定义内容 */}
       {children}
-
-      {/* 加载遮罩 */}
-      {showOverlay && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-card border rounded-lg p-8 max-w-sm w-full mx-4 text-center">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative">
-                <div className="w-12 h-12 border-4 border-gray-200 rounded-full animate-spin">
-                  <div className="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full"></div>
-                </div>
-              </div>
-              <div>
-                <p className="text-lg font-medium">正在加载用户状态...</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  请稍候，正在为您准备个性化内容
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

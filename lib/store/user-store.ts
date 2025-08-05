@@ -5,7 +5,7 @@ import { persist, createJSONStorage } from 'zustand/middleware'
 export type TUser = {
   id: string
   username: string | null
-  email: string | null
+  email: string
   avatar: string | null
   gender?: string | null
   signature?: string | null

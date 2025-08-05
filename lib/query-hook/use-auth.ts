@@ -15,91 +15,111 @@ export function useStableUser() {
   // 使用一个统一的查询
   const query = useQuery({
     queryKey: queryKeys.user.session(),
-    queryFn: async () => {
-      console.log('🔄 useUser queryFn 被调用')
+    queryFn: async (): Promise<TUser | null> => {
       const supabase = createClient()
       try {
-        // 获取当前用户会话
-        const {
-          data: { session },
-          error: sessionError,
-        } = await supabase.auth.getSession()
+        // 添加超时控制
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('查询超时')), 5000) // 缩短超时时间
+        })
 
-        console.log('📋 获取到的 session:', session)
+        const queryPromise = (async (): Promise<TUser | null> => {
+          // 获取当前用户会话
+          const {
+            data: { session },
+            error: sessionError,
+          } = await supabase.auth.getSession()
 
-        // 处理会话错误或无会话情况
-        if (sessionError || !session) {
-          if (sessionError) {
-            console.error('❌ 获取用户会话失败:', sessionError)
-          } else {
-            console.log('👤 用户未登录')
+          // 处理会话错误或无会话情况
+          if (sessionError || !session) {
+            if (sessionError) {
+              console.error('❌ 获取用户会话失败:', sessionError)
+            }
+            return null
           }
-          return null
-        }
 
-        // 获取用户详细信息
-        const { data: profile, error: profileError } = await supabase
-          .from('UserProfile')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
+          // 获取用户详细信息
+          const { data: profile, error: profileError } = await supabase
+            .from('UserProfile')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
 
-        // console.log('📊 获取到的 profile:', profile)
+          if (profileError) {
+            console.error('❌ 获取用户资料失败:', profileError, session)
+            // 返回基本用户信息
+            return {
+              id: session.user.id,
+              email: session.user.email!,
+              username: session.user.user_metadata.username || 'User',
+              avatar: null,
+              updatedAt: session.user.created_at,
+            }
+          }
 
-        if (profileError) {
-          console.error('❌ 获取用户资料失败:', profileError, session)
-          // 返回基本用户信息
-          return {
-            id: session.user.id,
-            email: session.user.email,
-            username: session.user.user_metadata.username || 'User',
-            avatar: null,
-            created_at: session.user.created_at,
-          } as TUser
-        }
+          return profile
+        })()
 
-        console.log('✅ 获取到用户资料:', profile)
-        return profile as TUser
+        // 使用 Promise.race 实现超时控制
+        return (await Promise.race([queryPromise, timeoutPromise])) as TUser
       } catch (error) {
         // 捕获所有可能的错误
         console.error('❌ 用户数据获取失败:', error)
         return null
       }
     },
-    staleTime: 5 * 60 * 1000, // 5分钟数据保持新鲜
-    gcTime: 30 * 60 * 1000, // 30分钟垃圾回收时间
-    retry: false, // 认证失败不重试
+    staleTime: 15 * 60 * 1000, // 15分钟数据保持新鲜
+    gcTime: 60 * 60 * 1000, // 1小时垃圾回收时间
+    retry: 1, // 只重试1次
+    retryDelay: 1000, // 重试延迟1秒
     refetchOnWindowFocus: false, // 窗口聚焦时不重新获取
+    refetchOnMount: false, // 组件挂载时不重新获取（如果数据仍然新鲜）
+    refetchOnReconnect: true, // 网络重连时重新获取
+    // 性能优化
+    structuralSharing: true, // 结构共享优化
+    throwOnError: false, // 不抛出错误
   })
 
   const { data: user, isLoading, error, refetch } = query
   const { setUser } = useUserStore()
 
-  // 监听认证状态变化
+  // 同步用户状态到 Zustand - 单独处理，避免循环
   useEffect(() => {
-    const supabase = createClient()
-
-    // 同步到 Zustand 存储
-    if (user) {
-      setUser(user)
+    if (user && (user as TUser).id) {
+      setUser(user as TUser)
     }
+  }, [(user as TUser)?.id]) // 只依赖用户ID，避免无限循环
 
-    // 设置认证状态监听器
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        refetch() // 重新获取用户数据
-      } else if (event === 'SIGNED_OUT') {
+  // 监听认证状态变化 - 修复无限循环问题
+  useEffect(() => {
+    // 监听 SessionProvider 发出的事件
+    const handleAuthStateChange = (event: CustomEvent) => {
+      const { event: authEvent, session } = event.detail
+
+      if (authEvent === 'SIGNED_IN' || authEvent === 'TOKEN_REFRESHED') {
+        // 使用 setTimeout 防抖，避免频繁调用
+        setTimeout(() => {
+          refetch()
+        }, 100)
+      } else if (authEvent === 'SIGNED_OUT') {
         setUser(null) // 清除用户数据
       }
-    })
+    }
+
+    // 添加事件监听器
+    window.addEventListener(
+      'authStateChanged',
+      handleAuthStateChange as EventListener
+    )
 
     // 清理函数
     return () => {
-      subscription.unsubscribe()
+      window.removeEventListener(
+        'authStateChanged',
+        handleAuthStateChange as EventListener
+      )
     }
-  }, [user, setUser, refetch])
+  }, []) // 移除所有依赖项，只在组件挂载时执行一次
 
   return {
     user,

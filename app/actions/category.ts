@@ -7,7 +7,7 @@ import {
   updateCategorySchema,
 } from '@/schemas/blogCategorySchema'
 import { prisma } from '@/lib/prisma/client'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/client'
 import { revalidatePath } from 'next/cache'
 
 export interface Category {

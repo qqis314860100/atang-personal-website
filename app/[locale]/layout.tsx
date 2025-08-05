@@ -12,6 +12,8 @@ import SessionProvider from '@/components/provider/SessionProvider'
 import { QueryProvider } from '@/components/provider/QueryProvider'
 import { UserStatePreloader } from '@/components/provider/UserStatePreloader'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { PerformanceMonitor } from '@/components/performance-monitor'
+import { RoutePrefetch } from '@/components/route-prefetch'
 
 import { cn } from '@/utils/utils'
 import { fontSans } from '@/utils/fonts'
@@ -66,25 +68,28 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
   params,
-}: RootLayoutProps) {
-  const paramsData = await Promise.resolve(params)
-  const { locale } = paramsData
-  if (!hasLocale(routing.locales, locale)) {
-    notFound()
-  }
+}: {
+  children: React.ReactNode
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
+
+  // 验证语言环境
+  if (!hasLocale(routing.locales, locale)) notFound()
+
   return (
-    <html
-      lang={locale}
-      className="touch-pan-x touch-pan-y"
-      suppressHydrationWarning
-    >
+    <html lang={locale} suppressHydrationWarning>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
+      </head>
       <body
         className={cn(
-          'h-screen bg-gray-100 antialiased font-sans',
+          'min-h-screen bg-background font-sans antialiased',
           fontSans.variable
         )}
       >
-        <NextIntlClientProvider>
+        <NextIntlClientProvider locale={locale}>
           <ErrorBoundary>
             <QueryProvider>
               <SessionProvider>
@@ -105,6 +110,14 @@ export default async function RootLayout({
                         {children}
                       </main>
                     </div>
+                    {/* 开发环境性能监控 */}
+                    <PerformanceMonitor
+                      enabled={process.env.NODE_ENV === 'development'}
+                    />
+                    {/* 路由预取优化 */}
+                    <RoutePrefetch>
+                      <></>
+                    </RoutePrefetch>
                   </UserStatePreloader>
                 </ThemeProvider>
               </SessionProvider>

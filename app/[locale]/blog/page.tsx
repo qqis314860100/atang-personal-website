@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Filter,
   RefreshCw,
+  Eye,
 } from 'lucide-react'
 import { AnimatedCard } from '@/components/ui/animated-card'
 import { Link, useRouter } from '@/i18n/navigation'
@@ -335,6 +336,10 @@ const Blog = () => {
                                 <span>
                                   {calculateReadTime(post.excerpt || '')}
                                 </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Eye className="h-3 w-3" />
+                                <span>{post.viewCount || 0}</span>
                               </div>
                             </div>
 

@@ -11,7 +11,7 @@ import dayjs from 'dayjs'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { UploadArea } from '@/components/ui/upload-area'
 import { PDFViewer } from '@/components/ui/pdf-viewer'
-import { useI18n } from '@/utils/i18n'
+import { useI18n } from '@/lib/hooks/use-i18n'
 
 export default function ResumePage() {
   const t = useI18n()

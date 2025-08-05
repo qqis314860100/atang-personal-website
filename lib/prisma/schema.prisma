@@ -1,0 +1,173 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["public"]
+}
+
+model Post {
+  id         String      @id @default(uuid())
+  title      String
+  body       String
+  author     String?     @default("")
+  userId     String
+  categoryId String? // 外键：指向分类
+  viewCount  Int         @default(0) // 阅读量
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  user       UserProfile @relation(fields: [userId], references: [id])
+  category   Category?   @relation(fields: [categoryId], references: [id])
+
+  @@schema("public")
+}
+
+model UserProfile {
+  id              String          @id
+  email           String          @unique
+  bio             String?
+  avatar          String?
+  isAdmin         Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  date            String?
+  gender          String?
+  signature       String?
+  techStack       String?
+  resume_content  String?
+  resume_url      String?
+  resume_filename String?
+  resume_size     Int?
+  username        String          @unique
+  annotations     PDFAnnotation[]
+  posts           Post[]
+  categories      Category[]
+
+  @@schema("public")
+}
+
+model PDFAnnotation {
+  id        String      @id @default(uuid())
+  createdAt DateTime    @default(now())
+  page      Int
+  pdfUrl    String
+  text      String
+  timestamp DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  userId    String
+  x         Float
+  y         Float
+  user      UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([pdfUrl])
+  @@index([userId])
+  @@index([userId, pdfUrl])
+  @@schema("public")
+}
+
+model Category {
+  id          String       @id @default(uuid())
+  name        String
+  createdAt   DateTime     @default(now())
+  description String       @default("")
+  updatedAt   DateTime     @default(now())
+  posts       Post[] // 一对多：一个分类有多个文章
+  user        UserProfile? @relation(fields: [userId], references: [id])
+  userId      String?
+  author      String?      @default("")
+
+  @@schema("public")
+}
+
+// 埋点事件表
+model AnalyticsEvent {
+  id        String   @id @default(uuid())
+  eventId   String   @unique
+  eventType String
+  eventData Json
+  userId    String?
+  sessionId String
+  timestamp DateTime
+  module    String
+  version   String   @default("1.0.0")
+  createdAt DateTime @default(now())
+
+  @@schema("public")
+}
+
+// 页面访问表
+model PageView {
+  id           String   @id @default(uuid())
+  pagePath     String
+  referrer     String?
+  userAgent    String?
+  ipAddress    String?
+  userId       String?
+  sessionId    String
+  viewDuration Int?
+  scrollDepth  Int?
+  deviceType   String?
+  browser      String?
+  os           String?
+  locale       String?
+  createdAt    DateTime @default(now())
+
+  @@schema("public")
+}
+
+// 用户行为聚合表
+model UserBehaviorAggregate {
+  id            String   @id @default(uuid())
+  userId        String?
+  date          DateTime @db.Date
+  module        String
+  actionCount   Int      @default(0)
+  totalDuration Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, date, module])
+  @@schema("public")
+}
+
+// 模块配置表
+model AnalyticsModule {
+  id         String   @id @default(uuid())
+  moduleName String   @unique
+  version    String
+  isActive   Boolean  @default(true)
+  config     Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@schema("public")
+}
+
+// 自定义事件定义表
+model AnalyticsEventDefinition {
+  id           String   @id @default(uuid())
+  moduleName   String
+  eventName    String
+  eventSchema  Json?
+  isDeprecated Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@schema("public")
+}
+
+// 聊天消息表
+model ChatMessage {
+  id          String   @id @default(uuid())
+  roomId      String   @default("main")
+  username    String
+  message     String
+  messageType String   @default("text") // text, image, system
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@schema("public")
+}

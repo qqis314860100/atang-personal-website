@@ -1,0 +1,22 @@
+{
+  "title": "项目展示",
+  "description": "探索我的各种项目作品",
+  "viewProject": "查看项目",
+  "demo": "预览",
+  "sourceCode": "源码",
+  "category": "分类",
+  "technologies": "技术栈",
+  "status": {
+    "completed": "已完成",
+    "in-progress": "开发中",
+    "planned": "计划中"
+  },
+  "categories": {
+    "web": "Web开发",
+    "mobile": "移动开发",
+    "ai": "人工智能",
+    "data": "数据分析",
+    "multimedia": "多媒体",
+    "collaboration": "协作工具"
+  }
+}

@@ -15,15 +15,21 @@ export function QueryProvider({ children }: QueryProviderProps) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            // 默认查询配置
-            staleTime: 5 * 60 * 1000, // 5分钟数据保持新鲜
-            gcTime: 10 * 60 * 1000, // 10分钟垃圾回收时间
+            // 优化查询配置
+            staleTime: 10 * 60 * 1000, // 10分钟数据保持新鲜
+            gcTime: 30 * 60 * 1000, // 30分钟垃圾回收时间
             retry: 1, // 失败重试1次
             refetchOnWindowFocus: false, // 窗口聚焦时不重新获取
+            refetchOnMount: false, // 组件挂载时不重新获取（如果数据仍然新鲜）
+            refetchOnReconnect: true, // 网络重连时重新获取
+            // 性能优化
+            structuralSharing: true, // 结构共享优化
+            throwOnError: false, // 不抛出错误，避免组件崩溃
           },
           mutations: {
-            // 默认变更配置
+            // 优化变更配置
             retry: 1, // 失败重试1次
+            retryDelay: 1000, // 重试延迟1秒
           },
         },
       })

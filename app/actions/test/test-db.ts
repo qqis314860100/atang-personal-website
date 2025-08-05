@@ -1,6 +1,6 @@
 'use server'
 
-import { createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/client'
 
 export async function testDatabaseConnection() {
   try {

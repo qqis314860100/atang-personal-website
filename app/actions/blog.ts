@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma/client'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/client'
 import {
   createPostSchema,
   updatePostSchema,
@@ -18,6 +18,7 @@ export interface BlogPost {
   body: string
   author: string | null
   userId: string
+  viewCount: number // 阅读量
   createdAt: Date
   updatedAt: Date
   username?: string // 新增：扁平化的用户名
@@ -40,6 +41,7 @@ export interface BlogPostOverview {
   title: string
   author: string | null
   userId: string
+  viewCount: number // 阅读量
   createdAt: Date
   updatedAt: Date
   excerpt?: string // 文章摘要
@@ -156,7 +158,15 @@ export async function fetchBlogPost(
   try {
     const post = await prisma.post.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        body: true,
+        author: true,
+        userId: true,
+        viewCount: true,
+        createdAt: true,
+        updatedAt: true,
         user: {
           select: {
             username: true,
@@ -438,5 +448,28 @@ export async function toggleBlogPostPublished(id: string) {
   } catch (error) {
     console.error('切换文章状态失败:', error)
     return { success: false, error: '切换文章状态失败' }
+  }
+}
+
+// 增加文章阅读量
+export async function incrementViewCount(id: string) {
+  try {
+    const post = await prisma.post.update({
+      where: { id },
+      data: {
+        viewCount: {
+          increment: 1,
+        },
+      },
+      select: {
+        id: true,
+        viewCount: true,
+      },
+    })
+
+    return { success: true, viewCount: post.viewCount }
+  } catch (error) {
+    console.error('增加阅读量失败:', error)
+    return { success: false, error: '操作失败' }
   }
 }

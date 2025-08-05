@@ -17,7 +17,18 @@
     "i18n-zh-cache": "node scripts/generate-zh-cache.cjs",
     "db:push": "node scripts/safe-db-push.js",
     "db:push:force": "node scripts/safe-db-push.js --force-reset",
-    "db:reset": "echo '⚠️  请使用 npm run db:push:force 来重置数据库'"
+    "db:reset": "echo '⚠️  请使用 npm run db:push:force 来重置数据库'",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:restore": "node scripts/restore-data.js",
+    "socket": "node server/socket-server.js",
+    "dev:socket": "concurrently \"npm run dev\" \"npm run socket\"",
+    "dev:full": "node scripts/start-dev.js",
+    "start:socket": "pm2 start ecosystem.config.cjs",
+    "stop:socket": "pm2 stop socket-server",
+    "restart:socket": "pm2 restart socket-server",
+    "logs:socket": "pm2 logs socket-server",
+    "status:socket": "pm2 status",
+    "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
@@ -43,6 +54,7 @@
     "@supabase/supabase-js": "^2.52.0",
     "@tanstack/react-query": "^5.83.0",
     "@tanstack/react-query-devtools": "^5.83.0",
+    "@types/uuid": "^10.0.0",
     "class-variance-authority": "^0.7.1",
     "classnames": "^2.5.1",
     "clsx": "^2.1.1",
@@ -69,9 +81,12 @@
     "react-markdown": "^10.1.0",
     "rehype-prism-plus": "^2.0.1",
     "remark-gfm": "^4.0.1",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "sonner": "^2.0.6",
     "tailwind-merge": "^3.3.1",
     "turndown": "^7.2.0",
+    "uuid": "^11.1.0",
     "zod": "^3.25.76",
     "zustand": "^5.0.6",
     "zustand-persist": "^0.4.0"
@@ -86,6 +101,7 @@
     "@types/react-dom": "^19.1.6",
     "@types/turndown": "^5.0.5",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^9.2.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.30",
     "playwright": "^1.41.2",
@@ -97,6 +113,7 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.20.3",
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "@next/bundle-analyzer": "^13.0.0"
   }
 }

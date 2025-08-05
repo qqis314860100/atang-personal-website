@@ -1,7 +1,7 @@
 'use server'
 
 import { TUserProfile, userProfileSchema } from '@/schemas/userProfileSchema'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/client'
 
 export const updateUser = async (data: TUserProfile) => {
   const parsed = userProfileSchema.safeParse(data)

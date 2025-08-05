@@ -10,6 +10,9 @@ const nextConfig = {
     // serverComponentsExternalPackages: [], // 已移除
   },
 
+  // 生产环境启用浏览器源映射
+  productionBrowserSourceMaps: true,
+
   // 更新为新的配置选项
   serverExternalPackages: [], // 替代 serverComponentsExternalPackages
 

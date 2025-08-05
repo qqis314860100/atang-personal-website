@@ -1,677 +1,408 @@
-// app/[locale]/dashboard/page.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { useRouter } from '@/i18n/navigation'
-import { useStableUser } from '@/lib/query-hook/use-auth'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import {
-  AlertCircle,
-  Play,
-  Square,
-  Clock,
-  Users,
-  UserPlus,
-  FileText,
-  Laptop,
-  ChevronDown,
-  ChevronRight,
-} from 'lucide-react'
-import Link from 'next/link'
-import { useLocale } from 'next-intl'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { AnimatedCard, AnimatedButton } from '@/components/ui/animated-card'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
-import {
-  getDashboardStats,
-  getWorkTimeData,
-  getOnboardingTasks,
-  getCalendarEvents,
-  getCurrentWorkTime,
-  updateTaskStatus,
-  type DashboardStats,
-  type WorkTimeData,
-  type OnboardingTask,
-  type CalendarEvent,
-} from '@/lib/services/dashboard-data'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-export default function DashboardPage() {
-  const { user, isLoading } = useStableUser()
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const redirectFrom = searchParams.get('redirectFrom')
-  const locale = useLocale()
+import {
+  BarChart3,
+  TrendingUp,
+  Users,
+  Target,
+  Eye,
+  AlertCircle,
+  Download,
+  Share2,
+  Smartphone,
+} from 'lucide-react'
+import { tracker } from '@/lib/analytics/simple-tracker'
+import dynamic from 'next/dynamic'
 
-  // 状态管理
-  const [authState, setAuthState] = useState<
-    'loading' | 'authenticated' | 'unauthenticated'
-  >('loading')
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [workTimeData, setWorkTimeData] = useState<WorkTimeData[]>([])
-  const [tasks, setTasks] = useState<OnboardingTask[]>([])
-  const [events, setEvents] = useState<CalendarEvent[]>([])
-  const [currentWorkTime, setCurrentWorkTime] = useState('00:00')
+interface AnalyticsData {
+  pageViews: number
+  uniqueVisitors: number
+  bounceRate: number
+  avgSessionDuration: number
+  conversionRate: number
+  topPages: Array<{ page: string; views: number }>
+  userInteractions: Array<{ action: string; count: number }>
+  deviceTypes: Array<{ device: string; percentage: number }>
+  realTimeUsers: number
+  errors: number
+  performance: {
+    loadTime: number
+    responseTime: number
+    uptime: number
+  }
+}
+
+export default function AnalyticsPage() {
+  const [data, setData] = useState<AnalyticsData>({
+    pageViews: 0,
+    uniqueVisitors: 0,
+    bounceRate: 0,
+    avgSessionDuration: 0,
+    conversionRate: 0,
+    topPages: [],
+    userInteractions: [],
+    deviceTypes: [],
+    realTimeUsers: 0,
+    errors: 0,
+    performance: {
+      loadTime: 0,
+      responseTime: 0,
+      uptime: 0,
+    },
+  })
   const [isTracking, setIsTracking] = useState(false)
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set()
-  )
+  const [activeTab, setActiveTab] = useState('overview')
+  const [timeRange, setTimeRange] = useState('7d')
+  const [isLoading, setIsLoading] = useState(true)
 
-  // 用户登录状态
+  // 初始化埋点系统
   useEffect(() => {
-    if (!isLoading) {
-      setAuthState(user ? 'authenticated' : 'unauthenticated')
-    }
-  }, [user, isLoading])
+    tracker.initialize()
+    tracker.trackPageView('analytics', 'main')
 
-  // 加载数据
-  useEffect(() => {
-    if (authState === 'authenticated') {
-      loadDashboardData()
-    }
-  }, [authState])
+    // 模拟数据加载
+    loadAnalyticsData()
 
-  const loadDashboardData = async () => {
-    try {
-      const [statsData, workTimeData, tasksData, eventsData, workTime] =
-        await Promise.all([
-          getDashboardStats(),
-          getWorkTimeData(),
-          getOnboardingTasks(),
-          getCalendarEvents(),
-          getCurrentWorkTime(),
-        ])
+    // 追踪性能指标
+    const loadTime = performance.now()
+    tracker.trackPerformance('page_load_time', loadTime)
+  }, [])
 
-      setStats(statsData)
-      setWorkTimeData(workTimeData)
-      setTasks(tasksData)
-      setEvents(eventsData)
-      setCurrentWorkTime(workTime)
-    } catch (error) {
-      console.error('加载仪表盘数据失败:', error)
-    }
+  const loadAnalyticsData = () => {
+    setIsLoading(true)
+    // 模拟API调用延迟
+    setTimeout(() => {
+      setData({
+        pageViews: 15420,
+        uniqueVisitors: 3240,
+        bounceRate: 23.5,
+        avgSessionDuration: 245,
+        conversionRate: 8.7,
+        topPages: [
+          { page: '/dashboard', views: 5420 },
+          { page: '/blog', views: 3240 },
+          { page: '/project', views: 2180 },
+          { page: '/about', views: 1560 },
+        ],
+        userInteractions: [
+          { action: 'click', count: 12450 },
+          { action: 'scroll', count: 8920 },
+          { action: 'hover', count: 5670 },
+          { action: 'form_submit', count: 890 },
+        ],
+        deviceTypes: [
+          { device: 'Desktop', percentage: 65 },
+          { device: 'Mobile', percentage: 28 },
+          { device: 'Tablet', percentage: 7 },
+        ],
+        realTimeUsers: 42,
+        errors: 12,
+        performance: {
+          loadTime: 1.2,
+          responseTime: 0.8,
+          uptime: 99.9,
+        },
+      })
+      setIsLoading(false)
+    }, 1000)
   }
 
-  const toggleSection = (sectionId: string) => {
-    const newExpandedSections = new Set(expandedSections)
-    if (newExpandedSections.has(sectionId)) {
-      newExpandedSections.delete(sectionId)
-    } else {
-      newExpandedSections.add(sectionId)
-    }
-    setExpandedSections(newExpandedSections)
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+    tracker.trackUserInteraction('click', 'tab', 'analytics', { tab: value })
   }
 
-  const handleTaskToggle = async (taskId: string, completed: boolean) => {
-    try {
-      await updateTaskStatus(taskId, completed)
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task.id === taskId ? { ...task, completed } : task
-        )
-      )
-    } catch (error) {
-      console.error('更新任务状态失败:', error)
-    }
+  const handleTimeRangeChange = (range: string) => {
+    setTimeRange(range)
+    tracker.trackUserInteraction('click', 'time_range', 'analytics', { range })
   }
 
-  const toggleTimeTracking = () => {
+  const toggleTracking = () => {
     setIsTracking(!isTracking)
+    if (!isTracking) {
+      tracker.trackTimeTracking('start', 'analytics-dashboard')
+    } else {
+      tracker.trackTimeTracking('stop', 'analytics-dashboard')
+    }
   }
 
-  if (isLoading || authState === 'loading') {
+  const handleDataView = (chartType: string, dataSource: string) => {
+    tracker.trackDataView(chartType, dataSource)
+  }
+
+  const handleExport = () => {
+    tracker.trackUserInteraction('click', 'export_button', 'analytics')
+    tracker.trackNotification('info', '数据导出功能开发中...')
+  }
+
+  const handleShare = () => {
+    tracker.trackUserInteraction('click', 'share_button', 'analytics')
+    tracker.trackNotification('info', '分享功能开发中...')
+  }
+
+  if (isLoading) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">加载中...</p>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6">
+        <div className="max-w-7xl mx-auto flex items-center justify-center h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">加载数据分析中...</p>
+          </div>
         </div>
       </div>
     )
   }
 
-  // 如果已登录，显示仪表盘内容
-  if (authState === 'authenticated') {
-    return (
-      <div className="h-full px-6 pb-6 overflow-hidden bg-gradient-to-br from-amber-50 via-white to-amber-200">
-        {/* 欢迎横幅 */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">
-            Welcome back, {user?.username || 'Nixtio'}
-          </h1>
+  // 动态加载次要功能区块
+  const TrafficPanel = dynamic(() => import('./component/TrafficPanel'), {
+    ssr: false,
+  })
+  const BehaviorPanel = dynamic(() => import('./component/BehaviorPanel'), {
+    ssr: false,
+  })
+  const PerformancePanel = dynamic(
+    () => import('./component/PerformancePanel'),
+    { ssr: false }
+  )
+  const RealtimePanel = dynamic(() => import('./component/RealtimePanel'), {
+    ssr: false,
+  })
 
-          {/* 进度条概览 */}
-          <div className="grid grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500 font-medium">Interviews</span>
-                <span className="font-bold text-gray-800">
-                  {stats?.interviews || 0}%
-                </span>
-              </div>
-              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gray-700 rounded-full transition-all duration-500"
-                  style={{ width: `${stats?.interviews || 0}%` }}
-                ></div>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500 font-medium">Hired</span>
-                <span className="font-bold text-gray-800">
-                  {stats?.hired || 0}%
-                </span>
-              </div>
-              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-amber-500 rounded-full transition-all duration-500"
-                  style={{ width: `${stats?.hired || 0}%` }}
-                ></div>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500 font-medium">Project time</span>
-                <span className="font-bold text-gray-800">
-                  {stats?.projectTime || 0}%
-                </span>
-              </div>
-              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gray-500 rounded-full transition-all duration-500"
-                  style={{ width: `${stats?.projectTime || 0}%` }}
-                ></div>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500 font-medium">Output</span>
-                <span className="font-bold text-gray-800">
-                  {stats?.output || 0}%
-                </span>
-              </div>
-              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gray-400 rounded-full transition-all duration-500"
-                  style={{ width: `${stats?.output || 0}%` }}
-                ></div>
-              </div>
-            </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* 头部 */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleTimeRangeChange('7d')}
+              className={timeRange === '7d' ? 'bg-blue-50 border-blue-200' : ''}
+            >
+              7天
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleTimeRangeChange('30d')}
+              className={
+                timeRange === '30d' ? 'bg-blue-50 border-blue-200' : ''
+              }
+            >
+              30天
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleTimeRangeChange('90d')}
+              className={
+                timeRange === '90d' ? 'bg-blue-50 border-blue-200' : ''
+              }
+            >
+              90天
+            </Button>
+            <Button onClick={handleExport} variant="outline" size="sm">
+              <Download className="w-4 h-4 mr-2" />
+              导出
+            </Button>
+            <Button onClick={handleShare} variant="outline" size="sm">
+              <Share2 className="w-4 h-4 mr-2" />
+              分享
+            </Button>
           </div>
         </div>
 
-        {/* 主要内容区域 - 三列布局 */}
-        <div className="grid grid-cols-12 gap-6 h-[calc(100vh-280px)] overflow-hidden">
-          {/* 左侧列 - 用户资料和可折叠列表 */}
-          <div className="col-span-2 space-y-4 overflow-y-auto">
-            {/* 用户资料卡片 */}
-            <Card className="bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm rounded-2xl">
-              <CardContent className="p-6">
-                <div className="flex flex-col items-center text-center">
-                  <Avatar className="h-20 w-20 ring-4 ring-amber-100 mb-4">
-                    <AvatarImage src={user?.avatar || undefined} />
-                    <AvatarFallback className="text-2xl bg-gradient-to-br from-amber-500 to-amber-600 text-white">
-                      {user?.username?.charAt(0) || 'L'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">
-                    {user?.username || 'Lora Piterson'}
-                  </h3>
-                  <p className="text-gray-500 mb-4 text-sm">
-                    {user?.bio || 'UX/UI Designer'}
+        {/* 实时状态卡片 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-100 text-sm">实时用户</p>
+                  <p className="text-2xl font-bold">{data.realTimeUsers}</p>
+                </div>
+                <Users className="w-8 h-8 text-blue-200" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-100 text-sm">页面浏览量</p>
+                  <p className="text-2xl font-bold">
+                    {data.pageViews.toLocaleString()}
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+                <Eye className="w-8 h-8 text-green-200" />
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* 可折叠列表 */}
-            <Card className="bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm rounded-2xl">
-              <CardContent className="p-4">
-                <div className="space-y-3">
-                  {[
-                    {
-                      id: 'pension',
-                      title: 'Pension contributions',
-                      icon: null,
-                    },
-                    {
-                      id: 'devices',
-                      title: 'Devices',
-                      icon: <Laptop className="w-5 h-5 text-gray-400" />,
-                      content: ['MacBook Air', 'Version M1'],
-                    },
-                    {
-                      id: 'compensation',
-                      title: 'Compensation Summary',
-                      icon: null,
-                    },
-                    {
-                      id: 'benefits',
-                      title: 'Employee Benefits',
-                      icon: null,
-                    },
-                  ].map((section) => (
-                    <Collapsible
-                      key={section.id}
-                      open={expandedSections.has(section.id)}
-                    >
-                      <CollapsibleTrigger asChild>
-                        <button
-                          onClick={() => toggleSection(section.id)}
-                          className="flex items-center justify-between w-full p-3 rounded-xl hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-200"
-                          title={`点击${
-                            expandedSections.has(section.id) ? '收起' : '展开'
-                          } ${section.title}`}
-                        >
-                          <div className="flex items-center gap-3">
-                            {section.icon}
-                            <span className="text-gray-700 font-medium text-sm">
-                              {section.title}
-                            </span>
-                          </div>
-                          {expandedSections.has(section.id) ? (
-                            <ChevronDown className="w-4 h-4 text-gray-400 transition-transform" />
-                          ) : (
-                            <ChevronRight className="w-4 h-4 text-gray-400 transition-transform" />
-                          )}
-                        </button>
-                      </CollapsibleTrigger>
-                      {section.content && (
-                        <CollapsibleContent className="ml-8 space-y-2 mt-2">
-                          {section.content.map((item, index) => (
-                            <div
-                              key={index}
-                              className="text-gray-600 text-xs pl-2"
-                            >
-                              {item}
-                            </div>
-                          ))}
-                        </CollapsibleContent>
-                      )}
-                    </Collapsible>
-                  ))}
+          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-purple-100 text-sm">转化率</p>
+                  <p className="text-2xl font-bold">{data.conversionRate}%</p>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+                <Target className="w-8 h-8 text-purple-200" />
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* 中间列 - 进度、时间追踪、日历 */}
-          <div className="col-span-8 space-y-4 overflow-y-auto">
-            {/* 上半部分：Progress 和 Time tracker 并排 */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* 进度卡片 */}
-              <Card className="bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm rounded-2xl">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-xl font-bold text-gray-800">
-                    Progress
+          <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-orange-100 text-sm">错误数</p>
+                  <p className="text-2xl font-bold">{data.errors}</p>
+                </div>
+                <AlertCircle className="w-8 h-8 text-orange-200" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 主要内容区域 */}
+        <Tabs
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="space-y-6"
+        >
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview">概览</TabsTrigger>
+            <TabsTrigger value="traffic">流量分析</TabsTrigger>
+            <TabsTrigger value="behavior">用户行为</TabsTrigger>
+            <TabsTrigger value="performance">性能监控</TabsTrigger>
+            <TabsTrigger value="realtime">实时数据</TabsTrigger>
+          </TabsList>
+
+          {/* 概览标签页 */}
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* 关键指标 */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5" />
+                    关键指标
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">独立访客</span>
+                    <span className="font-semibold">
+                      {data.uniqueVisitors.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">跳出率</span>
+                    <span className="font-semibold">{data.bounceRate}%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">平均会话时长</span>
+                    <span className="font-semibold">
+                      {data.avgSessionDuration}秒
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* 设备分布 */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Smartphone className="w-5 h-5" />
+                    设备分布
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="mb-4">
-                    <p className="text-2xl font-bold text-gray-800 mb-2">
-                      {workTimeData
-                        .reduce((sum, day) => sum + day.hours, 0)
-                        .toFixed(1)}{' '}
-                      h
-                    </p>
-                    <p className="text-gray-500 text-sm">Work Time this week</p>
-                  </div>
-                  {/* 柱状图 */}
-                  <div className="flex items-end justify-between h-24">
-                    {workTimeData.map((day, index) => (
-                      <div key={day.day} className="flex flex-col items-center">
-                        <div
-                          className={`w-6 rounded-t-xl transition-all duration-300 cursor-pointer ${
-                            day.isHighlighted
-                              ? 'bg-amber-500 shadow-lg'
-                              : 'bg-gray-300 hover:bg-gray-400'
-                          } mb-2 hover:scale-110`}
-                          style={{ height: `${(day.hours / 10) * 100}%` }}
-                          title={`${day.day}: ${day.hours}小时`}
-                        ></div>
-                        <span className="text-xs text-gray-600 font-medium">
-                          {day.day}
+                  <div className="space-y-3">
+                    {data.deviceTypes.map((device, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between"
+                      >
+                        <span className="text-sm text-gray-600">
+                          {device.device}
                         </span>
-                        {day.isHighlighted && (
-                          <span className="text-xs text-amber-600 mt-1 font-bold">
-                            {day.hours}h
+                        <div className="flex items-center gap-2">
+                          <Progress
+                            value={device.percentage}
+                            className="w-20"
+                          />
+                          <span className="text-sm font-medium">
+                            {device.percentage}%
                           </span>
-                        )}
+                        </div>
                       </div>
                     ))}
                   </div>
                 </CardContent>
               </Card>
-
-              {/* 时间追踪器卡片 */}
-              <Card className="bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm rounded-2xl">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-xl font-bold text-gray-800">
-                    Time tracker
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <div className="mb-4">
-                    <div className="w-20 h-20 mx-auto rounded-full border-4 border-amber-200 flex items-center justify-center bg-white shadow-sm">
-                      <span className="text-xl font-bold text-gray-800">
-                        {currentWorkTime}
-                      </span>
-                    </div>
-                    <p className="text-gray-500 mt-3 text-sm font-medium">
-                      Work Time
-                    </p>
-                  </div>
-                  <div className="flex justify-center gap-3">
-                    <AnimatedButton
-                      size="sm"
-                      onClick={toggleTimeTracking}
-                      className={
-                        isTracking
-                          ? 'bg-green-500 hover:bg-green-600 text-white'
-                          : 'bg-amber-500 hover:bg-amber-600 text-white'
-                      }
-                      title={isTracking ? '停止计时' : '开始计时'}
-                    >
-                      {isTracking ? (
-                        <Square className="w-4 h-4" />
-                      ) : (
-                        <Play className="w-4 h-4" />
-                      )}
-                    </AnimatedButton>
-                    <AnimatedButton
-                      size="sm"
-                      variant="outline"
-                      className="rounded-xl border-gray-300"
-                      title="重置计时器"
-                    >
-                      <Clock className="w-4 h-4" />
-                    </AnimatedButton>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
 
-            {/* 下半部分：Calendar 占据底部 */}
-            <Card className="bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm rounded-2xl">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-xl font-bold text-gray-800">
-                  Calendar
+            {/* 热门页面 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5" />
+                  热门页面
                 </CardTitle>
-                <CardDescription className="text-gray-500 text-sm">
-                  September 2024
-                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {events.map((event) => (
+                  {data.topPages.map((page, index) => (
                     <div
-                      key={event.id}
-                      className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
-                      title={`${event.title} - ${event.time}`}
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                     >
-                      <div className="text-center min-w-[40px]">
-                        <p className="text-sm font-bold text-gray-800">
-                          {event.date.split(' ')[1]}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {event.date.split(' ')[0]}
-                        </p>
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-800">
-                          {event.title}
-                        </p>
-                        <p className="text-xs text-gray-500">{event.time}</p>
-                      </div>
-                      <div className="flex -space-x-1">
-                        {Array.from({ length: event.participants }, (_, i) => (
-                          <div
-                            key={i}
-                            className="w-6 h-6 bg-gray-300 rounded-full border-2 border-white"
-                          ></div>
-                        ))}
-                      </div>
+                      <span className="text-sm font-medium">{page.page}</span>
+                      <Badge variant="secondary">
+                        {page.views.toLocaleString()} 次浏览
+                      </Badge>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </TabsContent>
 
-          {/* 右侧列 - 关键指标、入职进度、任务列表 */}
-          <div className="col-span-2 space-y-4 overflow-y-auto">
-            {/* 关键指标卡片 - 垂直排列 */}
-            <div className="space-y-3">
-              <Card className="bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm rounded-2xl">
-                <CardContent className="p-4 text-center">
-                  <div className="flex flex-col items-center">
-                    <div className="p-3 bg-gray-100 rounded-xl mb-3">
-                      <Users className="w-5 h-5 text-gray-700" />
-                    </div>
-                    <p className="text-xl font-bold text-gray-800">
-                      {stats?.employees || 0}
-                    </p>
-                    <p className="text-gray-500 text-xs font-medium">
-                      Employees
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+          {/* 流量分析标签页 */}
+          <TabsContent value="traffic" className="space-y-6">
+            <TrafficPanel data={data} />
+          </TabsContent>
 
-              <Card className="bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm rounded-2xl">
-                <CardContent className="p-4 text-center">
-                  <div className="flex flex-col items-center">
-                    <div className="p-3 bg-green-100 rounded-xl mb-3">
-                      <UserPlus className="w-5 h-5 text-green-700" />
-                    </div>
-                    <p className="text-xl font-bold text-gray-800">
-                      {stats?.hirings || 0}
-                    </p>
-                    <p className="text-gray-500 text-xs font-medium">Hirings</p>
-                  </div>
-                </CardContent>
-              </Card>
+          {/* 用户行为标签页 */}
+          <TabsContent value="behavior" className="space-y-6">
+            <BehaviorPanel data={data} />
+          </TabsContent>
 
-              <Card className="bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm rounded-2xl">
-                <CardContent className="p-4 text-center">
-                  <div className="flex flex-col items-center">
-                    <div className="p-3 bg-amber-100 rounded-xl mb-3">
-                      <FileText className="w-5 h-5 text-amber-700" />
-                    </div>
-                    <p className="text-xl font-bold text-gray-800">
-                      {stats?.projects || 0}
-                    </p>
-                    <p className="text-gray-500 text-xs font-medium">
-                      Projects
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+          {/* 性能监控标签页 */}
+          <TabsContent value="performance" className="space-y-6">
+            <PerformancePanel data={data} />
+          </TabsContent>
 
-            {/* 入职进度卡片 */}
-            <Card className="bg-white/90 backdrop-blur-sm border border-gray-200 shadow-sm rounded-2xl">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-xl font-bold text-gray-800">
-                  Onboarding
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-4">
-                  <p className="text-2xl font-bold text-gray-800">
-                    {Math.round(
-                      (tasks.filter((t) => t.completed).length / tasks.length) *
-                        100
-                    )}
-                    %
-                  </p>
-                  <p className="text-gray-500 text-sm font-medium">
-                    Total Progress
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex justify-between text-xs mb-2">
-                      <span className="font-medium text-gray-600">Task</span>
-                      <span className="font-bold text-gray-800">30%</span>
-                    </div>
-                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-amber-500 rounded-full w-[30%]"></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-xs mb-2">
-                      <span className="font-medium text-gray-600">
-                        Documentation
-                      </span>
-                      <span className="font-bold text-gray-800">25%</span>
-                    </div>
-                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-gray-500 rounded-full w-[25%]"></div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-xs mb-2">
-                      <span className="font-medium text-gray-600">
-                        Training
-                      </span>
-                      <span className="font-bold text-gray-800">0%</span>
-                    </div>
-                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-gray-400 rounded-full w-[0%]"></div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* 入职任务列表卡片 */}
-            <Card className="bg-gray-800 border border-gray-700 shadow-sm rounded-2xl">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-xl font-bold text-white">
-                  Onboarding Task
-                </CardTitle>
-                <CardDescription className="text-gray-300 text-sm">
-                  {tasks.filter((t) => t.completed).length}/{tasks.length}{' '}
-                  completed
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {tasks.map((task) => (
-                    <div key={task.id} className="flex items-center gap-3">
-                      <button
-                        onClick={() =>
-                          handleTaskToggle(task.id, !task.completed)
-                        }
-                        className={`w-4 h-4 rounded-full border border-white flex items-center justify-center transition-all duration-200 hover:scale-110 ${
-                          task.completed
-                            ? 'bg-amber-500 border-amber-500 hover:bg-amber-600'
-                            : 'hover:border-gray-300'
-                        }`}
-                        title={task.completed ? '标记为未完成' : '标记为已完成'}
-                      >
-                        {task.completed && (
-                          <svg
-                            className="w-2 h-2 text-white"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        )}
-                      </button>
-                      <div className="flex-1">
-                        <p
-                          className={`text-sm ${
-                            task.completed
-                              ? 'line-through text-gray-500'
-                              : 'text-white'
-                          }`}
-                        >
-                          {task.title}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {task.date} • {task.time}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+          {/* 实时数据标签页 */}
+          <TabsContent value="realtime" className="space-y-6">
+            <RealtimePanel
+              data={data}
+              isTracking={isTracking}
+              toggleTracking={toggleTracking}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
-    )
-  }
-
-  // 如果未登录，显示登录提示
-  return (
-    <div className="h-full flex items-center justify-center px-6">
-      <AnimatedCard>
-        <Card className="rounded-3xl max-w-md w-full">
-          <CardHeader>
-            <CardTitle>需要登录</CardTitle>
-            <CardDescription>您需要登录才能访问完整功能</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {redirectFrom && (
-              <Alert className="mb-4 rounded-2xl">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>访问受限</AlertTitle>
-                <AlertDescription>
-                  您尝试访问的页面需要登录才能查看
-                </AlertDescription>
-              </Alert>
-            )}
-            <p className="text-muted-foreground mb-4">
-              请登录您的账号以访问所有功能，或者注册一个新账号。
-            </p>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-            <AnimatedButton
-              className="flex-1 rounded-2xl"
-              onClick={() => {
-                const loginPath = `/${locale}/login`
-                const url = new URL(loginPath, window.location.origin)
-                if (redirectFrom) {
-                  url.searchParams.set('redirectTo', redirectFrom)
-                }
-                router.push(url.toString())
-              }}
-            >
-              登录
-            </AnimatedButton>
-            <AnimatedButton
-              className="flex-1 rounded-2xl"
-              variant="outline"
-              onClick={() => router.push(`/${locale}`)}
-            >
-              返回首页
-            </AnimatedButton>
-          </CardFooter>
-        </Card>
-      </AnimatedCard>
     </div>
   )
 }

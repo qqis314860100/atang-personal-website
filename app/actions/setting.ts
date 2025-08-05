@@ -4,7 +4,7 @@ import {
   TUpdateServerPasswordSchema,
   updateServerPasswordSchema,
 } from '@/schemas/passwordSchema'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/client'
 import { revalidatePath } from 'next/cache'
 
 export async function updatePassword(data: TUpdateServerPasswordSchema) {
