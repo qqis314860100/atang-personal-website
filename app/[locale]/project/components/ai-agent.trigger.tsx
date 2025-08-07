@@ -11,13 +11,26 @@ const AIAgent = dynamic(
 export default function AIAgentTrigger() {
   const [open, setOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
+  const [key, setKey] = useState(0) // 用于强制重新渲染
+
+  const handleClose = () => {
+    setOpen(false)
+    setIsMinimized(false)
+    // 增加key值，确保下次打开时组件重新渲染
+    setKey((prev) => prev + 1)
+  }
+
+  const handleOpen = () => {
+    setOpen(true)
+    setIsMinimized(false)
+  }
 
   return (
     <>
       {/* 浮动按钮 */}
       <button
         className="fixed z-50 bottom-6 right-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full shadow-2xl w-16 h-16 flex items-center justify-center hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-110 hover:shadow-3xl"
-        onClick={() => setOpen(true)}
+        onClick={handleOpen}
         title="打开AI助手"
       >
         <MessageSquare className="w-8 h-8" />
@@ -61,7 +74,7 @@ export default function AIAgentTrigger() {
                   )}
                 </button>
                 <button
-                  onClick={() => setOpen(false)}
+                  onClick={handleClose}
                   className="p-2 hover:bg-red-50 rounded-lg transition-colors group"
                   title="关闭"
                 >
@@ -73,7 +86,7 @@ export default function AIAgentTrigger() {
             {/* 内容区域 */}
             {!isMinimized && (
               <div className="flex-1 overflow-hidden">
-                <AIAgent />
+                <AIAgent key={key} />
               </div>
             )}
 

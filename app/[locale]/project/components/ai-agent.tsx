@@ -3,7 +3,16 @@
 import React, { useState, useEffect, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
-import { Send, Trash2, Download, Copy, Bot, User } from 'lucide-react'
+import {
+  Send,
+  Trash2,
+  Download,
+  Copy,
+  Bot,
+  User,
+  X,
+  Square,
+} from 'lucide-react'
 
 const API_URL = '/api'
 
@@ -15,7 +24,17 @@ const AIAgent: React.FC = () => {
   const [chatHistory, setChatHistory] = useState<
     { role: string; content: string | object; timestamp?: Date }[]
   >([])
+  const [isLoading, setIsLoading] = useState(true) // 骨架屏状态
   const chatEndRef = useRef<HTMLDivElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
+
+  useEffect(() => {
+    // 模拟加载完成
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -75,6 +94,15 @@ const AIAgent: React.FC = () => {
     URL.revokeObjectURL(url)
   }
 
+  const stopProcessing = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+    }
+    setIsProcessing(false)
+    setError('查询已终止')
+  }
+
   const processQuery = async () => {
     if (!query.trim() || isProcessing) return
 
@@ -82,12 +110,17 @@ const AIAgent: React.FC = () => {
     setError(null)
     addToChatHistory('user', query)
 
+    // 创建新的AbortController
+    abortControllerRef.current = new AbortController()
+
     try {
       const response = await fetch(`${API_URL}/agent/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query, sessionId }),
+        signal: abortControllerRef.current.signal,
       })
+
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`)
       if (!response.body) throw new Error('流式响应体不存在')
@@ -98,68 +131,96 @@ const AIAgent: React.FC = () => {
       let assistantResponse = ''
       let isFirstChunk = true
 
+      // 添加空的assistant消息用于流式更新
+      addToChatHistory('assistant', '')
+
       while (true) {
         const { value, done } = await reader.read()
         if (done) break
+
         buffer += decoder.decode(value, { stream: true })
         const lines = buffer.split('\n')
         buffer = lines.pop() || ''
 
         for (const line of lines) {
-          if (!line.startsWith('data: ')) continue
-          try {
-            const jsonStr = line.substring(6)
-            const data = JSON.parse(jsonStr)
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6))
 
-            switch (data.type) {
-              case 'final_answer':
+              // 处理最终答案
+              if (data.type === 'final_answer') {
                 assistantResponse += data.value
+                // 更新最后一条消息
+                setChatHistory((prev) => {
+                  const newHistory = [...prev]
+                  const lastMessage = newHistory[newHistory.length - 1]
+                  if (lastMessage && lastMessage.role === 'assistant') {
+                    lastMessage.content = assistantResponse
+                  }
+                  return newHistory
+                })
+              }
 
-                // 打印机效果：实时更新最后一条消息
-                if (isFirstChunk) {
-                  // 第一次收到内容时，创建新的助手消息
-                  addToChatHistory('assistant', assistantResponse)
-                  isFirstChunk = false
-                } else {
-                  // 后续内容，实时更新最后一条消息
-                  setChatHistory((prev) => {
-                    const newHistory = [...prev]
-                    if (
-                      newHistory.length > 0 &&
-                      newHistory[newHistory.length - 1].role === 'assistant'
-                    ) {
-                      newHistory[newHistory.length - 1].content =
-                        assistantResponse
-                    }
-                    return newHistory
-                  })
-                }
-                break
-              case 'error':
-                setError(data.value)
-                break
+              // 处理工具调用结果（不显示工具调用提示）
+              if (data.type === 'tool_call_result') {
+                // 工具调用结果会被渲染在assistant消息中，不需要单独显示
+              }
+            } catch (error) {
+              console.error('解析流数据失败:', error)
             }
-          } catch (e) {
-            // 忽略解析失败
           }
         }
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '未知错误'
-      setError(`无法连接到服务器或API调用失败: ${errorMessage}`)
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.log('请求已取消')
+      } else {
+        console.error('处理查询失败:', error)
+        setError(`处理失败: ${error.message}`)
+      }
     } finally {
       setIsProcessing(false)
-      setQuery('')
+      abortControllerRef.current = null
     }
   }
 
   const renderContent = (content: string | object) => {
     if (typeof content === 'object') {
-      return (
-        <pre className="text-xs bg-gray-100 p-2 rounded">
-          {JSON.stringify(content, null, 2)}
-        </pre>
-      )
+      try {
+        const contentStr =
+          typeof content === 'string' ? content : JSON.stringify(content)
+        if (
+          contentStr.includes('"result"') &&
+          contentStr.includes('"results"')
+        ) {
+          return renderSearchResults(contentStr)
+        }
+        if (
+          contentStr.includes('"temperature"') ||
+          contentStr.includes('"humidity"') ||
+          contentStr.includes('"wind"')
+        ) {
+          return renderWeatherData(contentStr)
+        }
+        if (contentStr.includes('工具') && contentStr.includes('返回结果')) {
+          return renderToolResult(contentStr)
+        }
+        return (
+          <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto">
+            {JSON.stringify(content, null, 2)}
+          </pre>
+        )
+      } catch (error) {
+        return (
+          <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto">
+            {JSON.stringify(content, null, 2)}
+          </pre>
+        )
+      }
+    }
+    const contentStr = String(content)
+    if (contentStr.includes('工具') && contentStr.includes('返回结果')) {
+      return renderToolResult(contentStr)
     }
     return (
       <ReactMarkdown
@@ -173,13 +234,152 @@ const AIAgent: React.FC = () => {
     )
   }
 
+  const renderWeatherData = (contentStr: string) => {
+    try {
+      const data = JSON.parse(contentStr)
+      if (data.error) {
+        return <div className="text-red-600">{data.error}</div>
+      }
+
+      return (
+        <div className="bg-gradient-to-br from-blue-50 to-green-50 border border-green-200 rounded-xl p-4 shadow-sm">
+          <div className="flex items-center space-x-2 mb-3">
+            <div className="w-6 h-6 text-yellow-500">☀️</div>
+            <h3 className="font-semibold text-gray-800">{data.city}天气</h3>
+          </div>
+          <div className="space-y-2">
+            <div className="text-3xl font-bold text-blue-600">
+              {data.temperature}
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+              <div>天气 {data.description}</div>
+              {data.humidity && <div>湿度 {data.humidity}</div>}
+              {data.wind && <div>风力 {data.wind}</div>}
+              {data.updateTime && <div>更新 {data.updateTime}</div>}
+            </div>
+          </div>
+        </div>
+      )
+    } catch (error) {
+      return <div className="text-red-600">天气数据解析失败</div>
+    }
+  }
+
+  const renderSearchResults = (contentStr: string) => {
+    try {
+      const data = JSON.parse(contentStr)
+      if (data.error) {
+        return <div className="text-red-600">{data.error}</div>
+      }
+
+      return (
+        <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+          <div className="flex items-center space-x-2 mb-3">
+            <div className="w-5 h-5 text-blue-500">🔍</div>
+            <h3 className="font-semibold text-gray-800">搜索结果</h3>
+          </div>
+          <div className="space-y-3">
+            {data.results &&
+              data.results.slice(0, 3).map((result: any, index: number) => (
+                <div key={index} className="border-l-4 border-blue-200 pl-3">
+                  <h4 className="font-medium text-gray-800 mb-1 line-clamp-2">
+                    {result.title}
+                  </h4>
+                  <p className="text-sm text-gray-600 line-clamp-3">
+                    {cleanHtmlContent(result.content)}
+                  </p>
+                  {result.url && (
+                    <a
+                      href={result.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:text-blue-800 mt-1 inline-block"
+                    >
+                      查看详情 →
+                    </a>
+                  )}
+                </div>
+              ))}
+          </div>
+        </div>
+      )
+    } catch (error) {
+      return <div className="text-red-600">搜索结果解析失败</div>
+    }
+  }
+
+  const renderToolResult = (contentStr: string) => {
+    try {
+      // 尝试解析工具结果
+      const data = JSON.parse(contentStr)
+      if (data.temperature || data.humidity || data.wind) {
+        return renderWeatherData(contentStr)
+      }
+      if (data.results && Array.isArray(data.results)) {
+        return renderSearchResults(contentStr)
+      }
+      return <div className="text-gray-600">工具执行完成</div>
+    } catch (error) {
+      return <div className="text-gray-600">{contentStr}</div>
+    }
+  }
+
+  const cleanHtmlContent = (content: string) => {
+    return content
+      .replace(/<[^>]*>/g, '')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .trim()
+  }
+
   const formatTime = (date: Date) => {
-    return new Intl.DateTimeFormat('zh-CN', {
+    return date.toLocaleTimeString('zh-CN', {
       hour: '2-digit',
       minute: '2-digit',
-    }).format(date)
+    })
   }
-  console.log('chatHistory', chatHistory)
+
+  // 骨架屏组件
+  const SkeletonLoader = () => (
+    <div className="w-full h-full flex flex-col bg-gray-50 animate-pulse">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        <div className="flex justify-start">
+          <div className="flex items-start space-x-3">
+            <div className="w-8 h-8 rounded-full bg-gray-300"></div>
+            <div className="bg-gray-200 rounded-2xl px-4 py-3 w-64 h-16"></div>
+          </div>
+        </div>
+        <div className="flex justify-end">
+          <div className="flex items-start space-x-3 flex-row-reverse space-x-reverse">
+            <div className="w-8 h-8 rounded-full bg-gray-300"></div>
+            <div className="bg-gray-200 rounded-2xl px-4 py-3 w-48 h-12"></div>
+          </div>
+        </div>
+        <div className="flex justify-start">
+          <div className="flex items-start space-x-3">
+            <div className="w-8 h-8 rounded-full bg-gray-300"></div>
+            <div className="bg-gray-200 rounded-2xl px-4 py-3 w-80 h-20"></div>
+          </div>
+        </div>
+      </div>
+      <div className="border-t border-gray-200 bg-white p-4 rounded-b-2xl">
+        <div className="flex items-center space-x-3">
+          <div className="flex-1">
+            <div className="w-full h-12 bg-gray-200 rounded-2xl"></div>
+          </div>
+          <div className="w-12 h-12 bg-gray-200 rounded-2xl flex-shrink-0"></div>
+        </div>
+      </div>
+    </div>
+  )
+
+  if (isLoading) {
+    return <SkeletonLoader />
+  }
+
   return (
     <div className="w-full h-full flex flex-col bg-gray-50">
       <style jsx>{`
@@ -201,7 +401,20 @@ const AIAgent: React.FC = () => {
         .typing-animation {
           display: inline;
         }
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .line-clamp-3 {
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
       `}</style>
+
       {/* 聊天区域 */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {chatHistory.length === 0 ? (
@@ -346,7 +559,7 @@ const AIAgent: React.FC = () => {
           </div>
         )}
 
-        <div className="flex items-end space-x-3">
+        <div className="flex items-center space-x-3">
           <div className="flex-1 relative">
             <textarea
               value={query}
@@ -360,20 +573,30 @@ const AIAgent: React.FC = () => {
               placeholder="有问题，尽管问，shift+enter换行..."
               disabled={isProcessing}
               rows={1}
-              className="w-full px-4 py-3 border border-gray-300 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-60"
+              className="w-full px-4 py-3 border border-gray-300 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-60 text-sm"
               style={{ minHeight: '48px', maxHeight: '120px' }}
             />
           </div>
 
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={processQuery}
-              disabled={isProcessing || !query.trim()}
-              className="p-3 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 disabled:opacity-60 transition-colors"
-              title="发送消息"
-            >
-              <Send className="w-5 h-5" />
-            </button>
+          <div className="flex items-center">
+            {isProcessing ? (
+              <button
+                onClick={stopProcessing}
+                className="p-3 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-colors flex-shrink-0"
+                title="停止查询"
+              >
+                <Square className="w-5 h-5" />
+              </button>
+            ) : (
+              <button
+                onClick={processQuery}
+                disabled={!query.trim()}
+                className="p-3 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 disabled:opacity-60 transition-colors flex-shrink-0"
+                title="发送消息"
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -398,10 +621,6 @@ const AIAgent: React.FC = () => {
               <Download className="w-4 h-4" />
               <span>导出</span>
             </button>
-          </div>
-
-          <div className="text-xs text-gray-400">
-            {chatHistory.length > 0 && `${chatHistory.length} 条消息`}
           </div>
         </div>
       </div>
