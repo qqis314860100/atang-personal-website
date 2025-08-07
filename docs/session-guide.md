@@ -107,7 +107,7 @@ const supabase = createClient(url, key, {
 
 ```typescript
 // 使用自定义 API 客户端
-import { apiClient } from '@/lib/utils/api-client'
+import { apiClient } from '@/utils/utils/api-client'
 
 // 自动携带 token 的请求
 const userData = await apiClient.get('/user/profile')

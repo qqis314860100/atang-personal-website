@@ -171,7 +171,8 @@ export function PerformanceMonitor({
     const longTaskObserver = new PerformanceObserver((list) => {
       const entries = list.getEntries()
       entries.forEach((entry) => {
-        if (entry.duration > 50) {
+        // 提高长任务阈值到100ms，减少误报
+        if (entry.duration > 100) {
           const taskInfo = {
             name: entry.name,
             duration: entry.duration,

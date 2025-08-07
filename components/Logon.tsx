@@ -11,7 +11,7 @@ import {
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   PersonIcon,
   ReloadIcon,
@@ -46,6 +46,7 @@ export const Logon = () => {
   const [loginOpen, setLoginOpen] = useState(false)
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false)
   const [registerOpen, setRegisterOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   const locale = useLocale()
 
@@ -57,8 +58,13 @@ export const Logon = () => {
   const resendEmailMutation = useResendVerificationEmail()
   const forgotPasswordMutation = useForgotPassword()
 
-  const isLoggedIn = !!user
+  // 防止水合不一致
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
+  const isLoggedIn = !!user
+  console.log('user', user, isLoading, isLoggedIn)
   const {
     register: formRegister,
     handleSubmit: handleRegisterSubmit,
@@ -75,12 +81,9 @@ export const Logon = () => {
 
   const handleSignIn = async (data: TSignInSchema) => {
     try {
-      const result = await signInMutation.mutateAsync({ data, locale })
-
-      if (result.status === 'success') {
-        setLoginOpen(false)
-        resetSignIn()
-      }
+      await signInMutation.mutateAsync({ data, locale })
+      setLoginOpen(false)
+      resetSignIn()
       // 错误处理已经在 mutation 中完成
     } catch (error) {
       console.error('登录失败:', error)
@@ -147,8 +150,8 @@ export const Logon = () => {
     setLoginOpen(true)
   }
 
-  // 如果正在加载用户状态，显示加载指示器
-  if (isLoading) {
+  // 如果正在加载用户状态或未挂载，显示加载指示器
+  if (!mounted || isLoading) {
     return (
       <Button variant="ghost" size="sm" className="h-9 w-9 px-0">
         <InlineLoading text="" />

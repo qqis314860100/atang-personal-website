@@ -2,7 +2,11 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { useState } from 'react'
+import { persistQueryClient } from '@tanstack/react-query-persist-client'
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
+import { useState, useEffect } from 'react'
+// SSR 水合预留
+// import { Hydrate } from '@tanstack/react-query'
 
 interface QueryProviderProps {
   children: React.ReactNode
@@ -34,6 +38,23 @@ export function QueryProvider({ children }: QueryProviderProps) {
         },
       })
   )
+
+  useEffect(() => {
+    // localStorage 持久化
+    const persister = createSyncStoragePersister({
+      storage: window.localStorage,
+      serialize: JSON.stringify,
+      deserialize: JSON.parse,
+    })
+
+    // 立即恢复缓存
+    persistQueryClient({
+      queryClient,
+      persister,
+      maxAge: 24 * 60 * 60 * 1000, // 1天
+      buster: 'v1', // 缓存版本标识
+    })
+  }, [queryClient])
 
   return (
     <QueryClientProvider client={queryClient}>

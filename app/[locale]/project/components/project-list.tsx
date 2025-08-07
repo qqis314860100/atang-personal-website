@@ -26,7 +26,7 @@ interface Project {
 
 const projects: Project[] = [
   {
-    id: '1',
+    id: 'blog',
     title: '个人博客系统',
     description:
       '基于 Next.js 14 和 Prisma 构建的现代化博客系统，支持 Markdown 编辑、分类管理、搜索功能等。',
@@ -40,36 +40,40 @@ const projects: Project[] = [
       'Tailwind CSS',
     ],
     image: '/api/placeholder/400/300',
-    demoUrl: '/blog', // 指向当前项目的博客页面
     status: 'completed',
     featured: true,
   },
   {
-    id: '2',
+    id: 'chat-room',
     title: '在线聊天室',
     description:
       '基于 WebSocket 的实时聊天应用，支持访客匿名聊天、在线人数统计、消息历史记录等功能。',
     category: '实时通信',
     technologies: ['WebSocket', 'React', 'Node.js', 'Socket.IO', 'TypeScript'],
     image: '/api/placeholder/400/300',
-    demoUrl: '/project', // 指向项目页面，聊天室会在右下角打开
-    githubUrl: 'https://github.com/your-username/chat-room',
+    status: 'completed',
+    featured: true,
+  },
+
+  {
+    id: 'video-manage',
+    title: '视频管理系统',
+    description:
+      '完整的视频管理平台，支持视频上传、编辑、分类管理、弹幕统计等功能。',
+    category: '内容管理',
+    technologies: [
+      'Next.js',
+      'React Query',
+      'Prisma',
+      'TypeScript',
+      'Tailwind CSS',
+    ],
+    image: '/api/placeholder/400/300',
     status: 'completed',
     featured: true,
   },
   {
-    id: '3',
-    title: '在线视频播放器',
-    description:
-      '支持弹幕功能的在线视频播放器，具备视频控制、弹幕发送、用户互动等特性。',
-    category: '多媒体',
-    technologies: ['HTML5 Video', 'WebRTC', 'Canvas', 'WebSocket'],
-    image: '/api/placeholder/400/300',
-    status: 'in-progress',
-    featured: false,
-  },
-  {
-    id: '4',
+    id: 'collaborative-editor',
     title: '多人协作编辑器',
     description:
       '基于 Operational Transformation 的实时协作编辑器，支持多人同时编辑、冲突解决、版本控制。',
@@ -85,7 +89,7 @@ const projects: Project[] = [
     featured: false,
   },
   {
-    id: '5',
+    id: 'dashboard',
     title: '数据可视化仪表板',
     description:
       '基于埋点数据的实时仪表板，展示用户行为分析、性能监控、业务指标等可视化图表。',
@@ -96,7 +100,7 @@ const projects: Project[] = [
     featured: false,
   },
   {
-    id: '6',
+    id: 'pwa',
     title: '移动端 PWA 应用',
     description:
       '渐进式 Web 应用，支持离线使用、推送通知、原生应用体验等功能。',
@@ -172,11 +176,10 @@ export default function ProjectList() {
         {filteredProjects.map((project) => {
           // 根据项目类型决定跳转行为
           const getProjectLink = () => {
-            switch (project.title) {
-              case '个人博客系统':
+            switch (project.id) {
+              case 'blog':
                 return '/blog' // 跳转到博客页面
-              case '在线聊天室':
-                return '/project' // 跳转到项目页面（打开聊天室）
+
               default:
                 return `/project/${project.id}` // 跳转到项目详情页
             }
@@ -185,15 +188,8 @@ export default function ProjectList() {
           const handleClick = (e: React.MouseEvent) => {
             const link = getProjectLink()
 
-            if (project.title === '在线聊天室') {
-              // 聊天室在新窗口打开
-              e.preventDefault()
-              window.open(link, '_blank')
-            } else if (project.title === '个人博客系统') {
-              // 博客系统在当前窗口跳转
-              e.preventDefault()
-              window.location.href = link
-            }
+            e.preventDefault()
+            window.open(link, '_blank')
             // 其他项目使用默认的Link跳转
           }
 

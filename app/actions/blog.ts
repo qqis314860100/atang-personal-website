@@ -3,7 +3,7 @@
 import { prisma } from '@/lib/prisma/client'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { createAdminClient } from '@/lib/supabase/client'
+import { createAdminClient } from '@/lib/supabase/server'
 import {
   createPostSchema,
   updatePostSchema,

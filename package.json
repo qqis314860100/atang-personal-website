@@ -18,7 +18,12 @@
     "db:push": "node scripts/safe-db-push.js",
     "db:push:force": "node scripts/safe-db-push.js --force-reset",
     "db:reset": "echo '⚠️  请使用 npm run db:push:force 来重置数据库'",
-    "db:seed": "tsx prisma/seed.ts",
+    "db:seed": "tsx lib/prisma/seed.ts",
+    "db:seed:video": "tsx lib/prisma/seed-video.ts",
+    "setup:rls": "node scripts/setup-rls.js",
+    "prisma:generate": "prisma generate --schema=lib/prisma/schema.prisma",
+    "prisma:push": "prisma db push --schema=lib/prisma/schema.prisma",
+    "prisma:migrate": "prisma migrate dev --schema=lib/prisma/schema.prisma",
     "db:restore": "node scripts/restore-data.js",
     "socket": "node server/socket-server.js",
     "dev:socket": "concurrently \"npm run dev\" \"npm run socket\"",
@@ -30,7 +35,13 @@
     "status:socket": "pm2 status",
     "analyze": "ANALYZE=true next build"
   },
+  "prisma": {
+    "schema": "lib/prisma/schema.prisma"
+  },
   "dependencies": {
+    "@ffmpeg/core": "^0.12.10",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
     "@hookform/resolvers": "^5.1.1",
     "@next/bundle-analyzer": "^15.3.4",
     "@prisma/client": "^6.11.0",
@@ -47,13 +58,16 @@
     "@radix-ui/react-radio-group": "^1.3.7",
     "@radix-ui/react-select": "^2.2.5",
     "@radix-ui/react-separator": "^1.1.7",
+    "@radix-ui/react-slider": "^1.3.5",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tabs": "^1.1.12",
     "@radix-ui/react-tooltip": "^1.2.7",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.52.0",
-    "@tanstack/react-query": "^5.83.0",
-    "@tanstack/react-query-devtools": "^5.83.0",
+    "@tanstack/query-sync-storage-persister": "^5.83.1",
+    "@tanstack/react-query": "^5.84.1",
+    "@tanstack/react-query-devtools": "^5.84.1",
+    "@tanstack/react-query-persist-client": "^5.84.1",
     "@types/uuid": "^10.0.0",
     "class-variance-authority": "^0.7.1",
     "classnames": "^2.5.1",
@@ -92,6 +106,7 @@
     "zustand-persist": "^0.4.0"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^13.0.0",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/postcss": "^4.1.11",
     "@tailwindcss/typography": "^0.5.16",
@@ -113,7 +128,7 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.20.3",
-    "typescript": "5.8.3",
-    "@next/bundle-analyzer": "^13.0.0"
+    "tw-animate-css": "^1.3.6",
+    "typescript": "5.8.3"
   }
 }

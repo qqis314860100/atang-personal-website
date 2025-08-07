@@ -1,14 +1,35 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { queryKeys } from '@/lib/query-hook'
 import { signIn, register, resendVerificationEmail } from '@/app/actions/auth'
-import { createClient } from '@/lib/supabase/client'
-import { toast } from 'react-hot-toast'
 import { TSignInSchema } from '@/schemas/signInSchema'
 import { TRegisterSchema } from '@/schemas/registerSchema'
-import { useEffect } from 'react'
-import { TUser, useUserStore } from '@/lib/store/user-store'
+import toast from 'react-hot-toast'
+import { keepPreviousData } from '@tanstack/react-query'
+import { checkDatabaseHealthFromClient } from '@/lib/utils/client-db-check'
+// 定义用户类型
+export interface TUser {
+  id: string
+  email: string
+  username?: string
+  avatar?: string | null
+  bio?: string | null
+  gender?: string | null
+  signature?: string | null
+  techStack?: string | null
+  date?: string | null
+  isAdmin?: boolean
+  updatedAt?: string
+  createdAt?: string
+  resume_content?: string | null
+  resume_url?: string | null
+  resume_filename?: string | null
+  resume_size?: number | null
+}
+const supabase = createClient()
 
 // 优化后的用户认证 hook
 export function useStableUser() {
@@ -16,111 +37,108 @@ export function useStableUser() {
   const query = useQuery({
     queryKey: queryKeys.user.session(),
     queryFn: async (): Promise<TUser | null> => {
-      const supabase = createClient()
       try {
-        // 添加超时控制
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('查询超时')), 5000) // 缩短超时时间
-        })
-
-        const queryPromise = (async (): Promise<TUser | null> => {
-          // 获取当前用户会话
-          const {
-            data: { session },
-            error: sessionError,
-          } = await supabase.auth.getSession()
-
-          // 处理会话错误或无会话情况
-          if (sessionError || !session) {
-            if (sessionError) {
-              console.error('❌ 获取用户会话失败:', sessionError)
-            }
-            return null
+        // 检查数据库连接状态（客户端安全）
+        const dbHealth = await checkDatabaseHealthFromClient()
+        if (dbHealth.status !== 'healthy') {
+          console.warn('⚠️ 数据库连接异常:', dbHealth.message)
+          if (dbHealth.error) {
+            console.error('数据库错误:', dbHealth.error)
           }
+        }
 
-          // 获取用户详细信息
-          const { data: profile, error: profileError } = await supabase
-            .from('UserProfile')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
+        // 安全检查
+        const client = createClient()
+        if (!client) {
+          console.warn('⚠️ Supabase 客户端未初始化')
+          return null
+        }
 
-          if (profileError) {
-            console.error('❌ 获取用户资料失败:', profileError, session)
-            // 返回基本用户信息
-            return {
-              id: session.user.id,
-              email: session.user.email!,
-              username: session.user.user_metadata.username || 'User',
-              avatar: null,
-              updatedAt: session.user.created_at,
-            }
+        // 获取当前用户会话
+        const {
+          data: { session },
+          error: sessionError,
+        } = await client.auth.getSession()
+
+        // 处理会话错误或无会话情况
+        if (sessionError || !session) {
+          if (sessionError) {
+            console.error('❌ 获取用户会话失败:', sessionError)
           }
+          return null
+        }
 
-          return profile
-        })()
+        // 获取用户详细信息
+        const { data: profile, error: profileError } = await client
+          .from('UserProfile')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
 
-        // 使用 Promise.race 实现超时控制
-        return (await Promise.race([queryPromise, timeoutPromise])) as TUser
+        if (profileError) {
+          console.error('❌ 获取用户资料失败:', profileError, session)
+          // 返回基本用户信息
+          return {
+            id: session.user.id,
+            email: session.user.email!,
+            username: session.user.user_metadata.username || 'User',
+            avatar: null,
+            updatedAt: session.user.created_at,
+            resume_content: profile?.resume_content,
+            resume_url: profile?.resume_url,
+            resume_filename: profile?.resume_filename,
+            resume_size: profile?.resume_size,
+          }
+        }
+
+        return profile
       } catch (error) {
         // 捕获所有可能的错误
         console.error('❌ 用户数据获取失败:', error)
+        // 返回 null，让 React Query 使用缓存数据
         return null
       }
     },
-    staleTime: 15 * 60 * 1000, // 15分钟数据保持新鲜
-    gcTime: 60 * 60 * 1000, // 1小时垃圾回收时间
-    retry: 1, // 只重试1次
-    retryDelay: 1000, // 重试延迟1秒
+    staleTime: 30 * 60 * 1000, // 30分钟数据保持新鲜
+    gcTime: 24 * 60 * 60 * 1000, // 24小时垃圾回收时间
+    retry: (failureCount, error) => {
+      // 减少重试次数，避免过多的异步操作
+      return failureCount < 1
+    },
+    retryDelay: 1000, // 固定重试延迟
     refetchOnWindowFocus: false, // 窗口聚焦时不重新获取
     refetchOnMount: false, // 组件挂载时不重新获取（如果数据仍然新鲜）
-    refetchOnReconnect: true, // 网络重连时重新获取
+    refetchOnReconnect: false, // 网络重连时不重新获取，避免频繁请求
     // 性能优化
     structuralSharing: true, // 结构共享优化
     throwOnError: false, // 不抛出错误
+    placeholderData: keepPreviousData, // 保持上一次数据，避免切换页面时 loading
+    // Next.js 15 兼容性
+    enabled: typeof window !== 'undefined', // 只在客户端执行
   })
 
   const { data: user, isLoading, error, refetch } = query
-  const { setUser } = useUserStore()
 
-  // 同步用户状态到 Zustand - 单独处理，避免循环
+  // 调试：监控缓存状态
   useEffect(() => {
-    if (user && (user as TUser).id) {
-      setUser(user as TUser)
-    }
-  }, [(user as TUser)?.id]) // 只依赖用户ID，避免无限循环
+    // 检查组件是否仍然挂载
+    let isMounted = true
 
-  // 监听认证状态变化 - 修复无限循环问题
-  useEffect(() => {
-    // 监听 SessionProvider 发出的事件
-    const handleAuthStateChange = (event: CustomEvent) => {
-      const { event: authEvent, session } = event.detail
-
-      if (authEvent === 'SIGNED_IN' || authEvent === 'TOKEN_REFRESHED') {
-        // 使用 setTimeout 防抖，避免频繁调用
-        setTimeout(() => {
-          refetch()
-        }, 100)
-      } else if (authEvent === 'SIGNED_OUT') {
-        setUser(null) // 清除用户数据
-      }
+    if (error && isMounted) {
+      console.log('🔍 用户数据查询失败，但可能使用缓存数据')
+      console.log('📊 当前缓存状态:', {
+        hasData: !!user,
+        isLoading,
+        error: error?.message,
+      })
     }
 
-    // 添加事件监听器
-    window.addEventListener(
-      'authStateChanged',
-      handleAuthStateChange as EventListener
-    )
-
-    // 清理函数
     return () => {
-      window.removeEventListener(
-        'authStateChanged',
-        handleAuthStateChange as EventListener
-      )
+      isMounted = false
     }
-  }, []) // 移除所有依赖项，只在组件挂载时执行一次
+  }, [error, user, isLoading])
 
+  // 只返回 user，不做副作用
   return {
     user,
     isLoading,
@@ -141,39 +159,33 @@ export function useSignIn() {
     }: {
       data: TSignInSchema
       locale: string
-    }) => {
-      return await signIn(data, locale)
-    },
-    onSuccess: (result) => {
+    }) => await signIn(data, locale),
+    onSuccess: async (result) => {
       if (result && result.status === 'success' && result.user) {
-        // 登录成功后更新用户数据
+        // 1.先同步session
+        if (result.access_token && result.refresh_token) {
+          // 这样会自动触发 onAuthStateChange，useStableUser 会自动 refetch
+          const client = createClient()
+          if (client) {
+            await client.auth.setSession({
+              access_token: result.access_token,
+              refresh_token: result.refresh_token,
+            })
+          }
+        }
+        // 2.立即更新 react-query 缓存（可选，保险起见）
         queryClient.setQueryData(queryKeys.user.session(), result.user)
         queryClient.setQueryData(queryKeys.user.profile(), result.user)
 
         toast.success(result.message || '登录成功')
-        return { success: true, user: result.user }
+        return result.user
       } else {
-        // 处理特定错误
-        if (result?.message === 'Email not confirmed') {
-          return {
-            success: false,
-            error: 'email_not_confirmed',
-            message: result.message,
-          }
-        }
-
         toast.error(result?.message || '登录失败')
-        return {
-          success: false,
-          error: 'login_failed',
-          message: result?.message,
-        }
       }
     },
     onError: (error) => {
       console.error('登录失败:', error)
       toast.error('登录失败，请重试')
-      return { success: false, error: 'network_error' }
     },
   })
 }

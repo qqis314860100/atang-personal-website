@@ -1,0 +1,339 @@
+/* 视频播放器样式 */
+
+/* 弹幕滚动动画 */
+@keyframes danmaku-scroll {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-danmaku-scroll {
+  animation: danmaku-scroll 12s linear forwards;
+}
+
+/* 弹幕样式优化 */
+.danmaku-item {
+  text-shadow:
+    1px 1px 0 rgba(0, 0, 0, 0.8),
+    -1px -1px 0 rgba(0, 0, 0, 0.8),
+    1px -1px 0 rgba(0, 0, 0, 0.8),
+    -1px 1px 0 rgba(0, 0, 0, 0.8);
+  font-weight: bold;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+/* 视频控制栏渐变 */
+.video-controls {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+}
+
+/* 进度条样式 */
+.progress-bar {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: height 0.2s ease;
+}
+
+.progress-bar:hover {
+  height: 6px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #00a1d6;
+  border-radius: 2px;
+  transition: width 0.1s ease;
+  position: relative;
+}
+
+.progress-handle {
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background: #00a1d6;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.progress-bar:hover .progress-handle {
+  opacity: 1;
+}
+
+/* 音量控制样式 - 严格按照图片UI */
+.volume-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.volume-slider-container {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 8px;
+  padding: 12px 8px;
+  margin-bottom: 12px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 40px;
+}
+
+.volume-control:hover .volume-slider-container,
+.volume-slider-container:hover {
+  opacity: 1;
+  visibility: visible;
+}
+
+.volume-value {
+  color: white;
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 8px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.volume-slider {
+  width: 4px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  writing-mode: bt-lr;
+  -webkit-writing-mode: bt-lr;
+  -ms-writing-mode: bt-lr;
+  writing-mode: bt-lr;
+  -webkit-appearance: slider-vertical;
+  appearance: slider-vertical;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #00a1d6;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: #00a1d6;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+.volume-slider::-webkit-slider-track {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.volume-slider::-moz-range-track {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  height: 4px;
+  border: none;
+}
+
+/* 倍速选择器样式 - 严格按照图片UI */
+.speed-selector {
+  position: relative;
+  display: inline-block;
+}
+
+.speed-menu {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  background: rgba(0, 0, 0, 0.9);
+  border-radius: 8px;
+  padding: 8px 0;
+  min-width: 80px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.2s ease;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.speed-selector:hover .speed-menu,
+.speed-menu:hover {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.speed-option {
+  padding: 8px 16px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  font-size: 14px;
+  text-align: center;
+  width: 100%;
+  border-radius: 4px;
+  margin: 1px 0;
+}
+
+.speed-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.speed-option.active {
+  color: #00a1d6;
+  font-weight: 500;
+}
+
+/* 视频加载状态 */
+.video-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+.video-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* 全屏模式优化 */
+.video-player:fullscreen {
+  background: black;
+}
+
+.video-player:fullscreen .video-controls {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, transparent 100%);
+}
+
+/* 弹幕输入框样式 */
+.danmaku-input {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.danmaku-input input {
+  background: transparent;
+  border: none;
+  color: white;
+}
+
+.danmaku-input input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* 弹幕控制按钮样式 */
+.danmaku-toggle {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.danmaku-toggle.active {
+  background: #00a1d6;
+  color: white;
+}
+
+.danmaku-toggle.inactive {
+  background: #f0f0f0;
+  color: #666;
+}
+
+/* 弹幕输入区域样式 */
+.danmaku-input-area {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+}
+
+.danmaku-input-area input {
+  background: white;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.danmaku-input-area input:focus {
+  border-color: #00a1d6;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 161, 214, 0.2);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .video-player-container {
+    aspect-ratio: 16/9;
+  }
+
+  .video-controls {
+    padding: 0.5rem;
+  }
+
+  .video-controls .control-buttons {
+    gap: 0.25rem;
+  }
+
+  .danmaku-input {
+    padding: 0.5rem;
+  }
+}

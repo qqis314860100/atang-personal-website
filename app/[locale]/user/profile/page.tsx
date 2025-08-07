@@ -205,7 +205,7 @@ export default function ProfilePage() {
   }
 
   // 如果用户未登录且不在加载中，显示加载状态（避免闪烁）
-  if (!userLoading || !user) {
+  if (userLoading || !user) {
     return (
       <div className="container py-8 px-4 max-w-3xl mx-auto">
         <CardLoading text="正在跳转..." />

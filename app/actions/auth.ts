@@ -24,6 +24,18 @@ export const register = async (credentials: TRegisterSchema) => {
   }
   const { username, email, password, confirmPassword } = credentials
 
+  // 1. 检查邮箱是否已存在
+  const userList = (await supabase.auth.admin.listUsers()).data.users.find(
+    (user) => user.email === email
+  )
+  if (userList) {
+    return {
+      status: 'error',
+      message: '邮箱已存在,请确认~',
+    }
+  }
+
+  // 2. 检查用户名是否已存在
   const { data: existingUsers, error: usernameError } = await supabase
     .from('UserProfile')
     .select('id')
@@ -34,13 +46,13 @@ export const register = async (credentials: TRegisterSchema) => {
     console.log('existingEmailError', usernameError)
     return {
       status: 'error',
-      message: usernameError.message || '用户名校验不合法~',
+      message: usernameError.message || '用户名不合法~',
     }
   }
   if (existingUsers && existingUsers.length > 0) {
     return {
       status: 'error',
-      message: '用户名已存在,请确认~',
+      message: ' ',
     }
   }
 
@@ -106,7 +118,7 @@ export async function signIn(credentials: TSignInSchema, locale: string) {
     return { status: 'error', message: error.message, error, user: null }
   }
 
-  const username = data?.user?.user_metadata?.name
+  const username = data?.user?.user_metadata?.username
 
   console.log('error -----1', username, error)
 
@@ -152,6 +164,8 @@ export async function signIn(credentials: TSignInSchema, locale: string) {
     status: 'success',
     message: '登录成功~',
     user: userProfile,
+    access_token: data.session.access_token,
+    refresh_token: data.session.refresh_token,
   }
 }
 

@@ -11,6 +11,7 @@ import '../globals.css'
 import SessionProvider from '@/components/provider/SessionProvider'
 import { QueryProvider } from '@/components/provider/QueryProvider'
 import { UserStatePreloader } from '@/components/provider/UserStatePreloader'
+import { AuthListener } from '@/components/provider/AuthListener'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { PerformanceMonitor } from '@/components/performance-monitor'
 import { RoutePrefetch } from '@/components/route-prefetch'
@@ -93,6 +94,7 @@ export default async function RootLayout({
           <ErrorBoundary>
             <QueryProvider>
               <SessionProvider>
+                <AuthListener />
                 <ThemeProvider
                   attribute="class"
                   defaultTheme="system"

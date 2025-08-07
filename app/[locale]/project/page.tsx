@@ -4,19 +4,19 @@ import ProjectList from '@/app/[locale]/project/components/project-list'
 import ChatRoomTrigger from '@/app/[locale]/project/components/chat-trigger'
 import OnlineVisitorsFixed from '@/app/[locale]/project/components/visitors-tips'
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>
-}): Promise<Metadata> {
-  const { locale } = await params
-  const t = await getTranslations({ locale, namespace: 'Project' })
+// export async function generateMetadata({
+//   params,
+// }: {
+//   params: Promise<{ locale: string }>
+// }): Promise<Metadata> {
+//   const { locale } = await params
+//   const t = await getTranslations({ locale, namespace: 'Project' })
 
-  return {
-    title: t('title'),
-    description: t('description'),
-  }
-}
+//   return {
+//     title: t('title'),
+//     description: t('description'),
+//   }
+// }
 
 export default function ProjectPage() {
   return (

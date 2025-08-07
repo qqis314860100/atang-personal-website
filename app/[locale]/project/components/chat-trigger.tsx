@@ -1,13 +1,55 @@
 'use client'
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
-import { MessageCircle, MessageSquare, X } from 'lucide-react'
-import { ChatRoomHeader } from '../(feature)/chat-room/page'
+import {
+  Badge,
+  MessageCircle,
+  MessageSquare,
+  Wifi,
+  WifiOff,
+  X,
+} from 'lucide-react'
+import { useSocket } from '@/lib/hooks/use-socket'
+import { CardHeader } from '@/components/ui/card'
 
-const ChatRoom = dynamic(() => import('../(feature)/chat-room/page'), {
-  ssr: false,
-})
+const ChatRoom = dynamic(
+  () => import('@/app/[locale]/project/components/chat-room'),
+  {
+    ssr: false,
+  }
+)
 
+export const ChatRoomHeader = () => {
+  // 使用 Socket.IO WebSocket
+  const {
+    isConnected,
+    messages,
+    userCount,
+    typingUsers,
+    sendMessage,
+    sendTyping,
+    myIp,
+  } = useSocket()
+  return (
+    <CardHeader className="pb-0">
+      <div className="flex items-center gap-4">
+        {isConnected ? (
+          <Wifi className="h-4 w-4 text-green-500" />
+        ) : (
+          <WifiOff className="h-4 w-4 text-red-500" />
+        )}
+        {/* 展示本机IP（脱敏） */}
+        {myIp && (
+          <div className="text-xs text-gray-400 mt-1">我的IP: {myIp}</div>
+        )}
+
+        <Badge className="ml-2 bg-gray-100 text-gray-800">
+          在线人数:{userCount}
+        </Badge>
+      </div>
+    </CardHeader>
+  )
+}
 export default function ChatRoomTrigger() {
   const [open, setOpen] = useState(false)
 

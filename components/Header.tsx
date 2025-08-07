@@ -35,7 +35,6 @@ import {
 import { GlobeIcon } from '@radix-ui/react-icons'
 import { useLocale } from 'next-intl'
 import { Logon } from './Logon'
-import { useStableUser } from '@/lib/query-hook/use-auth'
 
 interface NavMenuItem {
   title: string
@@ -50,7 +49,6 @@ const Header = () => {
   const pathname = usePathname()
   const currentLocale = useLocale()
   const [mounted, setMounted] = useState(false)
-  const { user } = useStableUser()
 
   // 防止水和不一致
   useEffect(() => {
@@ -95,18 +93,20 @@ const Header = () => {
                     (parent.href !== '/' && currentPath.startsWith(parent.href))
                   return (
                     <NavigationMenuItem key={parent.href}>
-                      <NavigationMenuLink
-                        href={`/${currentLocale}${
-                          parent.href === '/' ? '' : parent.href
-                        }`}
-                        className={cn(
-                          'px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200',
-                          isActive
-                            ? 'bg-gray-800 text-white shadow-sm hover:bg-gray-800 hover:text-white'
-                            : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                        )}
-                      >
-                        {parent.title}
+                      <NavigationMenuLink asChild>
+                        <Link
+                          href={`/${currentLocale}${
+                            parent.href === '/' ? '' : parent.href
+                          }`}
+                          className={cn(
+                            'px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200',
+                            isActive
+                              ? 'bg-gray-800 text-white shadow-sm hover:bg-gray-800 hover:text-white'
+                              : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                          )}
+                        >
+                          {parent.title}
+                        </Link>
                       </NavigationMenuLink>
                     </NavigationMenuItem>
                   )
