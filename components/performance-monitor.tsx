@@ -121,7 +121,7 @@ export function PerformanceMonitor({
           }
         })
         setWebVitals((prev: any) => ({ ...prev, cls: clsValue }))
-        console.log('📐 CLS:', clsValue.toFixed(3))
+        // console.log('📐 CLS:', clsValue.toFixed(3))
       })
 
       try {

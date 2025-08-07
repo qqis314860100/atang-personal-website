@@ -20,7 +20,7 @@ interface Project {
   image: string
   demoUrl?: string
   githubUrl?: string
-  status: 'completed' | 'in-progress' | 'planned'
+  status: '已完成' | '计划中'
   featured: boolean
 }
 
@@ -40,7 +40,7 @@ const projects: Project[] = [
       'Tailwind CSS',
     ],
     image: '/api/placeholder/400/300',
-    status: 'completed',
+    status: '已完成',
     featured: true,
   },
   {
@@ -51,7 +51,7 @@ const projects: Project[] = [
     category: '实时通信',
     technologies: ['WebSocket', 'React', 'Node.js', 'Socket.IO', 'TypeScript'],
     image: '/api/placeholder/400/300',
-    status: 'completed',
+    status: '已完成',
     featured: true,
   },
 
@@ -69,7 +69,7 @@ const projects: Project[] = [
       'Tailwind CSS',
     ],
     image: '/api/placeholder/400/300',
-    status: 'completed',
+    status: '已完成',
     featured: true,
   },
   {
@@ -79,13 +79,13 @@ const projects: Project[] = [
       '基于 Operational Transformation 的实时协作编辑器，支持多人同时编辑、冲突解决、版本控制。',
     category: '协作工具',
     technologies: [
-      'Operational Transformation',
-      'WebSocket',
-      'React',
-      'TypeScript',
+      // 'Operational Transformation',
+      // 'WebSocket',
+      // 'React',
+      // 'TypeScript',
     ],
     image: '/api/placeholder/400/300',
-    status: 'planned',
+    status: '计划中',
     featured: false,
   },
   {
@@ -94,9 +94,11 @@ const projects: Project[] = [
     description:
       '基于埋点数据的实时仪表板，展示用户行为分析、性能监控、业务指标等可视化图表。',
     category: '数据分析',
-    technologies: ['D3.js', 'Chart.js', 'React', 'TypeScript', 'Prisma'],
+    technologies: [
+      /* 'D3.js', 'Chart.js', 'React', 'TypeScript', 'Prisma' */
+    ],
     image: '/api/placeholder/400/300',
-    status: 'in-progress',
+    status: '计划中',
     featured: false,
   },
   {
@@ -105,9 +107,11 @@ const projects: Project[] = [
     description:
       '渐进式 Web 应用，支持离线使用、推送通知、原生应用体验等功能。',
     category: '移动开发',
-    technologies: ['PWA', 'Service Worker', 'React', 'TypeScript', 'Workbox'],
+    technologies: [
+      /* 'PWA', 'Service Worker', 'React', 'TypeScript', 'Workbox' */
+    ],
     image: '/api/placeholder/400/300',
-    status: 'planned',
+    status: '计划中',
     featured: false,
   },
 ]
@@ -115,12 +119,6 @@ const projects: Project[] = [
 export default function ProjectList() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
-
-  const categories = [
-    'all',
-    ...Array.from(new Set(projects.map((p) => p.category))),
-  ]
-  const statuses = ['all', 'completed', 'in-progress', 'planned']
 
   const filteredProjects = projects.filter((project) => {
     const categoryMatch =
@@ -132,45 +130,6 @@ export default function ProjectList() {
 
   return (
     <div className="space-y-6">
-      {/* 筛选器，可选 */}
-      <div className="flex flex-wrap gap-4">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium text-gray-700">分类:</span>
-          <div className="flex space-x-1">
-            {categories.map((category) => (
-              <button
-                key={category}
-                className={`px-2 py-1 rounded text-xs ${
-                  selectedCategory === category
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-700'
-                }`}
-                onClick={() => setSelectedCategory(category)}
-              >
-                {category === 'all' ? '全部' : category}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium text-gray-700">状态:</span>
-          <div className="flex space-x-1">
-            {statuses.map((status) => (
-              <button
-                key={status}
-                className={`px-2 py-1 rounded text-xs ${
-                  selectedStatus === status
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-700'
-                }`}
-                onClick={() => setSelectedStatus(status)}
-              >
-                {status === 'all' ? '全部' : status}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
       {/* 项目卡片列表 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {filteredProjects.map((project) => {
