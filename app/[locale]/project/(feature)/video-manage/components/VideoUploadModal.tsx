@@ -23,7 +23,7 @@ import {
   Check,
   AlertCircle,
 } from 'lucide-react'
-import { useCreateVideo } from '@/lib/hooks/use-videos'
+import { useCreateVideo } from '@/app/hooks/use-videos'
 import { simpleVideoThumbnailService } from '@/lib/services/video-thumbnail-simple'
 import { useStableUser } from '@/lib/query-hook/use-auth'
 import { createClient } from '@/lib/supabase/client'

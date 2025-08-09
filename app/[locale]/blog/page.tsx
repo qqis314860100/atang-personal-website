@@ -26,7 +26,7 @@ import {
   usePermissions,
   PermissionGuard,
   Permission,
-} from '@/lib/hooks/use-permissions'
+} from '@/app/hooks/use-permissions'
 import { fetchCategories } from '@/app/actions/category'
 import toast from 'react-hot-toast'
 import {
@@ -44,6 +44,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { BlogListSkeleton } from '@/components/ui/blog-skeleton'
 import { CategoryImage } from '@/components/ui/category-image'
+import { useLoadingStore } from '@/app/hooks/use-loading'
 
 // 分类接口
 interface Category {
@@ -78,7 +79,6 @@ const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [isRefreshing, setIsRefreshing] = useState(false)
   const router = useRouter()
   const { canEditBlog, canDeleteBlog } = usePermissions()
 
@@ -93,6 +93,8 @@ const Blog = () => {
     search: searchTerm,
     categoryId: selectedCategory !== 'all' ? selectedCategory : undefined,
   })
+
+  const { showLoading, hideLoading } = useLoadingStore()
 
   // 搜索完成后显示结果
   useEffect(() => {
@@ -125,10 +127,9 @@ const Blog = () => {
 
   // 刷新数据
   const refreshData = async () => {
-    setIsRefreshing(true)
+    showLoading('搜索中...')
     await refetchPosts()
-    setIsRefreshing(false)
-    toast.success('数据已刷新')
+    hideLoading()
   }
 
   // 初始加载分类
@@ -240,11 +241,9 @@ const Blog = () => {
                 variant="outline"
                 size="sm"
                 onClick={refreshData}
-                disabled={isRefreshing}
+                title="刷新"
               >
-                <RefreshCw
-                  className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
-                />
+                搜索
               </Button>
             </div>
 

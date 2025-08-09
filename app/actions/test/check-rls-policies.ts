@@ -1,6 +1,6 @@
 'use server'
 
-import { createAdminClient } from '@/lib/supabase/client'
+import { createAdminClient } from '@/lib/supabase/server'
 
 export async function checkRLSPolicies() {
   try {

@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { useVideo } from '@/lib/hooks/use-videos'
+import { useVideo } from '@/app/hooks/use-videos'
 import {
   Eye,
   MessageSquare,

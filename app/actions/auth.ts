@@ -29,6 +29,7 @@ export const register = async (credentials: TRegisterSchema) => {
     (user) => user.email === email
   )
   if (userList) {
+    await supabase.auth.admin.deleteUser(userList.id)
     return {
       status: 'error',
       message: '邮箱已存在,请确认~',

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
 import { UpdateIcon } from '@radix-ui/react-icons'
-import { useI18n } from '@/lib/hooks/use-i18n'
+import { useI18n } from '@/app/hooks/use-i18n'
 import { useUpdatePassword } from '@/lib/query-hook/use-setting'
 import {
   updateClientPasswordSchema,

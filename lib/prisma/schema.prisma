@@ -1,6 +1,5 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["multiSchema"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -16,43 +15,41 @@ model Post {
   body       String
   author     String?     @default("")
   userId     String
-  categoryId String? // 外键：指向分类
-  viewCount  Int         @default(0) // 阅读量
+  categoryId String?
+  viewCount  Int         @default(0)
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
-  user       UserProfile @relation(fields: [userId], references: [id])
   category   Category?   @relation(fields: [categoryId], references: [id])
+  user       UserProfile @relation(fields: [userId], references: [id])
 
   @@schema("public")
 }
 
 model UserProfile {
-  id              String          @id
-  email           String          @unique
-  bio             String?
-  avatar          String?
-  isAdmin         Boolean         @default(false)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime       @default(now())
-  date            String?
-  gender          String?
-  signature       String?
-  techStack       String?
-  resume_content  String?
-  resume_url      String?
-  resume_filename String?
-  resume_size     Int?
-  username        String          @unique
-  annotations     PDFAnnotation[]
-  posts           Post[]
-  categories      Category[]
-  // 弹幕相关关联
-  danmaku         Danmaku[]
-  // 视频相关关联
-  videos          Video[]
-  videoComments   VideoComment[]
+  id               String            @id
+  email            String            @unique
+  bio              String?
+  avatar           String?
+  isAdmin          Boolean           @default(false)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @default(now())
+  date             String?
+  gender           String?
+  signature        String?
+  techStack        String?
+  resume_content   String?
+  resume_url       String?
+  resume_filename  String?
+  resume_size      Int?
+  username         String            @unique
+  categories       Category[]
+  danmaku          Danmaku[]
+  annotations      PDFAnnotation[]
+  posts            Post[]
+  videos           Video[]
+  videoComments    VideoComment[]
+  videoLikes       VideoLike[]
   videoPlayRecords VideoPlayRecord[]
-  videoLikes      VideoLike[]
 
   @@schema("public")
 }
@@ -82,127 +79,152 @@ model Category {
   createdAt   DateTime     @default(now())
   description String       @default("")
   updatedAt   DateTime     @default(now())
-  posts       Post[] // 一对多：一个分类有多个文章
-  user        UserProfile? @relation(fields: [userId], references: [id])
   userId      String?
   author      String?      @default("")
+  user        UserProfile? @relation(fields: [userId], references: [id])
+  posts       Post[]
 
   @@schema("public")
 }
 
-// 埋点事件表
-model AnalyticsEvent {
-  id        String   @id @default(uuid())
-  eventId   String   @unique
-  eventType String
-  eventData Json
-  userId    String?
-  sessionId String
-  timestamp DateTime
-  module    String
-  version   String   @default("1.0.0")
-  createdAt DateTime @default(now())
-
-  @@schema("public")
-}
-
-// 页面访问表
 model PageView {
-  id           String   @id @default(uuid())
-  pagePath     String
-  referrer     String?
-  userAgent    String?
-  ipAddress    String?
-  userId       String?
-  sessionId    String
-  viewDuration Int?
-  scrollDepth  Int?
-  deviceType   String?
-  browser      String?
-  os           String?
-  locale       String?
-  createdAt    DateTime @default(now())
+  id                String    @id @default(uuid())
+  page              String
+  user_id           String?
+  session_id        String
+  user_agent        String?
+  ip_address        String?
+  referrer          String?
+  country           String?
+  city              String?
+  device_type       String?
+  browser           String?
+  os                String?
+  screen_resolution String?
+  language          String?
+  timestamp         DateTime  @default(now())
+  duration          Int?
+  end_time          DateTime?
+  start_time        DateTime?
 
+  @@index([page])
+  @@index([user_id])
+  @@index([session_id])
+  @@index([timestamp])
+  @@index([device_type])
   @@schema("public")
 }
 
-// 用户行为聚合表
-model UserBehaviorAggregate {
-  id            String   @id @default(uuid())
-  userId        String?
-  date          DateTime @db.Date
-  module        String
-  actionCount   Int      @default(0)
-  totalDuration Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@unique([userId, date, module])
-  @@schema("public")
-}
-
-// 模块配置表
-model AnalyticsModule {
+model UserEvent {
   id         String   @id @default(uuid())
-  moduleName String   @unique
-  version    String
-  isActive   Boolean  @default(true)
-  config     Json?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  event_type String
+  event_name String
+  page       String?
+  user_id    String?
+  session_id String
+  properties Json?
+  value      Float?
+  timestamp  DateTime @default(now())
 
+  @@index([event_type])
+  @@index([user_id])
+  @@index([session_id])
+  @@index([timestamp])
   @@schema("public")
 }
 
-// 自定义事件定义表
-model AnalyticsEventDefinition {
-  id           String   @id @default(uuid())
-  moduleName   String
-  eventName    String
-  eventSchema  Json?
-  isDeprecated Boolean  @default(false)
-  createdAt    DateTime @default(now())
+model PerformanceMetric {
+  id                        String   @id @default(uuid())
+  page                      String
+  load_time                 Float
+  dom_content_loaded        Float
+  first_contentful_paint    Float?
+  largest_contentful_paint  Float?
+  cumulative_layout_shift   Float?
+  first_input_delay         Float?
+  session_id                String
+  user_id                   String?
+  timestamp                 DateTime @default(now())
+  interaction_to_next_paint Decimal? @db.Decimal
+  time_to_first_byte        Decimal? @db.Decimal
+  first_paint               Decimal? @db.Decimal
+  total_blocking_time       Decimal? @db.Decimal
 
+  @@index([page])
+  @@index([user_id])
+  @@index([session_id])
+  @@index([timestamp])
   @@schema("public")
 }
 
-// 聊天消息表
-model ChatMessage {
-  id          String   @id @default(uuid())
-  roomId      String   @default("main")
-  username    String
-  message     String
-  messageType String   @default("text") // text, image, system
-  isSystem    Boolean  @default(false)
-  createdAt   DateTime @default(now())
+model ErrorLog {
+  id              String   @id @default(uuid())
+  error_type      String
+  error_message   String
+  stack_trace     String?
+  page            String?
+  user_id         String?
+  session_id      String
+  user_agent      String?
+  ip_address      String?
+  severity        String   @default("medium")
+  timestamp       DateTime @default(now())
+  count           Int      @default(1)
+  last_occurrence DateTime @default(now())
+  source          String?  @default("frontend")
+  trace_id        String?
 
+  @@index([error_type])
+  @@index([user_id])
+  @@index([session_id])
+  @@index([severity])
+  @@index([timestamp])
   @@schema("public")
 }
 
-// ==================== 弹幕系统模型 ====================
+model UserSession {
+  id          String    @id @default(uuid())
+  user_id     String?
+  started_at  DateTime
+  ended_at    DateTime?
+  duration    Int?
+  page_count  Int       @default(0)
+  event_count Int       @default(0)
+  ip_address  String?
+  user_agent  String?
+  country     String?
+  city        String?
+  device_type String?
+  browser     String?
+  os          String?
+  language    String?
+  session_id  String    @unique
 
-// 弹幕主表
+  @@index([user_id])
+  @@index([session_id])
+  @@index([started_at])
+  @@index([device_type])
+  @@schema("public")
+}
+
 model Danmaku {
-  id          String   @id @default(uuid())
-  videoId     String // 视频ID
-  userId      String // 用户ID
-  content     String // 弹幕内容
-  timeMs      Int // 精确到毫秒的时间戳
-  type        Int      @default(1) // 弹幕类型：1=滚动，4=底部，5=顶部，6=逆向，7=高级弹幕
-  fontSize    Int      @default(25) // 字体大小
-  color       Int      @default(16777215) // 颜色（RGB）
-  timestampMs BigInt // 发送时间戳
-  poolType    Int      @default(0) // 弹幕池类型：0=普通池，1=字幕池，2=特殊池
-  userHash    String? // 用户哈希
-  rowId       Int? // 弹幕行ID（用于固定弹幕）
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id          String      @id @default(uuid())
+  videoId     String
+  userId      String
+  content     String
+  timeMs      Int
+  type        Int         @default(1)
+  fontSize    Int         @default(25)
+  color       Int         @default(16777215)
+  timestampMs BigInt
+  poolType    Int         @default(0)
+  userHash    String?
+  rowId       Int?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        UserProfile @relation(fields: [userId], references: [id])
+  video       Video       @relation(fields: [videoId], references: [id])
 
-  // 关联
-  user  UserProfile @relation(fields: [userId], references: [id])
-  video Video       @relation(fields: [videoId], references: [id])
-
-  // 索引优化
   @@index([videoId, timeMs])
   @@index([timestampMs])
   @@index([userId])
@@ -214,39 +236,36 @@ model Danmaku {
   @@schema("public")
 }
 
-// 弹幕池表
 model DanmakuPool {
   id        String   @id @default(uuid())
-  videoId   String // 视频ID
-  poolType  Int // 0=普通池，1=字幕池，2=特殊池
-  name      String // 池名称
+  videoId   String
+  poolType  Int
+  name      String
   createdAt DateTime @default(now())
 
   @@schema("public")
 }
 
-// 弹幕统计表（用于缓存统计信息）
 model DanmakuStats {
   id            String   @id @default(uuid())
-  videoId       String   @unique // 视频ID，唯一约束
-  totalCount    Int      @default(0) // 总弹幕数
-  scrollCount   Int      @default(0) // 滚动弹幕数
-  topCount      Int      @default(0) // 顶部弹幕数
-  bottomCount   Int      @default(0) // 底部弹幕数
-  reverseCount  Int      @default(0) // 逆向弹幕数
-  advancedCount Int      @default(0) // 高级弹幕数
+  videoId       String   @unique
+  totalCount    Int      @default(0)
+  scrollCount   Int      @default(0)
+  topCount      Int      @default(0)
+  bottomCount   Int      @default(0)
+  reverseCount  Int      @default(0)
+  advancedCount Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@schema("public")
 }
 
-// 弹幕时间分布表（用于分析弹幕密度）
 model DanmakuTimeDistribution {
   id           String   @id @default(uuid())
-  videoId      String // 视频ID
-  timeBucket   Int // 时间桶（秒）
-  danmakuCount Int      @default(0) // 该时间段的弹幕数量
+  videoId      String
+  timeBucket   Int
+  danmakuCount Int      @default(0)
   createdAt    DateTime @default(now())
 
   @@unique([videoId, timeBucket])
@@ -254,36 +273,30 @@ model DanmakuTimeDistribution {
   @@schema("public")
 }
 
-// ==================== 视频系统模型 ====================
-
-// 视频主表
 model Video {
-  id          String   @id @default(uuid())
-  title       String   // 视频标题
-  description String?  // 视频描述
-  url         String   // 视频URL
-  thumbnail   String?  // 缩略图URL
-  duration    Int      @default(0) // 视频时长（秒）
-  viewCount   Int      @default(0) // 观看次数
-  likeCount   Int      @default(0) // 点赞次数
-  dislikeCount Int     @default(0) // 点踩次数
-  danmakuCount Int     @default(0) // 弹幕数量
-  category    String?  // 视频分类
-  tags        String[] // 视频标签
-  isPublic    Boolean  @default(true) // 是否公开
-  isDeleted   Boolean  @default(false) // 是否删除
-  userId      String   // 上传者ID
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String            @id @default(uuid())
+  title        String
+  description  String?
+  url          String
+  thumbnail    String?
+  duration     Int               @default(0)
+  viewCount    Int               @default(0)
+  likeCount    Int               @default(0)
+  dislikeCount Int               @default(0)
+  danmakuCount Int               @default(0)
+  category     String?
+  tags         String[]
+  isPublic     Boolean           @default(true)
+  isDeleted    Boolean           @default(false)
+  userId       String
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  danmaku      Danmaku[]
+  user         UserProfile       @relation(fields: [userId], references: [id])
+  comments     VideoComment[]
+  likes        VideoLike[]
+  playRecords  VideoPlayRecord[]
 
-  // 关联
-  user     UserProfile @relation(fields: [userId], references: [id])
-  danmaku  Danmaku[]   // 视频的弹幕
-  comments VideoComment[] // 视频的评论
-  playRecords VideoPlayRecord[] // 视频的播放记录
-  likes    VideoLike[] // 视频的点赞记录
-
-  // 索引优化
   @@index([userId])
   @@index([category])
   @@index([isPublic, isDeleted])
@@ -293,25 +306,21 @@ model Video {
   @@schema("public")
 }
 
-// 视频评论表
 model VideoComment {
-  id        String   @id @default(uuid())
-  videoId   String   // 视频ID
-  userId    String   // 评论者ID
-  content   String   // 评论内容
-  parentId  String?  // 父评论ID（用于回复）
-  likeCount Int      @default(0) // 点赞数
-  isDeleted Boolean  @default(false) // 是否删除
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String         @id @default(uuid())
+  videoId   String
+  userId    String
+  content   String
+  parentId  String?
+  likeCount Int            @default(0)
+  isDeleted Boolean        @default(false)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  parent    VideoComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   VideoComment[] @relation("CommentReplies")
+  user      UserProfile    @relation(fields: [userId], references: [id])
+  video     Video          @relation(fields: [videoId], references: [id])
 
-  // 关联
-  video   Video          @relation(fields: [videoId], references: [id])
-  user    UserProfile    @relation(fields: [userId], references: [id])
-  parent  VideoComment?  @relation("CommentReplies", fields: [parentId], references: [id])
-  replies VideoComment[] @relation("CommentReplies")
-
-  // 索引优化
   @@index([videoId])
   @@index([userId])
   @@index([parentId])
@@ -319,22 +328,18 @@ model VideoComment {
   @@schema("public")
 }
 
-// 视频播放记录表
 model VideoPlayRecord {
-  id        String   @id @default(uuid())
-  videoId   String   // 视频ID
-  userId    String   // 用户ID
-  playTime  Int      @default(0) // 播放时长（秒）
-  progress  Float    @default(0) // 播放进度（0-1）
-  isCompleted Boolean @default(false) // 是否播放完成
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String      @id @default(uuid())
+  videoId     String
+  userId      String
+  playTime    Int         @default(0)
+  progress    Float       @default(0)
+  isCompleted Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        UserProfile @relation(fields: [userId], references: [id])
+  video       Video       @relation(fields: [videoId], references: [id])
 
-  // 关联
-  video Video       @relation(fields: [videoId], references: [id])
-  user  UserProfile @relation(fields: [userId], references: [id])
-
-  // 唯一约束：每个用户对每个视频只能有一条播放记录
   @@unique([videoId, userId])
   @@index([videoId])
   @@index([userId])
@@ -342,19 +347,15 @@ model VideoPlayRecord {
   @@schema("public")
 }
 
-// 视频点赞记录表
 model VideoLike {
-  id        String   @id @default(uuid())
-  videoId   String   // 视频ID
-  userId    String   // 用户ID
-  isLike    Boolean  // true=点赞，false=点踩
-  createdAt DateTime @default(now())
+  id        String      @id @default(uuid())
+  videoId   String
+  userId    String
+  isLike    Boolean
+  createdAt DateTime    @default(now())
+  user      UserProfile @relation(fields: [userId], references: [id])
+  video     Video       @relation(fields: [videoId], references: [id])
 
-  // 关联
-  video Video       @relation(fields: [videoId], references: [id])
-  user  UserProfile @relation(fields: [userId], references: [id])
-
-  // 唯一约束：每个用户对每个视频只能有一个点赞/点踩记录
   @@unique([videoId, userId])
   @@index([videoId])
   @@index([userId])

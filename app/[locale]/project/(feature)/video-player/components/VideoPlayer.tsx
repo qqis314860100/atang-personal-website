@@ -16,11 +16,11 @@ import {
   Users,
 } from 'lucide-react'
 import { Danmaku } from './Danmaku'
-import { useVideo } from '@/lib/hooks/use-videos'
-import { useDanmakuList, useSendDanmaku } from '@/lib/hooks/use-danmaku'
+import { useVideo } from '@/app/hooks/use-videos'
+import { useDanmakuList, useSendDanmaku } from '@/app/hooks/use-danmaku'
 import { useStableUser } from '@/lib/query-hook/use-auth'
 import './video-player.css'
-import { useSocket } from '@/lib/hooks/use-socket'
+import { useSocket } from '@/app/hooks/use-socket'
 
 interface VideoPlayerProps {
   videoId: string

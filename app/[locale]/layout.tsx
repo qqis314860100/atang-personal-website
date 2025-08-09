@@ -6,15 +6,19 @@ import { notFound } from 'next/navigation'
 import { NextIntlClientProvider, hasLocale } from 'next-intl'
 import { routing } from '@/i18n/routing'
 import Header from '@/components/Header'
-import { ThemeProvider } from '@/components/provider/ThemeProvider'
+import { ThemeProvider } from '@/app/components/providers/ThemeProvider'
 import '../globals.css'
-import SessionProvider from '@/components/provider/SessionProvider'
-import { QueryProvider } from '@/components/provider/QueryProvider'
-import { UserStatePreloader } from '@/components/provider/UserStatePreloader'
-import { AuthListener } from '@/components/provider/AuthListener'
+import SessionProvider from '@/app/components/providers/SessionProvider'
+import { QueryProvider } from '@/app/components/providers/QueryProvider'
+import { UserStatePreloader } from '@/app/components/providers/UserStatePreloader'
+import { AuthListener } from '@/app/components/providers/AuthListener'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { PerformanceMonitor } from '@/components/performance-monitor'
 import { RoutePrefetch } from '@/components/route-prefetch'
+import { AnalyticsProvider } from '@/app/components/providers/AnalyticsProvider'
+import ChatRoomTrigger from '@/app/components/ai-agent'
+import { LoadingProvider } from '@/app/components/providers/LoadingProvider'
+import { RealTimeProvider } from '@/app/components/providers/RealTimeProvider'
 
 import { cn } from '@/utils/utils'
 import { fontSans } from '@/utils/fonts'
@@ -93,36 +97,43 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale}>
           <ErrorBoundary>
             <QueryProvider>
-              <SessionProvider>
-                <AuthListener />
-                <ThemeProvider
-                  attribute="class"
-                  defaultTheme="system"
-                  enableSystem
-                  disableTransitionOnChange
-                >
-                  <UserStatePreloader>
-                    {/* 主面板容器 */}
-                    <ClientTopLoader />
-                    <ClientToaster />
-                    {/* 内容区域 - Header 和主体融合 */}
-                    <div className="h-full flex flex-col">
-                      <Header />
-                      <main className="flex-1 overflow-y-auto h-[calc(100vh-64px)] bg-gradient-to-br from-gray-50 via-white to-gray-50">
-                        {children}
-                      </main>
-                    </div>
-                    {/* 开发环境性能监控 */}
-                    <PerformanceMonitor
+              <RealTimeProvider>
+                <SessionProvider>
+                  <AuthListener />
+                  <ThemeProvider
+                    attribute="class"
+                    defaultTheme="system"
+                    enableSystem
+                    disableTransitionOnChange
+                  >
+                    <LoadingProvider>
+                      <AnalyticsProvider>
+                        <UserStatePreloader>
+                          {/* 主面板容器 */}
+                          <ClientTopLoader />
+                          <ClientToaster />
+                          {/* 内容区域 - Header 和主体融合 */}
+                          <div className="h-full flex flex-col">
+                            <Header />
+                            <main className="flex-1 overflow-y-auto h-[calc(100vh-64px)] bg-gradient-to-br from-gray-50 via-white to-gray-50">
+                              {children}
+                            </main>
+                          </div>
+                          {/* 开发环境性能监控 */}
+                          {/* <PerformanceMonitor
                       enabled={process.env.NODE_ENV === 'development'}
-                    />
-                    {/* 路由预取优化 */}
-                    <RoutePrefetch>
-                      <></>
-                    </RoutePrefetch>
-                  </UserStatePreloader>
-                </ThemeProvider>
-              </SessionProvider>
+                    /> */}
+                          {/* 路由预取优化 */}
+                          <RoutePrefetch>
+                            <></>
+                          </RoutePrefetch>
+                        </UserStatePreloader>
+                        <ChatRoomTrigger />
+                      </AnalyticsProvider>
+                    </LoadingProvider>
+                  </ThemeProvider>
+                </SessionProvider>
+              </RealTimeProvider>
             </QueryProvider>
           </ErrorBoundary>
         </NextIntlClientProvider>

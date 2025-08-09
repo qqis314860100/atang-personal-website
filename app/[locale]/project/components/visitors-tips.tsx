@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Users, Wifi, WifiOff } from 'lucide-react'
-import { useSocket } from '@/lib/hooks/use-socket'
+import { useSocket } from '@/app/hooks/use-socket'
 
 export default function OnlineVisitors() {
   // 使用 Socket.IO WebSocket 获取实时数据

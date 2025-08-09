@@ -1,7 +1,6 @@
 import { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
 import ProjectList from '@/app/[locale]/project/components/project-list'
-import ChatRoomTrigger from '@/app/[locale]/project/components/ai-agent.trigger'
 import OnlineVisitorsFixed from '@/app/[locale]/project/components/visitors-tips'
 
 // export async function generateMetadata({
@@ -26,7 +25,6 @@ export default function ProjectPage() {
         <ProjectList />
       </div>
       <OnlineVisitorsFixed />
-      <ChatRoomTrigger />
     </div>
   )
 }

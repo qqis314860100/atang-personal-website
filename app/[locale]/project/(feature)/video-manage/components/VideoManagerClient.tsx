@@ -22,7 +22,7 @@ import {
   FileVideo,
   Calendar,
 } from 'lucide-react'
-import { useVideos, useDeleteVideo } from '@/lib/hooks/use-videos'
+import { useVideos, useDeleteVideo } from '@/app/hooks/use-videos'
 import { VideoUploadModal } from './VideoUploadModal'
 import { VideoEditModal } from './VideoEditModal'
 import { Link, useRouter } from '@/i18n/navigation'

@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useDanmakuList, useHotDanmaku } from '@/lib/hooks/use-danmaku'
+import { useDanmakuList, useHotDanmaku } from '@/app/hooks/use-danmaku'
 import {
   MessageSquare,
   TrendingUp,

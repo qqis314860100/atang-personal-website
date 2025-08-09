@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { useParams } from 'next/navigation'
 import { cn } from '@/utils/utils'
+import { Link } from '@/i18n/navigation'
 
 export default function UserLayout({
   children,
@@ -12,12 +13,11 @@ export default function UserLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
-  const { locale } = useParams()
 
   const tabs = [
-    { id: 'profile', label: '基本资料', href: `/${locale}/user/profile` },
-    { id: 'resume', label: '简历管理', href: `/${locale}/user/resume` },
-    { id: 'settings', label: '安全设置', href: `/${locale}/user/settings` },
+    { id: 'profile', label: '基本资料', href: `/user/profile` },
+    { id: 'resume', label: '简历管理', href: `/user/resume` },
+    { id: 'settings', label: '安全设置', href: `/user/settings` },
   ]
 
   const activeTab =
@@ -30,7 +30,7 @@ export default function UserLayout({
           <Card className="p-2">
             <nav className="flex md:flex-col space-x-2 md:space-x-0 md:space-y-1">
               {tabs.map((tab) => (
-                <a
+                <Link
                   key={tab.id}
                   href={tab.href}
                   className={cn(
@@ -41,7 +41,7 @@ export default function UserLayout({
                   )}
                 >
                   {tab.label}
-                </a>
+                </Link>
               ))}
             </nav>
           </Card>

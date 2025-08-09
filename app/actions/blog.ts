@@ -91,6 +91,7 @@ export async function fetchBlogPosts({
           userId: true,
           createdAt: true,
           updatedAt: true,
+          viewCount: true,
           body: true, // 获取 body 用于生成摘要
           user: {
             select: {

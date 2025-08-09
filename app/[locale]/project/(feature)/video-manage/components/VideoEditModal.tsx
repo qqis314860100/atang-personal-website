@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { X, Save, Eye, EyeOff, MessageSquare } from 'lucide-react'
-import { useUpdateVideo } from '@/lib/hooks/use-videos'
+import { useUpdateVideo } from '@/app/hooks/use-videos'
 
 interface VideoEditModalProps {
   video: any
