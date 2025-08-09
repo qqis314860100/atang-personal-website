@@ -1,4 +1,67 @@
 {
+  "personalInfo": {
+    "title": "Personal Information",
+    "description": "Please use a permanent address where you can receive mail."
+  },
+  "role": {
+    "title": "Your Role",
+    "description": "Your current access level in the system"
+  },
+  "avatar": {
+    "title": "Change Avatar",
+    "description": "JPG, GIF or PNG. Max 1MB."
+  },
+  "inputs": {
+    "firstName": {
+      "label": "First Name",
+      "placeholder": "Please enter your first name"
+    },
+    "lastName": {
+      "label": "Last Name",
+      "placeholder": "Please enter your last name"
+    },
+    "email": {
+      "label": "Email Address",
+      "placeholder": "Please enter your email"
+    },
+    "username": {
+      "label": "Username",
+      "placeholder": "Please enter your username"
+    },
+    "bio": {
+      "label": "Bio",
+      "placeholder": "Tell us something about yourself"
+    },
+    "socialLinks": {
+      "label": "Social Links",
+      "placeholder": "Provide your social media links (separated by commas)"
+    }
+  },
+  "SaveInfo": {
+    "saveButton": "Save Account Info",
+    "saveLoading": "Saving account info..."
+  },
+  "exportData": {
+    "title": "Export Your Account Data",
+    "description": "Want to backup your account details? Just click a few times to download all information related to your account, including personal settings, purchase history and saved preferences.",
+    "details": "This download includes important data such as your account settings, preferences and transaction history. For security, please ensure the file is stored in a safe location to protect your information.",
+    "button": "Download Account Data",
+    "downloadLoading": "Downloading..."
+  },
+  "deleteAccount": {
+    "title": "Delete Your Account",
+    "description": "Deleting your account will permanently delete all personal data, preferences and purchase history. Please make sure you really want to continue.",
+    "warning": "Once your account is deleted, it cannot be recovered. Please ensure all important data is backed up before continuing.",
+    "button": "Delete Account",
+    "deleteLoading": "Deleting account..."
+  },
+  "modal": {
+    "title": "Confirm Account Deletion",
+    "description": "Are you sure you want to delete your account? This action cannot be undone.",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteLoading": "Deleting..."
+  },
   "welcome": "Welcome",
   "overview": "Overview",
   "statistics": "Statistics",
@@ -17,46 +80,111 @@
   "newPost": "New Post",
   "editProfile": "Edit Profile",
   "manageComments": "Manage Comments",
-  "settings": "Settings",
   "notifications": "Notifications",
   "noNotifications": "No new notifications",
   "viewAll": "View All",
   "markAllAsRead": "Mark All as Read",
   "clearAll": "Clear All",
-  "loading": "Loading...",
-  "error": "Error loading data",
   "retry": "Retry",
   "save": "Save",
-  "cancel": "Cancel",
-  "delete": "Delete",
-  "edit": "Edit",
-  "preview": "Preview",
   "publish": "Publish",
   "unpublish": "Unpublish",
   "confirmDelete": "Are you sure you want to delete this?",
   "yes": "Yes",
   "no": "No",
-  "success": "Success",
   "failed": "Failed",
   "lastUpdated": "Last Updated",
   "status": "Status",
   "active": "Active",
   "inactive": "Inactive",
   "draft": "Draft",
-  "archived": "Archived",
-  "category": "Category",
-  "tags": "Tags",
-  "addTag": "Add Tag",
-  "removeTag": "Remove Tag",
-  "selectCategory": "Select Category",
-  "noCategory": "No Category",
-  "allCategories": "All Categories",
-  "createCategory": "Create Category",
-  "editCategory": "Edit Category",
-  "deleteCategory": "Delete Category",
-  "categoryName": "Category Name",
-  "categoryDescription": "Category Description",
-  "saveChanges": "Save Changes",
-  "discardChanges": "Discard Changes",
-  "confirmDiscard": "Are you sure you want to discard changes?"
+  "analytics": {
+    "totalPageViews": "Total Page Views",
+    "totalUniqueVisitors": "Total Unique Visitors",
+    "realTimeUsers": "Real-time Users",
+    "avgSessionDuration": "Average Session Duration",
+    "minutes": "min",
+    "seconds": "sec"
+  },
+  "loading": {
+    "loadingDataFailed": "Failed to load data",
+    "pleaseTryAgainLater": "Please try again later",
+    "pleaseWait": "Please wait..."
+  },
+  "errorLogs": {
+    "title": "Frontend Error Logs",
+    "searchPlaceholder": "Search error types, messages or pages...",
+    "allLevels": "All Levels",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "time": "Time",
+    "count": "Count",
+    "level": "Level",
+    "totalRecords": "Total {count} records, Page {page} of {totalPages}",
+    "loading": "Loading...",
+    "loadingFailed": "Failed to load error logs",
+    "retry": "Retry",
+    "noErrorLogs": "No Error Logs",
+    "noErrorLogsDescription": "No error logs found under current filter conditions",
+    "errorDetails": "Error Details",
+    "errorType": "Error Type:",
+    "errorMessage": "Error Message:",
+    "occurrenceCount": "Occurrence Count:",
+    "lastOccurrence": "Last Occurrence:",
+    "severity": "Severity:",
+    "stackTrace": "Stack Trace",
+    "contextInfo": "Context Information",
+    "pagePath": "Page Path:",
+    "errorSource": "Error Source:",
+    "traceId": "Trace ID:",
+    "browserEngine": "Browser Engine",
+    "viewFullDetails": "View Full Details",
+    "copyErrorInfo": "Copy Error Info",
+    "errorInfoCopied": "Error information copied to clipboard",
+    "times": "times"
+  },
+  "realTime": {
+    "updating": "Updating in real-time",
+    "paused": "Paused",
+    "online": "Online",
+    "lastUpdate": "Last update: {time}",
+    "clickToEnable": "Click to enable real-time updates"
+  },
+  "pageHeatmap": {
+    "averageBrowsing": "Average browsing {time}",
+    "pageViews": "Page Views",
+    "uniqueVisitors": "Unique Visitors",
+    "deviceDistribution": "Device Distribution",
+    "browserDistribution": "Browser Distribution",
+    "title": "Popular Pages Heatmap",
+    "noData": "No page data",
+    "pageStats": "Page Statistics",
+    "averageStay": "Average Stay",
+    "times": "times"
+  },
+  "performanceHeatmap": {
+    "title": "Performance Metrics Heatmap",
+    "thresholdBasedOn": "Thresholds based on Web Vitals recommendations",
+    "average": "Average",
+    "sampleCount": "Sample Count",
+    "minValue": "Min Value",
+    "maxValue": "Max Value",
+    "sampleCountRecords": "Sample Count",
+    "records": "records",
+    "performanceThreshold": "Performance Threshold",
+    "excellent": "Excellent",
+    "good": "Good",
+    "poor": "Poor",
+    "noData": "No Data",
+    "unknown": "Unknown",
+    "metricLabels": {
+      "FCP": "First Contentful Paint",
+      "LCP": "Largest Contentful Paint",
+      "CLS": "Cumulative Layout Shift",
+      "FID": "First Input Delay",
+      "INP": "Interaction to Next Paint",
+      "TTFB": "Time to First Byte"
+    }
+  }
 }

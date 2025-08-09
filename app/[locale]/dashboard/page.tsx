@@ -15,11 +15,13 @@ import {
   usePerformanceHeatmapData,
 } from '@/lib/query-hook/use-analytics'
 import { useLoading } from '@/app/hooks/use-loading'
+import { useI18n } from '@/app/hooks/use-i18n'
 
 export default function AnalyticsPage() {
   const [timeRange] = useState('7d')
   const [selectedErrorId, setSelectedErrorId] = useState<string | null>(null)
   const [showErrorModal, setShowErrorModal] = useState(false)
+  const t = useI18n()
 
   const { showLoading, hideLoading } = useLoading()
 
@@ -41,7 +43,7 @@ export default function AnalyticsPage() {
 
   const handleErrorClick = (errorId: string) => {
     setSelectedErrorId(errorId)
-    showLoading('', '请稍候...')
+    showLoading('', t.dashboard('请稍候...'))
   }
 
   // 监听错误详情请求完成
@@ -50,7 +52,7 @@ export default function AnalyticsPage() {
       hideLoading()
       setShowErrorModal(true)
     }
-  }, [selectedErrorId, isFetched, isErrorDetailLoading, hideLoading])
+  }, [selectedErrorId, isFetched, isErrorDetailLoading, hideLoading, t])
 
   const handleCloseErrorModal = () => {
     setShowErrorModal(false)
@@ -69,8 +71,10 @@ export default function AnalyticsPage() {
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-red-400 font-medium">加载数据失败</p>
-          <p className="text-gray-500 text-sm">请稍后重试</p>
+          <p className="text-red-400 font-medium">
+            {t.dashboard('加载数据失败')}
+          </p>
+          <p className="text-gray-500 text-sm">{t.dashboard('请稍后重试')}</p>
         </div>
       </div>
     )

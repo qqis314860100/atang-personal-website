@@ -36,7 +36,7 @@ export default function AIAgentTrigger() {
     }
     return { x: 0, y: 0 }
   }
-
+  if (!mounted) return null
   return (
     <>
       {/* 浮动按钮 - 可拖动 */}

@@ -22,6 +22,7 @@ import { RealTimeProvider } from '@/app/components/providers/RealTimeProvider'
 
 import { cn } from '@/utils/utils'
 import { fontSans } from '@/utils/fonts'
+import Picture from './picture'
 
 interface RootLayoutProps extends React.PropsWithChildren {
   params: {
@@ -113,6 +114,7 @@ export default async function RootLayout({
                           <ClientTopLoader />
                           <ClientToaster />
                           {/* 内容区域 - Header 和主体融合 */}
+                          <Picture />
                           <div className="h-full flex flex-col">
                             <Header />
                             <main className="flex-1 overflow-y-auto h-[calc(100vh-64px)] bg-gradient-to-br from-gray-50 via-white to-gray-50">

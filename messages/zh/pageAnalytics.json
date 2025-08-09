@@ -1,0 +1,16 @@
+{
+  "title": "热门页面热力图",
+  "views": "浏览量",
+  "averageTime": "平均浏览",
+  "uniqueVisitors": "独立访客",
+  "stayTime": "停留时间",
+  "fullPath": "完整路径",
+  "pageStats": "页面统计",
+  "deviceDistribution": "设备分布",
+  "browserDistribution": "浏览器分布",
+  "noPageData": "暂无页面数据",
+  "viewModes": {
+    "list": "列表视图",
+    "heatmap": "热力图视图"
+  }
+}

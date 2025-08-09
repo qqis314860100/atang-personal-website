@@ -22,5 +22,9 @@
   "noNotifications": "No notifications",
   "markAllAsRead": "Mark all as read",
   "clearAll": "Clear all",
-  "viewAll": "View all"
+  "viewAll": "View all",
+  "switchLanguage": "Switch Language",
+  "switchTheme": "Switch Theme",
+  "chinese": "Chinese",
+  "english": "English"
 }

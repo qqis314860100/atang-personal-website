@@ -3,9 +3,11 @@
 import { Pause, Wifi } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useRealTime } from '@/app/components/providers/RealTimeProvider'
+import { useI18n } from '@/app/hooks/use-i18n'
 
 export function RealTimeToggle() {
   const { isEnabled, setIsEnabled, lastUpdate } = useRealTime()
+  const t = useI18n()
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('zh-CN', {
@@ -31,13 +33,15 @@ export function RealTimeToggle() {
           {isEnabled ? (
             <>
               <span className="text-white  animate-pulse animate-infinite">
-                实时更新中
+                {t.dashboard('实时更新中')}
               </span>
             </>
           ) : (
             <>
               <Pause className="w-4 h-4 text-gray-300" />
-              <span className="text-gray-300 font-medium">已暂停</span>
+              <span className="text-gray-300 font-medium">
+                {t.dashboard('已暂停')}
+              </span>
             </>
           )}
         </div>
@@ -47,7 +51,7 @@ export function RealTimeToggle() {
         {/* 网络状态指示器 */}
         <div className="flex items-center gap-1">
           <Wifi className="w-3 h-3 text-green-400" />
-          <span className="text-gray-400">在线</span>
+          <span className="text-gray-400">{t.dashboard('在线')}</span>
         </div>
 
         {/* 更新时间 */}
@@ -55,12 +59,16 @@ export function RealTimeToggle() {
           {isEnabled ? (
             <>
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              <span>最后更新: {formatTime(lastUpdate)}</span>
+              <span>
+                {t.dashboard('最后更新: {time}', {
+                  params: { time: formatTime(lastUpdate) },
+                })}
+              </span>
             </>
           ) : (
             <>
               <div className="w-2 h-2 bg-gray-400 rounded-full" />
-              <span>点击启用实时更新</span>
+              <span>{t.dashboard('点击启用实时更新')}</span>
             </>
           )}
         </div>

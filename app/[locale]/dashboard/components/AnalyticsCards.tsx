@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { useI18n } from '@/app/hooks/use-i18n'
 
 interface AnalyticsCardsProps {
   data: {
@@ -80,6 +81,7 @@ function AnimatedTime({
   const [displaySeconds, setDisplaySeconds] = useState(seconds)
   const [isAnimating, setIsAnimating] = useState(false)
   const prevSecondsRef = useRef(seconds)
+  const t = useI18n()
 
   useEffect(() => {
     if (seconds !== prevSecondsRef.current) {
@@ -118,12 +120,17 @@ function AnimatedTime({
 
   return (
     <span className={`${className} ${isAnimating ? 'animate-pulse' : ''}`}>
-      {minutes}分{remainingSeconds}秒
+      {minutes}
+      {t.dashboard('分')}
+      {remainingSeconds}
+      {t.dashboard('秒')}
     </span>
   )
 }
 
 export function AnalyticsCards({ data }: AnalyticsCardsProps) {
+  const t = useI18n()
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
       {/* 页面浏览量 */}
@@ -134,7 +141,7 @@ export function AnalyticsCards({ data }: AnalyticsCardsProps) {
               variant="outline"
               className="bg-purple-500/20 border-purple-500/30 text-purple-400 text-xs"
             >
-              总浏览量
+              {t.dashboard('总浏览量')}
             </Badge>
           </div>
           <div className="space-y-2">
@@ -153,7 +160,7 @@ export function AnalyticsCards({ data }: AnalyticsCardsProps) {
               variant="outline"
               className="bg-blue-500/20 border-blue-500/30 text-blue-400 text-xs"
             >
-              总独立访客数
+              {t.dashboard('总独立访客数')}
             </Badge>
           </div>
           <div className="space-y-2">
@@ -172,7 +179,7 @@ export function AnalyticsCards({ data }: AnalyticsCardsProps) {
               variant="outline"
               className="bg-green-500/20 border-green-500/30 text-green-400 text-xs"
             >
-              实时在线人数
+              {t.dashboard('实时在线人数')}
             </Badge>
           </div>
           <div className="space-y-2">
@@ -191,7 +198,7 @@ export function AnalyticsCards({ data }: AnalyticsCardsProps) {
               variant="outline"
               className="bg-orange-500/20 border-orange-500/30 text-orange-400 text-xs"
             >
-              平均会话时长
+              {t.dashboard('平均会话时长')}
             </Badge>
           </div>
           <div className="space-y-2">

@@ -22,6 +22,7 @@ import { useForm } from 'react-hook-form'
 import { registerSchema, TRegisterSchema } from '@/schemas/registerSchema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signInSchema, TSignInSchema } from '@/schemas/signInSchema'
+import { useI18n } from '@/app/hooks/use-i18n'
 import { useLocale } from 'next-intl'
 import {
   useStableUser,
@@ -49,6 +50,7 @@ export const Logon = () => {
   const [mounted, setMounted] = useState(false)
 
   const locale = useLocale()
+  const t = useI18n()
 
   // 使用 React Query hooks
   const { user, isLoading } = useStableUser()
@@ -64,7 +66,6 @@ export const Logon = () => {
   }, [])
 
   const isLoggedIn = !!user
-  console.log('user', user, isLoading, isLoggedIn)
   const {
     register: formRegister,
     handleSubmit: handleRegisterSubmit,
@@ -86,7 +87,7 @@ export const Logon = () => {
       resetSignIn()
       // 错误处理已经在 mutation 中完成
     } catch (error) {
-      console.error('登录失败:', error)
+      console.error(t.auth('登录失败'), error)
     }
   }
 
@@ -94,7 +95,7 @@ export const Logon = () => {
     try {
       await signOutMutation.mutateAsync()
     } catch (error) {
-      console.error('登出失败:', error)
+      console.error(t.auth('登出失败'), error)
     }
   }
 
@@ -207,7 +208,7 @@ export const Logon = () => {
             >
               <div className="flex">
                 <PersonIcon className="mr-2 h-4 w-4" />
-                个人中心
+                {t.auth('个人中心')}
               </div>
               <ChevronRightIcon className="h-4 w-4" />
             </Link>
@@ -220,7 +221,9 @@ export const Logon = () => {
             <div className="flex items-center">
               <ExitIcon className="mr-2 h-4 w-4" />
               <span>
-                {signOutMutation.isPending ? '退出中...' : '退出登录'}
+                {signOutMutation.isPending
+                  ? t.auth('退出中...')
+                  : t.auth('退出登录')}
               </span>
             </div>
             <ChevronRightIcon className="h-4 w-4" />
@@ -237,7 +240,7 @@ export const Logon = () => {
         <DialogTrigger asChild>
           <Button variant="outline" size="sm" className="hidden sm:flex gap-2">
             <PersonIcon className="h-4 w-4" />
-            <span>登录</span>
+            <span>{t.auth('登录')}</span>
           </Button>
         </DialogTrigger>
         <DialogContent
@@ -247,13 +250,15 @@ export const Logon = () => {
           className="sm:max-w-[425px]"
         >
           <DialogHeader>
-            <DialogTitle>账号登录</DialogTitle>
-            <DialogDescription>请输入您的账号信息以登录系统</DialogDescription>
+            <DialogTitle>{t.auth('账号登录')}</DialogTitle>
+            <DialogDescription>
+              {t.auth('请输入您的账号信息以登录系统')}
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSignInSubmit(handleSignIn)}>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="email">邮箱</Label>
+                <Label htmlFor="email">{t.auth('邮箱')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -268,7 +273,7 @@ export const Logon = () => {
                 )}
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="password">密码</Label>
+                <Label htmlFor="password">{t.auth('密码')}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -287,10 +292,10 @@ export const Logon = () => {
                 {signInMutation.isPending ? (
                   <>
                     <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                    登录中...
+                    {t.auth('登录中...')}
                   </>
                 ) : (
-                  '登录'
+                  t.auth('登录')
                 )}
               </Button>
             </DialogFooter>
@@ -300,7 +305,7 @@ export const Logon = () => {
                 onClick={openForgotPassword}
                 className="text-primary hover:underline"
               >
-                忘记密码?
+                {t.auth('忘记密码?')}
               </button>
               <span className="mx-2">•</span>
               <button
@@ -308,7 +313,7 @@ export const Logon = () => {
                 onClick={openRegister}
                 className="text-primary hover:underline"
               >
-                注册账号
+                {t.auth('注册账号')}
               </button>
             </div>
           </form>
@@ -324,15 +329,15 @@ export const Logon = () => {
           className="sm:max-w-[425px]"
         >
           <DialogHeader>
-            <DialogTitle>找回密码</DialogTitle>
+            <DialogTitle>{t.auth('找回密码')}</DialogTitle>
             <DialogDescription>
-              请输入您的电子邮箱，我们将发送重置密码链接给您
+              {t.auth('请输入您的电子邮箱，我们将发送重置密码链接给您')}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleForgotPassword}>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="reset-email">电子邮箱</Label>
+                <Label htmlFor="reset-email">{t.auth('电子邮箱')}</Label>
                 <Input
                   id="reset-email"
                   name="email"
@@ -344,16 +349,16 @@ export const Logon = () => {
             </div>
             <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
               <Button type="button" variant="outline" onClick={openLogin}>
-                返回登录
+                {t.auth('返回登录')}
               </Button>
               <Button type="submit" disabled={forgotPasswordMutation.isPending}>
                 {forgotPasswordMutation.isPending ? (
                   <>
                     <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                    处理中...
+                    {t.auth('处理中...')}
                   </>
                 ) : (
-                  '发送重置链接'
+                  t.auth('发送重置链接')
                 )}
               </Button>
             </DialogFooter>
@@ -370,17 +375,19 @@ export const Logon = () => {
           className="sm:max-w-[425px]"
         >
           <DialogHeader>
-            <DialogTitle>注册新账号</DialogTitle>
-            <DialogDescription>创建一个账号以使用我们的服务</DialogDescription>
+            <DialogTitle>{t.auth('注册新账号')}</DialogTitle>
+            <DialogDescription>
+              {t.auth('创建一个账号以使用我们的服务')}
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleRegisterSubmit(handleRegister)}>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="register-name">用户名</Label>
+                <Label htmlFor="register-name">{t.auth('用户名')}</Label>
                 <Input
                   id="register-name"
                   type="text"
-                  placeholder="用户名"
+                  placeholder={t.auth('用户名')}
                   {...formRegister('username')}
                   required
                 />
@@ -391,7 +398,7 @@ export const Logon = () => {
                 )}
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="register-email">电子邮箱</Label>
+                <Label htmlFor="register-email">{t.auth('电子邮箱')}</Label>
                 <Input
                   id="register-email"
                   type="email"
@@ -404,7 +411,7 @@ export const Logon = () => {
                 )}
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="register-password">密码</Label>
+                <Label htmlFor="register-password">{t.auth('密码')}</Label>
                 <Input
                   id="register-password"
                   type="password"
@@ -413,7 +420,7 @@ export const Logon = () => {
                   minLength={8}
                 />
                 <p className="text-xs text-muted-foreground">
-                  密码至少包含8个字符
+                  {t.auth('密码至少包含8个字符')}
                 </p>
                 {errors.password && (
                   <p className="text-sm text-red-500">
@@ -422,7 +429,9 @@ export const Logon = () => {
                 )}
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="register-password-confirm">确认密码</Label>
+                <Label htmlFor="register-password-confirm">
+                  {t.auth('确认密码')}
+                </Label>
                 <Input
                   id="register-password-confirm"
                   type="password"
@@ -438,16 +447,16 @@ export const Logon = () => {
             </div>
             <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2">
               <Button type="button" variant="outline" onClick={openLogin}>
-                已有账号? 登录
+                {t.auth('已有账号? 登录')}
               </Button>
               <Button type="submit" disabled={registerMutation.isPending}>
                 {registerMutation.isPending ? (
                   <>
                     <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                    注册中...
+                    {t.auth('注册中...')}
                   </>
                 ) : (
-                  '注册账号'
+                  t.auth('注册账号')
                 )}
               </Button>
             </DialogFooter>

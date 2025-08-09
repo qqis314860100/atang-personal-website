@@ -13,16 +13,28 @@ export const config = {
 const publicPaths = ['/login', '/dashboard']
 
 export async function middleware(request: NextRequest) {
+  // 先处理国际化路由
+  const intlMiddleware = createMiddleware(routing)
+
   // 获取当前路径
   const pathname = request.nextUrl.pathname
-  const pathnameWithoutLocale = pathname.replace(/^\/[a-z]{2}(?:\/|$)/, '/')
+
+  // 正确移除语言前缀 - 支持所有配置的语言
+  const localePattern = new RegExp(`^/(${routing.locales.join('|')})(?:/|$)`)
+  const pathnameWithoutLocale = pathname.replace(localePattern, '/')
+
+  console.log('原始路径:', pathname)
+  console.log('移除语言前缀后:', pathnameWithoutLocale)
 
   const isPublicPath = publicPaths.some(
     (path) =>
-      pathnameWithoutLocale || pathnameWithoutLocale.startsWith(`${path}/`)
+      pathnameWithoutLocale === path ||
+      pathnameWithoutLocale.startsWith(`${path}/`)
   )
 
-  // 先处理 Supabase 会话
+  console.log('是否公开路径:', isPublicPath, 'publicPaths:', publicPaths)
+
+  // 处理 Supabase 会话
   const supabaseResponse = await updateSession(request)
 
   // 获取会话信息
@@ -31,8 +43,8 @@ export async function middleware(request: NextRequest) {
   // 如果不是公开路径并且没有会话,重定向到dashboard
   if (!isPublicPath && !session) {
     // 获取当前语言
-    const locale = pathname.split('/')[1] || 'zh'
-
+    const locale = pathname.match(localePattern)?.[1] || routing.defaultLocale
+    console.log('重定向 - 语言:', locale)
     // 构建重定向URL
     const redirectUrl = new URL(`/${locale}/dashboard`, request.url)
     redirectUrl.searchParams.set('redirectFrom', pathname)
@@ -40,14 +52,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  // 再处理国际化路由
-  const intlMiddleware = createMiddleware(routing)
+  // 应用国际化中间件
+  const response = intlMiddleware(request)
 
   // 将 Supabase 的 cookie 转移到国际化中间件的响应中
-  const response = intlMiddleware(request)
-  supabaseResponse?.cookies.getAll().forEach((cookie) => {
-    response.cookies.set(cookie.name, cookie.value)
-  })
+  if (supabaseResponse) {
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      response.cookies.set(cookie.name, cookie.value)
+    })
+  }
 
   return response
 }

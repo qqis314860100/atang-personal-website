@@ -8,5 +8,10 @@
   "rename": "重命名",
   "edit": "编辑",
   "delete": "删除",
-  "updating": "更新中..."
+  "updating": "更新中...",
+  "notFound": {
+    "title": "没有找到页面",
+    "description": "抱歉，我们找不到您正在寻找的页面。",
+    "backToHome": "返回首页"
+  }
 }

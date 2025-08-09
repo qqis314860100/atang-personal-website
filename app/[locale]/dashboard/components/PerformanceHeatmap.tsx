@@ -18,32 +18,34 @@ import {
   ViewIcon,
 } from 'lucide-react'
 import { FullscreenCard } from '@/app/components/full-screen'
+import { useI18n } from '@/app/hooks/use-i18n'
 
 interface PerformanceHeatmapProps {
   data: PerformanceHeatmapResponse
 }
 
-const METRIC_LABELS: Record<string, string> = {
-  FCP: '首次内容绘制',
-  LCP: '最大内容绘制',
-  CLS: '累积布局偏移',
-  FID: '首次输入延迟',
-  INP: '交互到下次绘制',
-  TTFB: '首字节时间',
-}
-
-const METRIC_ICONS: Record<string, React.ReactNode> = {
-  FCP: <Clock className="w-4 h-4 text-white" />,
-  LCP: <TrendingUp className="w-4 h-4 text-white" />,
-  CLS: <MousePointer className="w-4 h-4 text-white" />,
-  FID: <Zap className="w-4 h-4 text-white" />,
-  INP: <MousePointer className="w-4 h-4 text-white" />,
-  TTFB: <Globe className="w-4 h-4 text-white" />,
-}
-
 export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
   const [expandedMetric, setExpandedMetric] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'heatmap' | 'chart'>('list')
+  const t = useI18n()
+
+  const METRIC_LABELS: Record<string, string> = {
+    FCP: t.dashboard('FCP'),
+    LCP: t.dashboard('LCP'),
+    CLS: t.dashboard('CLS'),
+    FID: t.dashboard('FID'),
+    INP: t.dashboard('INP'),
+    TTFB: t.dashboard('TTFB'),
+  }
+
+  const METRIC_ICONS: Record<string, React.ReactNode> = {
+    FCP: <Clock className="w-4 h-4 text-white" />,
+    LCP: <TrendingUp className="w-4 h-4 text-white" />,
+    CLS: <MousePointer className="w-4 h-4 text-white" />,
+    FID: <Zap className="w-4 h-4 text-white" />,
+    INP: <MousePointer className="w-4 h-4 text-white" />,
+    TTFB: <Globe className="w-4 h-4 text-white" />,
+  }
 
   const items = Object.values(data).map(
     (m: PerformanceHeatmapMetric & any) => ({
@@ -58,14 +60,18 @@ export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
   )
 
   const gradeOf = (key: string, avg: number | null) => {
-    if (avg === null) return { label: '无数据', color: 'text-gray-400' }
+    if (avg === null)
+      return { label: t.dashboard('无数据'), color: 'text-gray-400' }
 
-    const t = data[key]?.thresholds
-    if (!t) return { label: '未知', color: 'text-gray-400' }
+    const thresholds = data[key]?.thresholds
+    if (!thresholds)
+      return { label: t.dashboard('未知'), color: 'text-gray-400' }
 
-    if (avg <= t.good) return { label: '优秀', color: 'text-green-400' }
-    if (avg <= t.needs) return { label: '良好', color: 'text-yellow-400' }
-    return { label: '较差', color: 'text-red-400' }
+    if (avg <= thresholds.good)
+      return { label: t.dashboard('优秀'), color: 'text-green-400' }
+    if (avg <= thresholds.needs)
+      return { label: t.dashboard('良好'), color: 'text-yellow-400' }
+    return { label: t.dashboard('较差'), color: 'text-red-400' }
   }
 
   const getHeatmapColor = (intensity: number) => {
@@ -89,9 +95,10 @@ export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
           <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
             <div className="w-5 h-5 bg-blue-400 rounded-full"></div>
           </div>
-          性能指标热力图
+          {t.dashboard('性能指标热力图')}
           <span className="text-xs text-gray-400 flex items-center gap-1">
-            <Info className="w-3 h-3" /> 阈值基于 Web Vitals 建议
+            <Info className="w-3 h-3" />{' '}
+            {t.dashboard('阈值基于 Web Vitals 建议')}
           </span>
         </>
       }
@@ -102,7 +109,7 @@ export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
             const isExpanded = expandedMetric === item.key
             const { min, max, avg, count } = item.stats
             const g = gradeOf(item.key, avg)
-            const t = item.thresholds || {}
+            const thresholds = item.thresholds || {}
 
             return (
               <div key={index} className="space-y-2">
@@ -134,11 +141,15 @@ export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
                       <p className="text-sm font-medium text-white">
                         {formatValue(avg, item.key)}
                       </p>
-                      <p className="text-xs text-gray-400">平均值</p>
+                      <p className="text-xs text-gray-400">
+                        {t.dashboard('平均值')}
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-white">{count}</p>
-                      <p className="text-xs text-gray-400">样本数</p>
+                      <p className="text-xs text-gray-400">
+                        {t.dashboard('样本数')}
+                      </p>
                     </div>
                     <div className="flex items-center gap-1">
                       <span
@@ -157,7 +168,9 @@ export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
                       <div className="flex items-center gap-2">
                         <ArrowBigDown className="w-4 h-4 text-green-400" />
                         <div>
-                          <p className="text-xs text-gray-400">最小值</p>
+                          <p className="text-xs text-gray-400">
+                            {t.dashboard('最小值')}
+                          </p>
                           <p className="text-sm font-medium text-white">
                             {formatValue(min, item.key)}
                           </p>
@@ -166,7 +179,9 @@ export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
                       <div className="flex items-center gap-2">
                         <ArrowBigUp className="w-4 h-4 text-red-400" />
                         <div>
-                          <p className="text-xs text-gray-400">最大值</p>
+                          <p className="text-xs text-gray-400">
+                            {t.dashboard('最大值')}
+                          </p>
                           <p className="text-sm font-medium text-white">
                             {formatValue(max, item.key)}
                           </p>
@@ -175,9 +190,11 @@ export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
                       <div className="flex items-center gap-2">
                         <ChartSplineIcon className="w-4 h-4 text-purple-400" />
                         <div>
-                          <p className="text-xs text-gray-400">样本数量</p>
+                          <p className="text-xs text-gray-400">
+                            {t.dashboard('样本数量')}
+                          </p>
                           <p className="text-sm font-medium text-white">
-                            {count} 条记录
+                            {count} {t.dashboard('条记录')}
                           </p>
                         </div>
                       </div>
@@ -186,100 +203,48 @@ export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
                     {/* 阈值信息 */}
                     <div>
                       <p className="text-xs font-medium text-gray-300 mb-2">
-                        性能阈值
+                        {t.dashboard('性能阈值')}
                       </p>
                       <div className="text-xs">
-                        <span className="text-green-400">≤{t.good}</span>
-                        <span className="text-gray-400"> 优秀 · </span>
-                        <span className="text-yellow-400">≤{t.needs}</span>
-                        <span className="text-gray-400"> 良好</span>
+                        <span className="text-green-400">
+                          ≤{thresholds.good}
+                        </span>
+                        <span className="text-gray-400">
+                          {' '}
+                          {t.dashboard('优秀')} ·{' '}
+                        </span>
+                        <span className="text-yellow-400">
+                          ≤{thresholds.needs}
+                        </span>
+                        <span className="text-gray-400">
+                          {' '}
+                          {t.dashboard('良好')}
+                        </span>
                       </div>
                     </div>
 
                     {/* 设备分布 */}
-                    {item.breakdown?.devices &&
-                      item.breakdown.devices.length > 0 && (
-                        <div>
-                          <p className="text-xs font-medium text-gray-300 mb-2">
-                            设备分布（平均值）
-                          </p>
-                          <div className="space-y-2">
-                            {item.breakdown.devices.map((d: any) => (
-                              <div
-                                key={d.name}
-                                className="flex items-center justify-between"
-                              >
-                                <span className="text-xs text-gray-400">
-                                  {d.name}
-                                </span>
-                                <span className="text-xs text-white">
-                                  {formatValue(d.avg, item.key)}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                    {/* 浏览器分布 */}
-                    {item.breakdown?.browsers &&
-                      item.breakdown.browsers.length > 0 && (
-                        <div>
-                          <p className="text-xs font-medium text-gray-300 mb-2">
-                            浏览器分布（平均值）
-                          </p>
-                          <div className="space-y-2">
-                            {item.breakdown.browsers.map((b: any) => (
-                              <div
-                                key={b.name}
-                                className="flex items-center justify-between"
-                              >
-                                <span className="text-xs text-gray-400">
-                                  {b.name}
-                                </span>
-                                <span className="text-xs text-white">
-                                  {formatValue(b.avg, item.key)}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                    {/* 相关页面 */}
-                    {item.pages && item.pages.length > 0 && (
+                    {item.breakdown?.devices && (
                       <div>
                         <p className="text-xs font-medium text-gray-300 mb-2">
-                          相关页面
+                          {t.dashboard('设备分布')}
                         </p>
-                        <div className="space-y-2">
-                          {item.pages.slice(0, 8).map((p: any) => (
-                            <div key={p.page} className="space-y-1">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs text-gray-400 truncate max-w-[60%]">
-                                  {p.page}
+                        <div className="grid grid-cols-2 gap-2">
+                          {item.breakdown.devices.map(
+                            (device: any, idx: number) => (
+                              <div
+                                key={idx}
+                                className="flex items-center justify-between text-xs"
+                              >
+                                <span className="text-gray-400">
+                                  {device.device}
                                 </span>
-                                <span className="text-xs text-white">
-                                  {formatValue(p.avg, item.key)}
+                                <span className="text-white">
+                                  {device.count}
                                 </span>
                               </div>
-                              <div className="w-full h-1 bg-gray-700/60 rounded">
-                                <div
-                                  className="h-full rounded bg-blue-500"
-                                  style={{
-                                    width: `${Math.min(
-                                      100,
-                                      Math.max(
-                                        5,
-                                        ((p.avg ?? 0) / (item.stats.max || 1)) *
-                                          100
-                                      )
-                                    )}%`,
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          ))}
+                            )
+                          )}
                         </div>
                       </div>
                     )}
@@ -290,10 +255,12 @@ export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
           })
         ) : (
           <div className="text-center py-8">
-            <div className="w-12 h-12 bg-gray-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Info className="w-6 h-6 text-gray-400" />
+            <div className="w-12 h-12 bg-gray-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+              <TrendingUp className="w-6 h-6 text-gray-400" />
             </div>
-            <p className="text-gray-400">暂无性能数据</p>
+            <p className="text-sm text-gray-400">
+              {t.dashboard('暂无性能数据')}
+            </p>
           </div>
         )}
       </div>

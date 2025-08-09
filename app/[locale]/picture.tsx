@@ -6,15 +6,14 @@ export const Picture = () => {
       className="absolute inset-0 h-full w-full overflow-hidden"
       style={{ opacity: 1 }}
     >
-      <source
-        type="image/webp"
-        srcSet="https://persistent.oaistatic.com/burrito-nux/640.webp 640w, https://persistent.oaistatic.com/burrito-nux/1280.webp 1280w, https://persistent.oaistatic.com/burrito-nux/1920.webp 1920w"
-      />
+      <source type="image/webp" srcSet="/images/bg.webp" />
       <Image
         className="absolute inset-0 h-full w-full scale-[1.02] object-cover opacity-50 blur-2xl dark:opacity-30"
-        alt=""
+        alt="bg"
+        width={1920}
+        height={1080}
         aria-hidden="true"
-        src="https://persistent.oaistatic.com/burrito-nux/1920.webp"
+        src="/images/bg.webp"
         sizes="100vw"
         loading="eager"
         fetchPriority="high"

@@ -1,0 +1,38 @@
+{
+  "title": "性能指标热力图",
+  "thresholdBasedOn": "阈值基于 Web Vitals 建议",
+  "metrics": {
+    "FCP": "首次内容绘制",
+    "LCP": "最大内容绘制",
+    "CLS": "累积布局偏移",
+    "FID": "首次输入延迟",
+    "INP": "交互到下次绘制",
+    "TTFB": "首字节时间"
+  },
+  "stats": {
+    "average": "平均值",
+    "sampleCount": "样本数",
+    "minValue": "最小值",
+    "maxValue": "最大值",
+    "sampleQuantity": "样本数量",
+    "records": "条记录"
+  },
+  "grades": {
+    "excellent": "优秀",
+    "good": "良好",
+    "poor": "较差",
+    "noData": "无数据",
+    "unknown": "未知"
+  },
+  "thresholds": {
+    "title": "性能阈值",
+    "excellent": "优秀",
+    "good": "良好"
+  },
+  "breakdown": {
+    "devices": "设备分布（平均值）",
+    "browsers": "浏览器分布（平均值）",
+    "relatedPages": "相关页面"
+  },
+  "noData": "暂无性能数据"
+}

@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { AlertTriangle, Clock, MapPin, Monitor } from 'lucide-react'
 import { useCallback } from 'react'
 import toast from 'react-hot-toast'
+import { useI18n } from '@/app/hooks/use-i18n'
 
 interface ErrorLog {
   id: string
@@ -43,6 +44,8 @@ export function ErrorLogItem({
   formatTimestamp,
   truncateMessage,
 }: ErrorLogItemProps) {
+  const t = useI18n()
+
   const handleExpand = useCallback(() => {
     onExpand(error.id)
   }, [error.id, onExpand])
@@ -59,9 +62,9 @@ export function ErrorLogItem({
     (e: React.MouseEvent) => {
       e.stopPropagation()
       navigator.clipboard.writeText(JSON.stringify(error, null, 2))
-      toast.success('错误信息已复制到剪贴板')
+      toast.success(t.dashboard('错误信息已复制到剪贴板'))
     },
-    [error]
+    [error, t]
   )
 
   return (
@@ -89,7 +92,7 @@ export function ErrorLogItem({
                   variant="outline"
                   className="text-xs bg-gray-700/50 border-gray-600 text-gray-300"
                 >
-                  {error.count} 次
+                  {error.count} {t.dashboard('次')}
                 </Badge>
               </div>
             </div>
@@ -138,28 +141,42 @@ export function ErrorLogItem({
         <div className="ml-4 p-4 bg-gray-800/20 border border-gray-700/30 rounded-lg space-y-4">
           {/* 完整错误信息 */}
           <div>
-            <h4 className="text-sm font-medium text-white mb-2">错误详情</h4>
+            <h4 className="text-sm font-medium text-white mb-2">
+              {t.dashboard('错误详情')}
+            </h4>
             <div className="space-y-2">
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">错误类型:</span>
+                <span className="text-gray-400">
+                  {t.dashboard('错误类型:')}
+                </span>
                 <span className="text-gray-300 font-mono">{error.type}</span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">错误消息:</span>
+                <span className="text-gray-400">
+                  {t.dashboard('错误消息:')}
+                </span>
                 <span className="text-gray-300">{error.message}</span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">发生次数:</span>
-                <span className="text-gray-300">{error.count} 次</span>
+                <span className="text-gray-400">
+                  {t.dashboard('发生次数:')}
+                </span>
+                <span className="text-gray-300">
+                  {error.count} {t.dashboard('次')}
+                </span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">最后发生:</span>
+                <span className="text-gray-400">
+                  {t.dashboard('最后发生:')}
+                </span>
                 <span className="text-gray-300">
                   {formatTimestamp(error.timestamp)}
                 </span>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">严重程度:</span>
+                <span className="text-gray-400">
+                  {t.dashboard('严重程度:')}
+                </span>
                 <span className="text-gray-300 capitalize">
                   {error.severity}
                 </span>
@@ -170,7 +187,9 @@ export function ErrorLogItem({
           {/* 堆栈跟踪 */}
           {error.stackTrace && (
             <div>
-              <h4 className="text-sm font-medium text-white mb-2">堆栈跟踪</h4>
+              <h4 className="text-sm font-medium text-white mb-2">
+                {t.dashboard('堆栈跟踪')}
+              </h4>
               <pre className="text-xs text-gray-300 bg-gray-900/50 p-3 rounded border border-gray-700/50 overflow-x-auto">
                 {error.stackTrace}
               </pre>
@@ -179,14 +198,20 @@ export function ErrorLogItem({
 
           {/* 上下文信息 */}
           <div>
-            <h4 className="text-sm font-medium text-white mb-2">上下文信息</h4>
+            <h4 className="text-sm font-medium text-white mb-2">
+              {t.dashboard('上下文信息')}
+            </h4>
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
-                <span className="text-gray-400">页面路径:</span>
+                <span className="text-gray-400">
+                  {t.dashboard('页面路径:')}
+                </span>
                 <span className="text-gray-300 ml-2">{error.page}</span>
               </div>
               <div>
-                <span className="text-gray-400">错误来源:</span>
+                <span className="text-gray-400">
+                  {t.dashboard('错误来源:')}
+                </span>
                 <span className="text-gray-300 ml-2">
                   {error.source || 'frontend'}
                 </span>
@@ -194,7 +219,9 @@ export function ErrorLogItem({
 
               {error.traceId && (
                 <div>
-                  <span className="text-gray-400">追踪ID:</span>
+                  <span className="text-gray-400">
+                    {t.dashboard('追踪ID:')}
+                  </span>
                   <span className="text-gray-300 ml-2 font-mono">
                     {error.traceId}
                   </span>
@@ -207,7 +234,7 @@ export function ErrorLogItem({
           {error.userAgent && (
             <div>
               <h4 className="text-sm font-medium text-white mb-2">
-                浏览器内核
+                {t.dashboard('浏览器内核')}
               </h4>
               <p className="text-xs text-gray-300 bg-gray-900/50 p-3 rounded border border-gray-700/50 break-all">
                 {error.userAgent}
@@ -221,13 +248,13 @@ export function ErrorLogItem({
               onClick={handleErrorClick}
               className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs rounded hover:bg-blue-500/30 transition-colors cursor-pointer"
             >
-              查看完整详情
+              {t.dashboard('查看完整详情')}
             </button>
             <button
               onClick={handleCopyError}
               className="px-3 cursor-pointer hover:text-white py-1 bg-gray-700/50 text-gray-300 text-xs rounded hover:bg-gray-600/50 transition-colors"
             >
-              复制错误信息
+              {t.dashboard('复制错误信息')}
             </button>
           </div>
         </div>

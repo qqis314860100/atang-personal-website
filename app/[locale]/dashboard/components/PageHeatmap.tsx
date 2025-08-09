@@ -16,6 +16,7 @@ import {
   getDefaultHeatmapColor,
 } from '@/app/components/heatmap/heatmap-view'
 import { FullscreenCard } from '@/app/components/full-screen'
+import { useI18n } from '@/app/hooks/use-i18n'
 
 interface PageHeatmapData {
   page: string
@@ -40,6 +41,7 @@ interface PageHeatmapProps {
 export function PageHeatmap({ data }: PageHeatmapProps) {
   const [expandedPage, setExpandedPage] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'heatmap'>('list')
+  const t = useI18n()
 
   const getHeatmapColor = (intensity: number) => {
     if (intensity >= 0.8) return 'bg-red-500'
@@ -52,7 +54,9 @@ export function PageHeatmap({ data }: PageHeatmapProps) {
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = seconds % 60
-    return `${minutes}分${remainingSeconds}秒`
+    return `${minutes}${t.dashboard('分')}${remainingSeconds}${t.dashboard(
+      '秒'
+    )}`
   }
 
   const formatPercentage = (value: number) => {
@@ -86,7 +90,9 @@ export function PageHeatmap({ data }: PageHeatmapProps) {
                       {page.pageDetails?.pathInfo?.originalPath || page.page}
                     </p>
                     <p className="text-xs text-gray-400">
-                      平均浏览 {formatTime(page.avgTime)}
+                      {t.dashboard('平均浏览 {time}', {
+                        params: { time: formatTime(page.avgTime) },
+                      })}
                     </p>
                   </div>
                 </div>
@@ -95,114 +101,46 @@ export function PageHeatmap({ data }: PageHeatmapProps) {
                     <p className="text-sm font-medium text-white">
                       {page.views}
                     </p>
-                    <p className="text-xs text-gray-400">浏览量</p>
+                    <p className="text-xs text-gray-400">
+                      {t.dashboard('浏览量')}
+                    </p>
                   </div>
                   <div
-                    className={`w-4 h-4 rounded-full ${getHeatmapColor(
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${getHeatmapColor(
                       page.intensity
                     )}`}
-                  ></div>
+                  >
+                    <span className="text-xs font-bold text-white">
+                      {formatPercentage(page.intensity)}
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {/* 展开的详细信息 */}
               {isExpanded && (
-                <div className="ml-8 p-4 bg-gray-800/30 rounded-lg space-y-4">
-                  {/* 完整路径 */}
+                <div className="ml-4 p-4 bg-gray-800/20 border border-gray-700/30 rounded-lg space-y-4">
                   <div>
-                    <p className="text-xs font-medium text-gray-300 mb-2">
-                      完整路径
-                    </p>
-                    <div className="text-xs">
-                      <span className="text-blue-400 font-mono">
-                        {page.page}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 基础统计信息 */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-blue-400" />
+                    <h4 className="text-sm font-medium text-white mb-2">
+                      {t.dashboard('页面统计')}
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <p className="text-xs text-gray-400">独立访客</p>
-                        <p className="text-sm font-medium text-white">
-                          {page.pageDetails?.uniqueVisitors ||
-                            Math.floor(page.views * 0.8)}
+                        <p className="text-gray-400">
+                          {t.dashboard('独立访客')}
+                        </p>
+                        <p className="text-white">
+                          {page.pageDetails?.uniqueVisitors || 0}
                         </p>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Eye className="w-4 h-4 text-green-400" />
                       <div>
-                        <p className="text-xs text-gray-400">浏览量</p>
-                        <p className="text-sm font-medium text-white">
-                          {page.views}
+                        <p className="text-gray-400">
+                          {t.dashboard('平均停留')}
                         </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-purple-400" />
-                      <div>
-                        <p className="text-xs text-gray-400">停留时间</p>
-                        <p className="text-sm font-medium text-white">
-                          {formatTime(page.avgTime)}
-                        </p>
+                        <p className="text-white">{formatTime(page.avgTime)}</p>
                       </div>
                     </div>
                   </div>
-
-                  {/* 设备分布 */}
-                  {page.pageDetails?.deviceDistribution && (
-                    <div>
-                      <p className="text-xs font-medium text-gray-300 mb-2">
-                        设备分布
-                      </p>
-                      <div className="space-y-2">
-                        {page.pageDetails.deviceDistribution.map(
-                          (device, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-center justify-between"
-                            >
-                              <span className="text-xs text-gray-400">
-                                {device.device}
-                              </span>
-                              <span className="text-xs text-white">
-                                {device.count} 次
-                              </span>
-                            </div>
-                          )
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 浏览器分布 */}
-                  {page.pageDetails?.browserDistribution && (
-                    <div>
-                      <p className="text-xs font-medium text-gray-300 mb-2">
-                        浏览器分布
-                      </p>
-                      <div className="space-y-2">
-                        {page.pageDetails.browserDistribution.map(
-                          (browser, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-center justify-between"
-                            >
-                              <span className="text-xs text-gray-400">
-                                {browser.browser}
-                              </span>
-                              <span className="text-xs text-white">
-                                {browser.count} 次
-                              </span>
-                            </div>
-                          )
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
@@ -213,7 +151,7 @@ export function PageHeatmap({ data }: PageHeatmapProps) {
           <div className="w-12 h-12 bg-gray-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
             <TrendingUp className="w-6 h-6 text-gray-400" />
           </div>
-          <p className="text-sm text-gray-400">暂无页面数据</p>
+          <p className="text-sm text-gray-400">{t.dashboard('暂无页面数据')}</p>
         </div>
       )}
     </div>
@@ -239,7 +177,7 @@ export function PageHeatmap({ data }: PageHeatmapProps) {
         </div>
         <div className="text-right">
           <p className="text-sm font-medium text-white">{page.views}</p>
-          <p className="text-xs text-white/80">次</p>
+          <p className="text-xs text-white/80">{t.dashboard('次')}</p>
         </div>
       </div>
     )
@@ -247,16 +185,18 @@ export function PageHeatmap({ data }: PageHeatmapProps) {
     const renderExpandedContent = (page: PageHeatmapData) => (
       <div className="space-y-4">
         <div>
-          <h4 className="text-sm font-medium text-white mb-2">页面统计</h4>
+          <h4 className="text-sm font-medium text-white mb-2">
+            {t.dashboard('页面统计')}
+          </h4>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-gray-400">独立访客</p>
+              <p className="text-gray-400">{t.dashboard('独立访客')}</p>
               <p className="text-white">
                 {page.pageDetails?.uniqueVisitors || 0}
               </p>
             </div>
             <div>
-              <p className="text-gray-400">平均停留</p>
+              <p className="text-gray-400">{t.dashboard('平均停留')}</p>
               <p className="text-white">{formatTime(page.avgTime)}</p>
             </div>
           </div>
@@ -279,7 +219,7 @@ export function PageHeatmap({ data }: PageHeatmapProps) {
         itemHeight="h-16"
         getHeatmapColor={getDefaultHeatmapColor}
         emptyIcon={<TrendingUp className="w-6 h-6 text-gray-400" />}
-        emptyText="暂无页面数据"
+        emptyText={t.dashboard('暂无页面数据')}
       />
     )
   }
@@ -291,7 +231,7 @@ export function PageHeatmap({ data }: PageHeatmapProps) {
           <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
             <TrendingUp className="w-5 h-5 text-purple-400" />
           </div>
-          热门页面热力图
+          {t.dashboard('热门页面热力图')}
         </>
       }
       actions={

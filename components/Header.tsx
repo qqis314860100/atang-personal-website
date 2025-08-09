@@ -25,7 +25,7 @@ import Image from 'next/image'
 import { Button } from './ui/button'
 import { useTheme } from 'next-themes'
 import { usePathname } from 'next/navigation'
-import { useRouter } from '@/i18n/navigation'
+import { useRouter, getPathname } from '@/i18n/navigation'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +35,8 @@ import {
 import { GlobeIcon } from '@radix-ui/react-icons'
 import { useLocale } from 'next-intl'
 import { Logon } from '../app/[locale]/Login/components/Logon'
+import { useI18n } from '@/app/hooks/use-i18n'
+import { routing } from '@/i18n/routing'
 
 interface NavMenuItem {
   title: string
@@ -49,6 +51,7 @@ const Header = () => {
   const pathname = usePathname()
   const currentLocale = useLocale()
   const [mounted, setMounted] = useState(false)
+  const t = useI18n()
 
   // 防止水和不一致
   useEffect(() => {
@@ -56,9 +59,24 @@ const Header = () => {
   }, [])
 
   const handleLanguageChange = (newLocale: string) => {
+    // 获取不包含语言前缀的路径
+    // pathname格式可能是 '/zh/dashboard' 或 '/en/dashboard'
     const segments = pathname.split('/')
-    segments[1] = newLocale
-    router.push(segments.join('/'))
+    // 移除语言代码段（第二个段）
+    if (segments.length > 1 && routing.locales.includes(segments[1] as any)) {
+      segments.splice(1, 1)
+    }
+    const pathnameWithoutLocale = segments.join('/') || '/'
+
+    console.log('语言切换:', {
+      原始路径: pathname,
+      移除语言前缀后: pathnameWithoutLocale,
+      新语言: newLocale,
+      当前语言: currentLocale,
+    })
+
+    // 使用next-intl的路由器进行正确的语言切换
+    router.replace(pathnameWithoutLocale, { locale: newLocale })
   }
 
   const toggleTheme = () => {
@@ -124,7 +142,7 @@ const Header = () => {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 rounded-xl hover:bg-gray-100"
-                aria-label="切换语言"
+                aria-label={t.navbar('切换语言')}
               >
                 <GlobeIcon className="h-4 w-4 text-gray-600" />
               </Button>
@@ -142,12 +160,12 @@ const Header = () => {
                   {locale === 'zh' ? (
                     <>
                       <CN className="h-4 w-6" />
-                      <span>中文</span>
+                      <span>{t.navbar('中文')}</span>
                     </>
                   ) : (
                     <>
                       <US className="h-4 w-6" />
-                      <span>English</span>
+                      <span>{t.navbar('English')}</span>
                     </>
                   )}
                 </DropdownMenuItem>
@@ -159,7 +177,7 @@ const Header = () => {
             size="icon"
             className="h-8 w-8 rounded-xl hover:bg-gray-100"
             onClick={toggleTheme}
-            aria-label="切换主题"
+            aria-label={t.navbar('切换主题')}
           >
             {mounted && theme === 'dark' ? (
               <SunIcon className="h-4 w-4 text-gray-600" />

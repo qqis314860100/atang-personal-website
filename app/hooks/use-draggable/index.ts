@@ -39,14 +39,22 @@ export function useDraggable(options: UseDraggableOptions = {}) {
   const lastMousePosition = useRef<Position>({ x: 0, y: 0 })
   const dragOffset = useRef<Position>({ x: 0, y: 0 })
   const animationFrameRef = useRef<number>(0)
+  const initialPositionRef = useRef(initialPosition)
 
-  // 初始化位置
+  // 初始化位置 - 只在组件挂载时设置一次
+  const hasInitialized = useRef(false)
+
   useEffect(() => {
-    setMounted(true)
-    if (typeof window !== 'undefined') {
-      setPosition(initialPosition)
+    initialPositionRef.current = initialPosition
+  })
+
+  useEffect(() => {
+    if (!hasInitialized.current && typeof window !== 'undefined') {
+      setMounted(true)
+      setPosition(initialPositionRef.current)
+      hasInitialized.current = true
     }
-  }, [initialPosition])
+  }, [])
 
   // 计算边界限制的位置
   const getBoundedPosition = useCallback(
@@ -62,7 +70,7 @@ export function useDraggable(options: UseDraggableOptions = {}) {
 
       return { x, y }
     },
-    [bounds]
+    [bounds?.minX, bounds?.maxX, bounds?.minY, bounds?.maxY]
   )
 
   // 吸附到边缘
@@ -197,10 +205,13 @@ export function useDraggable(options: UseDraggableOptions = {}) {
     setIsDragging(false)
     isDraggingRef.current = false
 
-    const snappedPosition = getSnappedPosition(position)
-    setPosition(snappedPosition)
-    onDragEnd?.(snappedPosition)
-  }, [position, getSnappedPosition, onDragEnd])
+    // 使用函数式更新来避免依赖 position
+    setPosition((currentPosition) => {
+      const snappedPosition = getSnappedPosition(currentPosition)
+      onDragEnd?.(snappedPosition)
+      return snappedPosition
+    })
+  }, [getSnappedPosition, onDragEnd])
 
   // 处理触摸结束
   const handleTouchEnd = useCallback(() => {
@@ -213,10 +224,13 @@ export function useDraggable(options: UseDraggableOptions = {}) {
     setIsDragging(false)
     isDraggingRef.current = false
 
-    const snappedPosition = getSnappedPosition(position)
-    setPosition(snappedPosition)
-    onDragEnd?.(snappedPosition)
-  }, [position, getSnappedPosition, onDragEnd])
+    // 使用函数式更新来避免依赖 position
+    setPosition((currentPosition) => {
+      const snappedPosition = getSnappedPosition(currentPosition)
+      onDragEnd?.(snappedPosition)
+      return snappedPosition
+    })
+  }, [getSnappedPosition, onDragEnd])
 
   // 添加全局事件监听
   useEffect(() => {
@@ -248,8 +262,9 @@ export function useDraggable(options: UseDraggableOptions = {}) {
 
   // 重置位置
   const resetPosition = useCallback(() => {
-    setPosition(initialPosition)
-  }, [initialPosition])
+    const boundedPosition = getBoundedPosition(initialPositionRef.current)
+    setPosition(boundedPosition)
+  }, [getBoundedPosition])
 
   return {
     position,

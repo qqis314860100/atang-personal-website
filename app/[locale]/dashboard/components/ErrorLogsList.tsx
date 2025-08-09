@@ -13,6 +13,7 @@ import {
   formatTimestamp,
   truncateMessage,
 } from './ErrorLogs.utils'
+import { useI18n } from '@/app/hooks/use-i18n'
 
 interface ErrorLogsListProps {
   data: ErrorLog[]
@@ -29,6 +30,8 @@ export function ErrorLogsList({
   onErrorExpand,
   onErrorClick,
 }: ErrorLogsListProps) {
+  const t = useI18n()
+
   return (
     <div className="space-y-0 h-full">
       {/* 日志列表 */}
@@ -54,8 +57,12 @@ export function ErrorLogsList({
         ) : (
           <div className="text-center py-12 text-gray-400">
             <AlertTriangle className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg font-medium mb-2">暂无错误日志</p>
-            <p className="text-sm">当前筛选条件下没有找到相关的错误日志</p>
+            <p className="text-lg font-medium mb-2">
+              {t.dashboard('暂无错误日志')}
+            </p>
+            <p className="text-sm">
+              {t.dashboard('当前筛选条件下没有找到相关的错误日志')}
+            </p>
           </div>
         )}
       </div>

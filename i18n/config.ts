@@ -8,4 +8,8 @@ export const namespaces: Namespace[] = [
   'dashboard',
   'setting',
   'project',
+  'performance',
+  'pageAnalytics',
+  'errorLogs',
+  'auth',
 ]

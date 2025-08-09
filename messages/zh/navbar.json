@@ -21,5 +21,9 @@
     "profile": "您的资料",
     "logout": "退出",
     "language": "语言"
-  }
+  },
+  "switchLanguage": "切换语言",
+  "switchTheme": "切换主题",
+  "chinese": "中文",
+  "english": "English"
 }
