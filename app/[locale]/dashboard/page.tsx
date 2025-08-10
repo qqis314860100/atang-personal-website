@@ -1,21 +1,22 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useI18n } from '@/app/hooks/use-i18n'
+import { useLoading } from '@/app/hooks/use-loading'
+import {
+  useErrorDetail,
+  usePageHeatmapData,
+  usePerformanceHeatmapData,
+  useSmartAnalyticsData,
+} from '@/lib/query-hook/use-analytics'
+import { useCallback, useEffect, useState } from 'react'
 import { AnalyticsCards } from './components/AnalyticsCards'
+import { AnalyticsSkeleton } from './components/AnalyticsSkeleton'
+import { DashboardSkeleton } from './components/DashboardSkeleton'
+import { ErrorDetailModal } from './components/ErrorDetailModal'
+import { ErrorLogs } from './components/ErrorLogs'
 import { PageHeatmap } from './components/PageHeatmap'
 import { PerformanceHeatmap } from './components/PerformanceHeatmap'
-import { ErrorLogs } from './components/ErrorLogs'
-import { ErrorDetailModal } from './components/ErrorDetailModal'
-import { AnalyticsSkeleton } from './components/AnalyticsSkeleton'
 import { RealTimeToggle } from './components/RealTimeToggle'
-import {
-  useSmartAnalyticsData,
-  usePageHeatmapData,
-  useErrorDetail,
-  usePerformanceHeatmapData,
-} from '@/lib/query-hook/use-analytics'
-import { useLoading } from '@/app/hooks/use-loading'
-import { useI18n } from '@/app/hooks/use-i18n'
 
 export default function AnalyticsPage() {
   const [timeRange] = useState('7d')
@@ -52,23 +53,23 @@ export default function AnalyticsPage() {
       hideLoading()
       setShowErrorModal(true)
     }
-  }, [selectedErrorId, isFetched, isErrorDetailLoading, hideLoading, t])
+  }, [selectedErrorId, isFetched, isErrorDetailLoading, hideLoading])
 
-  const handleCloseErrorModal = () => {
+  const handleCloseErrorModal = useCallback(() => {
     setShowErrorModal(false)
     setSelectedErrorId(null)
     hideLoading()
-  }
+  }, [hideLoading])
 
   // 显示骨架屏
   if (isAnalyticsLoading || isPageHeatmapLoading) {
-    return <AnalyticsSkeleton />
+    return <DashboardSkeleton />
   }
 
   // 显示错误状态
   if (analyticsError) {
     return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="text-red-400 font-medium">
@@ -86,7 +87,7 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950">
+    <div className="min-h-screen">
       {/* 实时更新控制 */}
       <RealTimeToggle />
       <div className="p-6 space-y-8">

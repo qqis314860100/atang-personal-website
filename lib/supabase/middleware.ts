@@ -1,8 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 
-// 中间件在请求到达路由处理之前执行，使用NextRequest对，负责路由保护
-// 每个请求首先经过中间件,验证用户会话状态，根据认证状态和路由规则决定是否重定向,例如：未登录用户访问受保护页面会被重定向到登录页
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
@@ -27,27 +25,64 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // 严格的调用顺序,创建客户端(createServerClient)后必须立即调用auth.getUser，不能在这两个操作之间插入任何其它代码
-  //   auth.getUser()不仅仅是检查用户登录状态
-  // 它还会刷新会话令牌、验证cookie有效性
-  // 在后台处理会话续期(session refresh)逻辑
+  // 获取用户会话
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const pathnameParts = request.nextUrl.pathname.split('/')
-
+  // 获取当前路径和语言
+  const pathname = request.nextUrl.pathname
+  const pathnameParts = pathname.split('/')
   const locale = pathnameParts[1]
 
-  const publicRoutes = ['/dashboard']
+  // 定义公开路径（不需要认证）
+  const publicPaths = [
+    '/',
+    '/login',
+    '/blog',
+    '/project',
+    '/dashboard',
+    '/home',
+  ]
 
-  const isPublicRoute = publicRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(`/${locale}${route}`)
+  // 定义需要认证的路径
+  const protectedPaths = ['/user']
+
+  // 移除语言前缀的路径
+  const pathWithoutLocale = pathname.replace(`/${locale}`, '') || '/'
+
+  // 如果访问的是根路径（只有语言前缀），重定向到home
+  if (pathWithoutLocale === '/') {
+    const homeUrl = new URL(`/${locale}/home`, request.url)
+    return NextResponse.redirect(homeUrl)
+  }
+
+  // 检查是否为公开路径
+  const isPublicPath = publicPaths.some(
+    (path) =>
+      pathWithoutLocale === path || pathWithoutLocale.startsWith(`${path}/`)
   )
 
-  if (!user && !isPublicRoute) {
-    const url = request.nextUrl.clone()
-    url.pathname = `/${locale}/dashboard`
-    return NextResponse.redirect(url)
+  // 检查是否为需要认证的路径
+  const isProtectedPath = protectedPaths.some(
+    (path) =>
+      pathWithoutLocale === path || pathWithoutLocale.startsWith(`${path}/`)
+  )
+
+  // 认证逻辑
+  if (isProtectedPath && !user) {
+    // 需要认证但未登录，重定向到登录页
+    const loginUrl = new URL(`/${locale}/login`, request.url)
+    loginUrl.searchParams.set('redirectTo', pathname)
+    return NextResponse.redirect(loginUrl)
   }
+
+  if (user && pathWithoutLocale === '/login') {
+    // 已登录用户访问登录页，重定向到首页
+    const homeUrl = new URL(`/${locale}`, request.url)
+    return NextResponse.redirect(homeUrl)
+  }
+
+  // 返回包含cookies的响应
+  return supabaseResponse
 }

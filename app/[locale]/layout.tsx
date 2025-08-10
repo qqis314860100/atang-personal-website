@@ -1,34 +1,28 @@
-import siteMetadata from '@/data/siteMetadata'
-import { Metadata } from 'next'
-import { ClientTopLoader } from '@/components/client-toploader'
-import { ClientToaster } from '@/components/client-toaster'
-import { notFound } from 'next/navigation'
-import { NextIntlClientProvider, hasLocale } from 'next-intl'
-import { routing } from '@/i18n/routing'
-import Header from '@/components/Header'
-import { ThemeProvider } from '@/app/components/providers/ThemeProvider'
-import '../globals.css'
-import SessionProvider from '@/app/components/providers/SessionProvider'
-import { QueryProvider } from '@/app/components/providers/QueryProvider'
-import { UserStatePreloader } from '@/app/components/providers/UserStatePreloader'
-import { AuthListener } from '@/app/components/providers/AuthListener'
-import { ErrorBoundary } from '@/components/ErrorBoundary'
-import { PerformanceMonitor } from '@/components/performance-monitor'
-import { RoutePrefetch } from '@/components/route-prefetch'
-import { AnalyticsProvider } from '@/app/components/providers/AnalyticsProvider'
 import ChatRoomTrigger from '@/app/components/ai-agent'
+import { AnalyticsProvider } from '@/app/components/providers/AnalyticsProvider'
+import { AuthListener } from '@/app/components/providers/AuthListener'
 import { LoadingProvider } from '@/app/components/providers/LoadingProvider'
+import { QueryProvider } from '@/app/components/providers/QueryProvider'
 import { RealTimeProvider } from '@/app/components/providers/RealTimeProvider'
+import SessionProvider from '@/app/components/providers/SessionProvider'
+import { ThemeProvider } from '@/app/components/providers/ThemeProvider'
+import { UserStatePreloader } from '@/app/components/providers/UserStatePreloader'
+import { ClientToaster } from '@/components/client-toaster'
+import { ClientTopLoader } from '@/components/client-toploader'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import Header from '@/components/Header'
+import { RoutePrefetch } from '@/components/route-prefetch'
+import { GlobalStatusBar } from '@/components/ui/global-status-bar'
+import siteMetadata from '@/data/siteMetadata'
+import { routing } from '@/i18n/routing'
+import { Metadata } from 'next'
+import { NextIntlClientProvider, hasLocale } from 'next-intl'
+import { notFound } from 'next/navigation'
+import '../globals.css'
 
-import { cn } from '@/utils/utils'
+import { cn } from '@/lib/utils'
 import { fontSans } from '@/utils/fonts'
 import Picture from './picture'
-
-interface RootLayoutProps extends React.PropsWithChildren {
-  params: {
-    locale: string
-  }
-}
 
 export async function generateStaticParams() {
   return siteMetadata.languages.map((locale: string) => {
@@ -110,22 +104,22 @@ export default async function RootLayout({
                     <LoadingProvider>
                       <AnalyticsProvider>
                         <UserStatePreloader>
+                          {/* 全局状态栏 */}
+                          <GlobalStatusBar />
+
                           {/* 主面板容器 */}
                           <ClientTopLoader />
                           <ClientToaster />
-                          {/* 内容区域 - Header 和主体融合 */}
                           <Picture />
-                          <div className="h-full flex flex-col">
+
+                          {/* 内容区域 - Header 和主体融合 */}
+                          <div className="relative h-full flex flex-col">
                             <Header />
-                            <main className="flex-1 overflow-y-auto h-[calc(100vh-64px)] bg-gradient-to-br from-gray-50 via-white to-gray-50">
+                            <main className="flex-1 overflow-y-auto h-[calc(100vh-64px)] bg-transparent">
                               {children}
                             </main>
                           </div>
-                          {/* 开发环境性能监控 */}
-                          {/* <PerformanceMonitor
-                      enabled={process.env.NODE_ENV === 'development'}
-                    /> */}
-                          {/* 路由预取优化 */}
+
                           <RoutePrefetch>
                             <></>
                           </RoutePrefetch>

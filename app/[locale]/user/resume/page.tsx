@@ -2,7 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { useStableUser } from '@/lib/query-hook/use-auth'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  ThemeCard,
+  ThemeCardContent,
+  ThemeCardHeader,
+  ThemeCardTitle,
+} from '@/components/ui/theme-card'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import toast from 'react-hot-toast'
@@ -232,13 +237,16 @@ export default function ResumePage() {
       <div className="flex-1 flex flex-col overflow-hidden p-2">
         <div className="max-w-7xl mx-auto w-full flex flex-col h-full space-y-2">
           {/* 附件管理卡片 - 固定高度 */}
-          <Card className="bg-white rounded-xl shadow-sm border-gray-200 flex-shrink-0 py-1 gap-1">
-            <CardHeader className="flex flex-row items-center justify-between pb-0 py-0.5">
-              <CardTitle className="text-sm font-semibold text-gray-800">
+          <ThemeCard
+            variant="glass"
+            className="bg-white rounded-xl shadow-sm border-gray-200 flex-shrink-0 py-1 gap-1"
+          >
+            <ThemeCardHeader className="flex flex-row items-center justify-between pb-0 py-0.5">
+              <ThemeCardTitle className="text-sm font-semibold text-gray-800">
                 {t.resume('附件管理')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-4 pb-2">
+              </ThemeCardTitle>
+            </ThemeCardHeader>
+            <ThemeCardContent className="px-4 pb-2">
               <div className="space-y-3">
                 {user?.resume_url ? (
                   <div className="group flex items-center gap-4 p-3 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-400 transition-all duration-200 cursor-pointer">
@@ -281,17 +289,20 @@ export default function ResumePage() {
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </ThemeCardContent>
+          </ThemeCard>
 
           {/* 简历内容卡片 - 占据剩余空间 */}
-          <Card className="bg-white rounded-xl shadow-sm border-gray-200 flex-1 flex flex-col overflow-hidden py-2 gap-1">
-            <CardHeader className="flex flex-row justify-between items-center pb-0 flex-shrink-0 py-0.5">
-              <CardTitle className="text-sm font-semibold text-gray-800">
+          <ThemeCard
+            variant="glass"
+            className="bg-white rounded-xl shadow-sm border-gray-200 flex-1 flex flex-col overflow-hidden py-2 gap-1"
+          >
+            <ThemeCardHeader className="flex flex-row justify-between items-center pb-0 flex-shrink-0 py-0.5">
+              <ThemeCardTitle className="text-sm font-semibold text-gray-800">
                 {t.resume('简历内容')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0 flex-1 overflow-auto">
+              </ThemeCardTitle>
+            </ThemeCardHeader>
+            <ThemeCardContent className="p-0 flex-1 overflow-auto">
               {user?.resume_url ? (
                 <div className="h-full">
                   <PDFViewer
@@ -311,8 +322,8 @@ export default function ResumePage() {
                   </p>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </ThemeCardContent>
+          </ThemeCard>
         </div>
       </div>
     </div>

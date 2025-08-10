@@ -157,14 +157,15 @@
     "uniqueVisitors": "Unique Visitors",
     "deviceDistribution": "Device Distribution",
     "browserDistribution": "Browser Distribution",
-    "title": "Popular Pages Heatmap",
+    "title": "Popular Pages",
     "noData": "No page data",
     "pageStats": "Page Statistics",
     "averageStay": "Average Stay",
-    "times": "times"
+    "times": "times",
+    "fullPath": "Full Path"
   },
   "performanceHeatmap": {
-    "title": "Performance Metrics Heatmap",
+    "title": "Performance Metrics",
     "thresholdBasedOn": "Thresholds based on Web Vitals recommendations",
     "average": "Average",
     "sampleCount": "Sample Count",

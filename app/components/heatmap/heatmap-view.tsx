@@ -72,7 +72,7 @@ export function HeatmapView<T extends HeatmapItem>({
                 </div>
 
                 {isExpanded && renderExpandedContent && (
-                  <div className="ml-4 p-4 bg-gray-800/20 border border-gray-700/30 rounded-lg space-y-4">
+                  <div className="p-4 bg-gray-800/20 border border-gray-700/30 rounded-lg space-y-4">
                     {renderExpandedContent(item)}
                   </div>
                 )}
@@ -99,7 +99,7 @@ export function HeatmapView<T extends HeatmapItem>({
             </div>
 
             {isExpanded && renderExpandedContent && (
-              <div className="ml-4 p-4 bg-gray-800/20 border border-gray-700/30 rounded-lg space-y-4">
+              <div className="p-4 bg-gray-800/20 border border-gray-700/30 rounded-lg space-y-4">
                 {renderExpandedContent(item)}
               </div>
             )}
@@ -117,4 +117,3 @@ export const getDefaultHeatmapColor = (intensity: number) => {
   if (intensity >= 0.2) return 'bg-blue-500'
   return 'bg-gray-500'
 }
- 

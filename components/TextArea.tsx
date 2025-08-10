@@ -1,8 +1,7 @@
 'use client'
 
-import { cn } from '@/utils/utils'
-import React from 'react'
-import { TextareaHTMLAttributes } from 'react'
+import { cn } from '@/lib/utils'
+import React, { TextareaHTMLAttributes } from 'react'
 
 interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {}
 

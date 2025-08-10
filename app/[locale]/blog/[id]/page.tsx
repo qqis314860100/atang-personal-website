@@ -3,7 +3,12 @@
 import { useParams, usePathname } from 'next/navigation'
 import { useRouter } from '@/i18n/navigation'
 import { usePost } from '@/lib/query-hook/use-posts'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  ThemeCard,
+  ThemeCardContent,
+  ThemeCardHeader,
+  ThemeCardTitle,
+} from '@/components/ui/theme-card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Calendar, User, Edit, Trash2 } from 'lucide-react'
 import ViewCounter from '@/components/view-counter'
@@ -154,8 +159,8 @@ export default function BlogDetailPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-6">
         <div className="max-w-7xl mx-auto">
-          <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-xl">
-            <CardContent className="p-8 text-center">
+          <ThemeCard className="bg-white/95 backdrop-blur-sm border-0 shadow-xl">
+            <ThemeCardContent className="p-8 text-center">
               <h1 className="text-2xl font-bold text-gray-800 mb-4">
                 文章未找到
               </h1>
@@ -169,8 +174,8 @@ export default function BlogDetailPage() {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 返回博客列表
               </Button>
-            </CardContent>
-          </Card>
+            </ThemeCardContent>
+          </ThemeCard>
         </div>
       </div>
     )
@@ -206,17 +211,20 @@ export default function BlogDetailPage() {
 
             {/* 文章目录 - 桌面端固定 */}
             <div className="hidden lg:block sticky top-[200px] z-30">
-              <Card className="bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl max-h-[calc(100vh-300px)] overflow-y-auto">
-                <CardHeader>
-                  <CardTitle className="text-gray-900 flex items-center gap-2 text-lg">
+              <ThemeCard
+                variant="glass"
+                className="bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl max-h-[calc(100vh-300px)] overflow-y-auto"
+              >
+                <ThemeCardHeader>
+                  <ThemeCardTitle className="text-gray-900 flex items-center gap-2 text-lg">
                     <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
                     文章目录
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
+                  </ThemeCardTitle>
+                </ThemeCardHeader>
+                <ThemeCardContent className="pt-0">
                   <TableOfContents toc={toc} />
-                </CardContent>
-              </Card>
+                </ThemeCardContent>
+              </ThemeCard>
             </div>
           </div>
 
@@ -279,8 +287,11 @@ export default function BlogDetailPage() {
             </div>
 
             {/* 文章内容 */}
-            <Card className="bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
-              <CardContent className="p-8">
+            <ThemeCard
+              variant="glass"
+              className="bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl"
+            >
+              <ThemeCardContent className="p-8">
                 <div className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-gray-900 prose-code:text-blue-600 prose-pre:bg-gray-50 prose-pre:border prose-pre:border-gray-200 prose-li:text-gray-700 prose-ul:text-gray-700 prose-ol:text-gray-700">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
@@ -426,8 +437,8 @@ export default function BlogDetailPage() {
                     {post.body}
                   </ReactMarkdown>
                 </div>
-              </CardContent>
-            </Card>
+              </ThemeCardContent>
+            </ThemeCard>
           </div>
         </div>
       </div>

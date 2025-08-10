@@ -1,39 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { fetchCategories } from '@/app/actions/category'
+import { useLoadingStore } from '@/app/hooks/use-loading'
+import {
+  Permission,
+  PermissionGuard,
+  usePermissions,
+} from '@/app/hooks/use-permissions'
+import { AnimatedCard } from '@/components/ui/animated-card'
+import { Badge } from '@/components/ui/badge'
+import { BlogListSkeleton } from '@/components/ui/blog-skeleton'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CategoryImage } from '@/components/ui/category-image'
 import { Input } from '@/components/ui/input'
-import {
-  Search,
-  Plus,
-  Edit,
-  Magnet,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  Calendar,
-  User,
-  BookOpen,
-  TrendingUp,
-  Filter,
-  RefreshCw,
-  Eye,
-} from 'lucide-react'
-import { AnimatedCard } from '@/components/ui/animated-card'
-import { Link, useRouter } from '@/i18n/navigation'
-import {
-  usePermissions,
-  PermissionGuard,
-  Permission,
-} from '@/app/hooks/use-permissions'
-import { fetchCategories } from '@/app/actions/category'
-import toast from 'react-hot-toast'
-import {
-  usePosts,
-  usePopularPosts,
-  useDeletePost,
-} from '@/lib/query-hook/use-posts'
 import {
   Select,
   SelectContent,
@@ -41,29 +21,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { BlogListSkeleton } from '@/components/ui/blog-skeleton'
-import { CategoryImage } from '@/components/ui/category-image'
-import { useLoadingStore } from '@/app/hooks/use-loading'
+import { ThemeCard } from '@/components/ui/theme-card'
+import { Link, useRouter } from '@/i18n/navigation'
+import {
+  useDeletePost,
+  usePopularPosts,
+  usePosts,
+} from '@/lib/query-hook/use-posts'
+import { formatDate } from '@/lib/utils'
+import {
+  BookOpen,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Edit,
+  Eye,
+  Filter,
+  Magnet,
+  Plus,
+  Search,
+  Trash2,
+  TrendingUp,
+  User,
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
 
 // 分类接口
 interface Category {
   id: string
   name: string
   postCount?: number
-}
-
-// 格式化日期
-const formatDate = (date: Date) => {
-  const now = new Date()
-  const diffTime = Math.abs(now.getTime() - date.getTime())
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-  if (diffDays === 1) return '1天前'
-  if (diffDays < 7) return `${diffDays}天前`
-  if (diffDays < 30) return `${Math.ceil(diffDays / 7)}周前`
-  if (diffDays < 365) return `${Math.ceil(diffDays / 30)}个月前`
-  return `${Math.ceil(diffDays / 365)}年前`
 }
 
 // 计算阅读时间
@@ -292,7 +280,10 @@ const Blog = () => {
               <div className="space-y-3">
                 {posts.map((post, index) => (
                   <AnimatedCard key={post.id} delay={index * 0.1}>
-                    <Card className="border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 py-0 h-60">
+                    <ThemeCard
+                      variant="elevated"
+                      className="border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 py-0 h-60"
+                    >
                       <div className="flex flex-col md:flex-row h-full">
                         {/* 文章图片 - 使用分类图片 */}
                         <div className="md:w-1/3 aspect-video md:aspect-square rounded-t-lg md:rounded-l-lg md:rounded-t-none flex items-center justify-center overflow-hidden">
@@ -385,7 +376,7 @@ const Blog = () => {
                           </div>
                         </div>
                       </div>
-                    </Card>
+                    </ThemeCard>
                   </AnimatedCard>
                 ))}
               </div>

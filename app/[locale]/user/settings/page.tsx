@@ -3,7 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  ThemeCard,
+  ThemeCardContent,
+  ThemeCardHeader,
+  ThemeCardTitle,
+} from '@/components/ui/theme-card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -68,11 +73,11 @@ export default function SettingsPage() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t.setting('安全设置')}</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <ThemeCard variant="glass">
+      <ThemeCardHeader>
+        <ThemeCardTitle>{t.setting('安全设置')}</ThemeCardTitle>
+      </ThemeCardHeader>
+      <ThemeCardContent>
         <form
           onSubmit={handleSubmit(handleUpdatePassword)}
           className="space-y-4"
@@ -127,7 +132,7 @@ export default function SettingsPage() {
             )}
           </Button>
         </form>
-      </CardContent>
-    </Card>
+      </ThemeCardContent>
+    </ThemeCard>
   )
 }

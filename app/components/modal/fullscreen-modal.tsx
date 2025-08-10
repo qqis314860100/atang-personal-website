@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { X, Minimize2, Maximize2 } from 'lucide-react'
-import { cn } from '@/utils/utils'
-import { useScrollLock } from '@/app/hooks/use-scroll-lock'
 import { useDraggable } from '@/app/hooks/use-draggable'
 import { useFullscreenAnimation } from '@/app/hooks/use-fullscreen-animation'
+import { useScrollLock } from '@/app/hooks/use-scroll-lock'
+import { cn } from '@/lib/utils'
+import { Maximize2, Minimize2, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 interface FullscreenModalProps {
   isOpen: boolean

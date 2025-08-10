@@ -1,24 +1,27 @@
 'use client'
 
-import { useState } from 'react'
-import {
-  PerformanceHeatmapResponse,
-  PerformanceHeatmapMetric,
-} from '@/lib/query-hook/use-analytics'
-import {
-  Info,
-  TrendingUp,
-  Clock,
-  Zap,
-  MousePointer,
-  Globe,
-  ArrowBigUp,
-  ArrowBigDown,
-  ChartSplineIcon,
-  ViewIcon,
-} from 'lucide-react'
 import { FullscreenCard } from '@/app/components/full-screen'
+import { ThemeTextSM, ThemeTextXS } from '@/app/components/ui/theme-text'
 import { useI18n } from '@/app/hooks/use-i18n'
+import {
+  PerformanceHeatmapMetric,
+  PerformanceHeatmapResponse,
+} from '@/lib/query-hook/use-analytics'
+import { getThemeClasses } from '@/lib/theme/colors'
+import { cn } from '@/lib/utils'
+import {
+  ArrowBigDown,
+  ArrowBigUp,
+  ChartSplineIcon,
+  Clock,
+  Globe,
+  Info,
+  MousePointer,
+  TrendingUp,
+  Zap,
+} from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { useState } from 'react'
 
 interface PerformanceHeatmapProps {
   data: PerformanceHeatmapResponse
@@ -28,6 +31,7 @@ export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
   const [expandedMetric, setExpandedMetric] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'heatmap' | 'chart'>('list')
   const t = useI18n()
+  const { theme: currentTheme } = useTheme()
 
   const METRIC_LABELS: Record<string, string> = {
     FCP: t.dashboard('FCP'),
@@ -95,15 +99,15 @@ export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
           <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
             <div className="w-5 h-5 bg-blue-400 rounded-full"></div>
           </div>
-          {t.dashboard('性能指标热力图')}
-          <span className="text-xs text-gray-400 flex items-center gap-1">
+          {t.dashboard('性能指标')}
+          <ThemeTextXS variant="muted" className="flex items-center gap-1">
             <Info className="w-3 h-3" />{' '}
             {t.dashboard('阈值基于 Web Vitals 建议')}
-          </span>
+          </ThemeTextXS>
         </>
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-2">
         {items.length > 0 ? (
           items.map((item, index) => {
             const isExpanded = expandedMetric === item.key
@@ -114,7 +118,17 @@ export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
             return (
               <div key={index} className="space-y-2">
                 <div
-                  className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg cursor-pointer hover:bg-gray-700/50 transition-colors"
+                  className={getThemeClasses(
+                    'flex items-center justify-between p-4 rounded-lg cursor-pointer transition-colors',
+                    (currentTheme as 'light' | 'dark') || 'light',
+                    {
+                      card: 'glass',
+                      border: 'primary',
+                      gradient: 'primary',
+                      shadow: 'glass',
+                      hover: 'primary',
+                    }
+                  )}
                   onClick={() =>
                     setExpandedMetric(isExpanded ? null : item.key)
                   }
@@ -128,32 +142,38 @@ export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
                       {METRIC_ICONS[item.key]}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white">
+                      <ThemeTextSM weight="medium" variant="primary">
                         {item.key}
-                      </p>
-                      <p className="text-xs text-gray-400">
+                      </ThemeTextSM>
+                      <ThemeTextXS variant="tertiary">
                         {METRIC_LABELS[item.key]}
-                      </p>
+                      </ThemeTextXS>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <p className="text-sm font-medium text-white">
+                      <ThemeTextSM weight="medium" variant="primary">
                         {formatValue(avg, item.key)}
-                      </p>
-                      <p className="text-xs text-gray-400">
+                      </ThemeTextSM>
+                      <ThemeTextXS variant="tertiary">
                         {t.dashboard('平均值')}
-                      </p>
+                      </ThemeTextXS>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium text-white">{count}</p>
-                      <p className="text-xs text-gray-400">
+                      <ThemeTextSM weight="medium" variant="primary">
+                        {count}
+                      </ThemeTextSM>
+                      <ThemeTextSM variant="tertiary">
                         {t.dashboard('样本数')}
-                      </p>
+                      </ThemeTextSM>
                     </div>
                     <div className="flex items-center gap-1">
                       <span
-                        className={`text-xs px-2 py-1 rounded bg-white/10 ${g.color}`}
+                        className={`text-xs px-2 py-1 rounded ${
+                          currentTheme === 'dark'
+                            ? 'bg-white/10'
+                            : 'bg-black/10'
+                        } ${g.color}`}
                       >
                         {g.label}
                       </span>
@@ -162,89 +182,192 @@ export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
                 </div>
 
                 {isExpanded && (
-                  <div className="ml-8 p-4 bg-gray-800/30 rounded-lg space-y-4">
+                  <div
+                    className={cn(
+                      getThemeClasses(
+                        'p-4 rounded-lg space-y-4',
+                        (currentTheme as 'light' | 'dark') || 'light',
+                        {
+                          card: 'tertiary',
+                          border: 'primary',
+                          gradient: 'primary',
+                          shadow: 'glass',
+                        }
+                      )
+                    )}
+                  >
                     {/* 基础统计信息 */}
                     <div className="space-y-3 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <ArrowBigDown className="w-4 h-4 text-green-400" />
                         <div>
-                          <p className="text-xs text-gray-400">
+                          <ThemeTextXS variant="tertiary">
                             {t.dashboard('最小值')}
-                          </p>
-                          <p className="text-sm font-medium text-white">
+                          </ThemeTextXS>
+                          <ThemeTextSM weight="medium" variant="primary">
                             {formatValue(min, item.key)}
-                          </p>
+                          </ThemeTextSM>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <ArrowBigUp className="w-4 h-4 text-red-400" />
                         <div>
-                          <p className="text-xs text-gray-400">
+                          <ThemeTextXS variant="tertiary">
                             {t.dashboard('最大值')}
-                          </p>
-                          <p className="text-sm font-medium text-white">
+                          </ThemeTextXS>
+                          <ThemeTextSM weight="medium" variant="primary">
                             {formatValue(max, item.key)}
-                          </p>
+                          </ThemeTextSM>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <ChartSplineIcon className="w-4 h-4 text-purple-400" />
                         <div>
-                          <p className="text-xs text-gray-400">
+                          <ThemeTextXS variant="tertiary">
                             {t.dashboard('样本数量')}
-                          </p>
-                          <p className="text-sm font-medium text-white">
+                          </ThemeTextXS>
+                          <ThemeTextSM weight="medium" variant="primary">
                             {count} {t.dashboard('条记录')}
-                          </p>
+                          </ThemeTextSM>
+                        </div>
+                      </div>
+
+                      {/* 阈值信息 */}
+                      <div className="flex items-center gap-2">
+                        <ThemeTextXS
+                          weight="medium"
+                          variant="secondary"
+                          className="mb-2"
+                        >
+                          {t.dashboard('性能阈值')}
+                        </ThemeTextXS>
+                        <div className="text-xs">
+                          <span className="text-green-400">
+                            ≤{thresholds.good}
+                          </span>
+                          <ThemeTextXS variant="tertiary">
+                            {t.dashboard('优秀')}
+                          </ThemeTextXS>
+                          <span className="text-yellow-400">
+                            ≤{thresholds.needs}
+                          </span>
+                          <ThemeTextXS variant="tertiary">
+                            {t.dashboard('良好')}
+                          </ThemeTextXS>
                         </div>
                       </div>
                     </div>
 
-                    {/* 阈值信息 */}
-                    <div>
-                      <p className="text-xs font-medium text-gray-300 mb-2">
-                        {t.dashboard('性能阈值')}
-                      </p>
-                      <div className="text-xs">
-                        <span className="text-green-400">
-                          ≤{thresholds.good}
-                        </span>
-                        <span className="text-gray-400">
-                          {' '}
-                          {t.dashboard('优秀')} ·{' '}
-                        </span>
-                        <span className="text-yellow-400">
-                          ≤{thresholds.needs}
-                        </span>
-                        <span className="text-gray-400">
-                          {' '}
-                          {t.dashboard('良好')}
-                        </span>
-                      </div>
-                    </div>
-
                     {/* 设备分布 */}
-                    {item.breakdown?.devices && (
+                    {item.breakdown?.devices &&
+                      item.breakdown.devices.length > 0 && (
+                        <div>
+                          <ThemeTextXS
+                            weight="medium"
+                            variant="secondary"
+                            className="mb-2"
+                          >
+                            {t.dashboard('设备分布（平均值）')}
+                          </ThemeTextXS>
+                          <div className="space-y-2">
+                            {item.breakdown.devices.map(
+                              (device: any, idx: number) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center justify-between"
+                                >
+                                  <ThemeTextXS variant="tertiary">
+                                    {device.name}
+                                  </ThemeTextXS>
+                                  <ThemeTextXS variant="primary">
+                                    {formatValue(device.avg, item.key)}
+                                  </ThemeTextXS>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* 浏览器分布 */}
+                    {item.breakdown?.browsers &&
+                      item.breakdown.browsers.length > 0 && (
+                        <div>
+                          <ThemeTextXS
+                            weight="medium"
+                            variant="secondary"
+                            className="mb-2"
+                          >
+                            {t.dashboard('浏览器分布（平均值）')}
+                          </ThemeTextXS>
+                          <div className="space-y-2">
+                            {item.breakdown.browsers.map(
+                              (browser: any, idx: number) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center justify-between"
+                                >
+                                  <ThemeTextXS variant="tertiary">
+                                    {browser.name}
+                                  </ThemeTextXS>
+                                  <ThemeTextXS variant="primary">
+                                    {formatValue(browser.avg, item.key)}
+                                  </ThemeTextXS>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* 相关页面 */}
+                    {item.pages && item.pages.length > 0 && (
                       <div>
-                        <p className="text-xs font-medium text-gray-300 mb-2">
-                          {t.dashboard('设备分布')}
-                        </p>
-                        <div className="grid grid-cols-2 gap-2">
-                          {item.breakdown.devices.map(
-                            (device: any, idx: number) => (
-                              <div
-                                key={idx}
-                                className="flex items-center justify-between text-xs"
-                              >
-                                <span className="text-gray-400">
-                                  {device.device}
-                                </span>
-                                <span className="text-white">
-                                  {device.count}
-                                </span>
+                        <ThemeTextXS
+                          weight="medium"
+                          variant="secondary"
+                          className="mb-2"
+                        >
+                          {t.dashboard('相关页面')}
+                        </ThemeTextXS>
+                        <div className="space-y-2">
+                          {item.pages.slice(0, 8).map((page: any) => (
+                            <div key={page.page} className="space-y-1">
+                              <div className="flex items-center justify-between">
+                                <ThemeTextXS
+                                  variant="tertiary"
+                                  className="truncate max-w-[60%]"
+                                >
+                                  {page.page}
+                                </ThemeTextXS>
+                                <ThemeTextXS variant="primary">
+                                  {formatValue(page.avg, item.key)}
+                                </ThemeTextXS>
                               </div>
-                            )
-                          )}
+                              <div
+                                className={`w-full h-1 rounded ${
+                                  currentTheme === 'dark'
+                                    ? 'bg-gray-700/60'
+                                    : 'bg-gray-300/60'
+                                }`}
+                              >
+                                <div
+                                  className="h-full rounded bg-blue-500"
+                                  style={{
+                                    width: `${Math.min(
+                                      100,
+                                      Math.max(
+                                        5,
+                                        ((page.avg ?? 0) /
+                                          (item.stats.max || 1)) *
+                                          100
+                                      )
+                                    )}%`,
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
@@ -255,12 +378,20 @@ export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
           })
         ) : (
           <div className="text-center py-8">
-            <div className="w-12 h-12 bg-gray-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-              <TrendingUp className="w-6 h-6 text-gray-400" />
+            <div
+              className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 ${
+                currentTheme === 'dark' ? 'bg-gray-500/20' : 'bg-gray-400/20'
+              }`}
+            >
+              <Info
+                className={`w-6 h-6 ${
+                  currentTheme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                }`}
+              />
             </div>
-            <p className="text-sm text-gray-400">
+            <ThemeTextSM variant="muted">
               {t.dashboard('暂无性能数据')}
-            </p>
+            </ThemeTextSM>
           </div>
         )}
       </div>

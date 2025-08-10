@@ -1,11 +1,10 @@
 'use client'
 
-import { Suspense } from 'react'
-import { usePathname } from 'next/navigation'
 import { Card } from '@/components/ui/card'
-import { useParams } from 'next/navigation'
-import { cn } from '@/utils/utils'
 import { Link } from '@/i18n/navigation'
+import { cn } from '@/lib/utils'
+import { usePathname } from 'next/navigation'
+import { Suspense } from 'react'
 
 export default function UserLayout({
   children,

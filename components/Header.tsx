@@ -1,42 +1,39 @@
 'use client'
 
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from '@/components/ui/navigation-menu'
-import { CN, US } from 'country-flag-icons/react/3x2'
-import {
-  MoonIcon,
-  SunIcon,
-  BellIcon,
-  MagnifyingGlassIcon,
-} from '@radix-ui/react-icons'
-import navMenuData from '@/data/navMenuData'
-import siteMetadata from '@/data/siteMetadata'
-import { cn } from '@/utils/utils'
-import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
-import Image from 'next/image'
-import { Button } from './ui/button'
-import { useTheme } from 'next-themes'
-import { usePathname } from 'next/navigation'
-import { useRouter, getPathname } from '@/i18n/navigation'
+import Logon from '@/app/[locale]/Login/components/Logon'
+import { useI18n } from '@/app/hooks/use-i18n'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu'
-import { GlobeIcon } from '@radix-ui/react-icons'
-import { useLocale } from 'next-intl'
-import { Logon } from '../app/[locale]/Login/components/Logon'
-import { useI18n } from '@/app/hooks/use-i18n'
-import { routing } from '@/i18n/routing'
+} from '@/components/ui/dropdown-menu'
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+} from '@/components/ui/navigation-menu'
+import {
+  LanguageStatusIndicator,
+  ThemeStatusIndicator,
+} from '@/components/ui/status-indicator'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import siteMetadata from '@/data/siteMetadata'
+import { cn } from '@/lib/utils'
+import { CN, US } from 'country-flag-icons/react/3x2'
+import { GlobeIcon, MoonIcon, SunIcon } from 'lucide-react'
+import { useTheme } from 'next-themes'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 interface NavMenuItem {
   title: string
@@ -46,57 +43,64 @@ interface NavMenuItem {
 }
 
 const Header = () => {
-  const { theme, setTheme } = useTheme()
-  const router = useRouter()
-  const pathname = usePathname()
-  const currentLocale = useLocale()
   const [mounted, setMounted] = useState(false)
+  const { theme, setTheme } = useTheme()
+  const pathname = usePathname()
   const t = useI18n()
 
-  // 防止水和不一致
+  // 获取当前语言
+  const currentLocale = pathname.split('/')[1] || 'zh'
+
+  // 导航菜单数据
+  const navMenuData = [
+    { title: t.navbar('首页'), href: '/home' },
+    { title: t.navbar('仪表盘'), href: '/dashboard' },
+    { title: t.navbar('博客'), href: '/blog' },
+    { title: t.navbar('项目'), href: '/project' },
+  ]
+
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  const handleLanguageChange = (newLocale: string) => {
-    // 获取不包含语言前缀的路径
-    // pathname格式可能是 '/zh/dashboard' 或 '/en/dashboard'
-    const segments = pathname.split('/')
-    // 移除语言代码段（第二个段）
-    if (segments.length > 1 && routing.locales.includes(segments[1] as any)) {
-      segments.splice(1, 1)
-    }
-    const pathnameWithoutLocale = segments.join('/') || '/'
-
-    console.log('语言切换:', {
-      原始路径: pathname,
-      移除语言前缀后: pathnameWithoutLocale,
-      新语言: newLocale,
-      当前语言: currentLocale,
-    })
-
-    // 使用next-intl的路由器进行正确的语言切换
-    router.replace(pathnameWithoutLocale, { locale: newLocale })
+  const handleLanguageChange = (newLocale: string): void => {
+    const currentPath = pathname.replace(`/${currentLocale}`, '')
+    const newPath = `/${newLocale}${currentPath === '/' ? '' : currentPath}`
+    window.location.href = newPath
   }
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark')
   }
 
+  // 获取主题状态文本
+  const getThemeStatusText = () => {
+    if (!mounted) return t.navbar('加载中...')
+    return theme === 'dark' ? t.navbar('深色模式') : t.navbar('浅色模式')
+  }
+
+  // 获取语言状态文本
+  const getLanguageStatusText = () => {
+    return currentLocale === 'zh' ? t.navbar('中文') : t.navbar('English')
+  }
+
   return (
-    <header className="px-6 py-3 bg-white/80 backdrop-blur-sm border-b border-gray-100">
-      <div className="flex justify-between">
-        {/* 左侧品牌区 - Crextio 风格 */}
-        <div className="flex items-center gap-20">
-          <div className="flex items-center gap-2 px-3 py-2 bg-gray-800 text-white rounded-xl text-sm font-semibold shadow-sm">
-            <Image
-              className="rounded-full w-4 h-4"
-              src={siteMetadata.avatar}
-              alt={siteMetadata.title}
-              width={16}
-              height={16}
-            />
-            {siteMetadata.title}
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="containerw  flex h-16 items-center justify-between px-6">
+        {/* 左侧Logo和导航 */}
+        <div className="flex items-center gap-8">
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/${currentLocale}`}
+              className="flex items-center gap-2"
+            >
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">Z</span>
+              </div>
+              <span className="font-bold text-xl text-gray-900 dark:text-white">
+                {siteMetadata.title}
+              </span>
+            </Link>
           </div>
 
           <div className="hidden md:flex items-center ">
@@ -135,56 +139,123 @@ const Header = () => {
         </div>
 
         {/* 右侧功能区 */}
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-xl hover:bg-gray-100"
-                aria-label={t.navbar('切换语言')}
-              >
-                <GlobeIcon className="h-4 w-4 text-gray-600" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="rounded-xl">
-              {siteMetadata.languages.map((locale) => (
-                <DropdownMenuItem
-                  key={locale}
-                  onClick={() => handleLanguageChange(locale)}
+        <div className="flex items-center gap-3">
+          {/* 主题切换按钮 */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className={cn(
-                    'rounded-lg',
-                    currentLocale === locale && 'font-bold bg-gray-100'
+                    'h-9 w-9 rounded-xl transition-all duration-200 relative',
+                    'hover:bg-gray-100 dark:hover:bg-gray-800',
+                    'border border-transparent hover:border-gray-200 dark:hover:border-gray-700'
                   )}
+                  onClick={toggleTheme}
+                  aria-label={t.navbar('切换主题')}
                 >
-                  {locale === 'zh' ? (
-                    <>
-                      <CN className="h-4 w-6" />
-                      <span>{t.navbar('中文')}</span>
-                    </>
+                  {mounted && theme === 'dark' ? (
+                    <SunIcon className="h-4 w-4 text-yellow-500" />
                   ) : (
-                    <>
-                      <US className="h-4 w-6" />
-                      <span>{t.navbar('English')}</span>
-                    </>
+                    <MoonIcon className="h-4 w-4 text-blue-500" />
                   )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-xl hover:bg-gray-100"
-            onClick={toggleTheme}
-            aria-label={t.navbar('切换主题')}
-          >
-            {mounted && theme === 'dark' ? (
-              <SunIcon className="h-4 w-4 text-gray-600" />
-            ) : (
-              <MoonIcon className="h-4 w-4 text-gray-600" />
-            )}
-          </Button>
+                  {/* 主题状态指示器 */}
+                  <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-green-500 border-2 border-white dark:border-gray-900" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="flex items-center gap-2">
+                <span>{getThemeStatusText()}</span>
+                <ThemeStatusIndicator />
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          {/* 语言切换下拉菜单 */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn(
+                        'h-9 w-9 rounded-xl transition-all duration-200 relative',
+                        'hover:bg-gray-100 dark:hover:bg-gray-800',
+                        'border border-transparent hover:border-gray-200 dark:hover:border-gray-700'
+                      )}
+                      aria-label={t.navbar('切换语言')}
+                    >
+                      <GlobeIcon className="h-4 w-4 text-green-500" />
+                      {/* 语言状态指示器 */}
+                      <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-blue-500 border-2 border-white dark:border-gray-900" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="rounded-xl w-48">
+                    <div className="p-2 border-b border-gray-100 dark:border-gray-800">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                        {t.navbar('当前语言')}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm font-medium">
+                        {currentLocale === 'zh' ? (
+                          <>
+                            <CN className="h-4 w-6" />
+                            <span>{t.navbar('中文')}</span>
+                          </>
+                        ) : (
+                          <>
+                            <US className="h-4 w-6" />
+                            <span>{t.navbar('English')}</span>
+                          </>
+                        )}
+                        <LanguageStatusIndicator />
+                      </div>
+                    </div>
+                    {siteMetadata.languages.map((locale) => (
+                      <DropdownMenuItem
+                        key={locale}
+                        onClick={() => handleLanguageChange(locale)}
+                        className={cn(
+                          'rounded-lg transition-all duration-200',
+                          currentLocale === locale
+                            ? 'font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                            : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                        )}
+                      >
+                        <div className="flex items-center gap-3 w-full">
+                          {locale === 'zh' ? (
+                            <>
+                              <CN className="h-4 w-6" />
+                              <span>{t.navbar('中文')}</span>
+                            </>
+                          ) : (
+                            <>
+                              <US className="h-4 w-6" />
+                              <span>{t.navbar('English')}</span>
+                            </>
+                          )}
+                          {currentLocale === locale && (
+                            <Badge
+                              variant="outline"
+                              className="ml-auto text-xs"
+                            >
+                              {t.navbar('当前')}
+                            </Badge>
+                          )}
+                        </div>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="flex items-center gap-2">
+                <span>{getLanguageStatusText()}</span>
+                <LanguageStatusIndicator />
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
           <Logon />
         </div>
       </div>

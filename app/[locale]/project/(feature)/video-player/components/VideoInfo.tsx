@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent } from '@/components/ui/card'
+import { ThemeCard, ThemeCardContent } from '@/components/ui/theme-card'
 import { Badge } from '@/components/ui/badge'
 import { useVideo } from '@/app/hooks/use-videos'
 import {
@@ -22,8 +22,8 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="p-6">
+      <ThemeCard variant="glass">
+        <ThemeCardContent className="p-6">
           <div className="animate-pulse space-y-4">
             <div className="h-6 bg-gray-200 rounded w-1/3"></div>
             <div className="space-y-2">
@@ -31,20 +31,20 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
               <div className="h-4 bg-gray-200 rounded w-5/6"></div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </ThemeCardContent>
+      </ThemeCard>
     )
   }
 
   if (error || !video) {
     return (
-      <Card>
-        <CardContent className="p-6">
+      <ThemeCard variant="glass">
+        <ThemeCardContent className="p-6">
           <div className="text-center text-gray-500">
             <p>无法加载视频信息</p>
           </div>
-        </CardContent>
-      </Card>
+        </ThemeCardContent>
+      </ThemeCard>
     )
   }
 
@@ -69,8 +69,8 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
   }
 
   return (
-    <Card>
-      <CardContent className="p-6">
+    <ThemeCard variant="glass">
+      <ThemeCardContent className="p-6">
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-gray-900">{video.title}</h2>
 
@@ -123,7 +123,7 @@ export function VideoInfo({ videoId }: VideoInfoProps) {
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </ThemeCardContent>
+    </ThemeCard>
   )
 }

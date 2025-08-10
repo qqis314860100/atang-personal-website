@@ -560,7 +560,7 @@ export const zhToEnCache: Record<string, { namespace: Namespace; key: string }> 
     "namespace": "dashboard",
     "key": "pageHeatmap.browserDistribution"
   },
-  "热门页面热力图": {
+  "热门页面": {
     "namespace": "dashboard",
     "key": "pageHeatmap.title"
   },
@@ -580,7 +580,11 @@ export const zhToEnCache: Record<string, { namespace: Namespace; key: string }> 
     "namespace": "dashboard",
     "key": "pageHeatmap.times"
   },
-  "性能指标热力图": {
+  "完整路径": {
+    "namespace": "dashboard",
+    "key": "pageHeatmap.fullPath"
+  },
+  "性能指标": {
     "namespace": "dashboard",
     "key": "performanceHeatmap.title"
   },
@@ -760,7 +764,7 @@ export const zhToEnCache: Record<string, { namespace: Namespace; key: string }> 
     "namespace": "project",
     "key": "categories.collaboration"
   },
-  "performance.性能指标热力图": {
+  "性能指标热力图": {
     "namespace": "performance",
     "key": "title"
   },
@@ -856,7 +860,7 @@ export const zhToEnCache: Record<string, { namespace: Namespace; key: string }> 
     "namespace": "performance",
     "key": "noData"
   },
-  "pageAnalytics.热门页面热力图": {
+  "热门页面热力图": {
     "namespace": "pageAnalytics",
     "key": "title"
   },
@@ -876,7 +880,7 @@ export const zhToEnCache: Record<string, { namespace: Namespace; key: string }> 
     "namespace": "pageAnalytics",
     "key": "stayTime"
   },
-  "完整路径": {
+  "pageAnalytics.完整路径": {
     "namespace": "pageAnalytics",
     "key": "fullPath"
   },

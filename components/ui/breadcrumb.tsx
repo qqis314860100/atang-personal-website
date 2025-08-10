@@ -1,10 +1,10 @@
 'use client'
 
-import React from 'react'
-import Link from 'next/link'
+import { cn } from '@/lib/utils'
 import { ChevronRight, Home } from 'lucide-react'
 import { useLocale } from 'next-intl'
-import { cn } from '@/utils/utils'
+import Link from 'next/link'
+import React from 'react'
 
 interface BreadcrumbItem {
   label: string

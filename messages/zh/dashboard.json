@@ -121,14 +121,15 @@
     "uniqueVisitors": "独立访客",
     "deviceDistribution": "设备分布",
     "browserDistribution": "浏览器分布",
-    "title": "热门页面热力图",
+    "title": "热门页面",
     "noData": "暂无页面数据",
     "pageStats": "页面统计",
     "averageStay": "平均停留",
-    "times": "次"
+    "times": "次",
+    "fullPath": "完整路径"
   },
   "performanceHeatmap": {
-    "title": "性能指标热力图",
+    "title": "性能指标",
     "thresholdBasedOn": "阈值基于 Web Vitals 建议",
     "average": "平均值",
     "sampleCount": "样本数",

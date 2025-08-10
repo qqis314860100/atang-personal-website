@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useI18n } from '@/app/hooks/use-i18n'
+import { ThemeText, ThemeText3XL } from '@/app/components/ui/theme-text'
+import { ThemeCard, ThemeCardContent } from '@/components/ui/theme-card'
 
 interface AnalyticsCardsProps {
   data: {
@@ -134,80 +135,80 @@ export function AnalyticsCards({ data }: AnalyticsCardsProps) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
       {/* 页面浏览量 */}
-      <Card className="bg-gradient-to-br from-purple-600/20 to-purple-800/20 border-purple-500/30">
-        <CardContent className="p-6">
+      <ThemeCard variant="glass" hover={true}>
+        <ThemeCardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <Badge
               variant="outline"
-              className="bg-purple-500/20 border-purple-500/30 text-purple-400 text-xs"
+              className="bg-blue-500/10 border-blue-500/20 text-blue-600 dark:bg-blue-500/20 dark:border-blue-500/30 dark:text-blue-400 text-xs"
             >
               {t.dashboard('总浏览量')}
             </Badge>
           </div>
           <div className="space-y-2">
-            <p className="text-3xl font-bold text-white">
+            <ThemeText3XL weight="bold" variant="primary">
               <AnimatedNumber value={data.pageViews} />
-            </p>
+            </ThemeText3XL>
           </div>
-        </CardContent>
-      </Card>
+        </ThemeCardContent>
+      </ThemeCard>
 
       {/* 独立访客 */}
-      <Card className="bg-gradient-to-br from-blue-600/20 to-blue-800/20 border-blue-500/30">
-        <CardContent className="p-6">
+      <ThemeCard variant="glass" hover={true}>
+        <ThemeCardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <Badge
               variant="outline"
-              className="bg-blue-500/20 border-blue-500/30 text-blue-400 text-xs"
+              className="bg-green-500/10 border-green-500/20 text-green-600 dark:bg-green-500/20 dark:border-green-500/30 dark:text-green-400 text-xs"
             >
-              {t.dashboard('总独立访客数')}
+              {t.dashboard('独立访客')}
             </Badge>
           </div>
           <div className="space-y-2">
-            <p className="text-3xl font-bold text-white">
+            <ThemeText3XL weight="bold" variant="primary">
               <AnimatedNumber value={data.uniqueVisitors} />
-            </p>
+            </ThemeText3XL>
           </div>
-        </CardContent>
-      </Card>
+        </ThemeCardContent>
+      </ThemeCard>
 
-      {/* 在线人数 */}
-      <Card className="bg-gradient-to-br from-green-600/20 to-green-800/20 border-green-500/30">
-        <CardContent className="p-6">
+      {/* 实时用户 */}
+      <ThemeCard variant="glass" hover={true}>
+        <ThemeCardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <Badge
               variant="outline"
-              className="bg-green-500/20 border-green-500/30 text-green-400 text-xs"
+              className="bg-yellow-500/10 border-yellow-500/20 text-yellow-600 dark:bg-yellow-500/20 dark:border-yellow-500/30 dark:text-yellow-400 text-xs"
             >
-              {t.dashboard('实时在线人数')}
+              {t.dashboard('实时用户')}
             </Badge>
           </div>
           <div className="space-y-2">
-            <p className="text-3xl font-bold text-white">
+            <ThemeText3XL weight="bold" variant="primary">
               <AnimatedNumber value={data.realTimeUsers} />
-            </p>
+            </ThemeText3XL>
           </div>
-        </CardContent>
-      </Card>
+        </ThemeCardContent>
+      </ThemeCard>
 
       {/* 平均会话时长 */}
-      <Card className="bg-gradient-to-br from-orange-600/20 to-orange-800/20 border-orange-500/30">
-        <CardContent className="p-6">
+      <ThemeCard variant="glass" hover={true}>
+        <ThemeCardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <Badge
               variant="outline"
-              className="bg-orange-500/20 border-orange-500/30 text-orange-400 text-xs"
+              className="bg-gray-500/10 border-gray-500/20 text-gray-600 dark:bg-gray-500/20 dark:border-gray-500/30 dark:text-gray-400 text-xs"
             >
               {t.dashboard('平均会话时长')}
             </Badge>
           </div>
           <div className="space-y-2">
-            <p className="text-3xl font-bold text-white">
+            <ThemeText3XL weight="bold" variant="primary">
               <AnimatedTime seconds={data.avgSessionDuration} />
-            </p>
+            </ThemeText3XL>
           </div>
-        </CardContent>
-      </Card>
+        </ThemeCardContent>
+      </ThemeCard>
     </div>
   )
 }

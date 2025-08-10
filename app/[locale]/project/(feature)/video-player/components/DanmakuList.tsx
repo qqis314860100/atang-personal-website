@@ -1,6 +1,11 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  ThemeCard,
+  ThemeCardContent,
+  ThemeCardHeader,
+  ThemeCardTitle,
+} from '@/components/ui/theme-card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useDanmakuList, useHotDanmaku } from '@/app/hooks/use-danmaku'
@@ -49,16 +54,16 @@ export function DanmakuList({
   return (
     <div className="space-y-4 mt-[64px] w-full max-w-4xl">
       {/* 弹幕列表 */}
-      <Card className="w-full">
-        <CardHeader className="pb-0">
-          <CardTitle className="text-base flex items-center justify-between">
+      <ThemeCard variant="glass" className="w-full">
+        <ThemeCardHeader className="pb-0">
+          <ThemeCardTitle className="text-base flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <MessageSquare className="h-4 w-4" />
               <span>弹幕列表</span>
             </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
+          </ThemeCardTitle>
+        </ThemeCardHeader>
+        <ThemeCardContent className="p-0">
           <ScrollArea className="h-[550px]">
             <div className="p-4">
               {recentDanmaku.length > 0 ? (
@@ -105,8 +110,8 @@ export function DanmakuList({
               查看历史弹幕
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </ThemeCardContent>
+      </ThemeCard>
     </div>
   )
 }

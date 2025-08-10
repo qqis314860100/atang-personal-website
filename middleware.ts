@@ -1,7 +1,7 @@
-import { routing } from './i18n/routing'
-import { NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 import createMiddleware from 'next-intl/middleware'
+import { NextRequest, NextResponse } from 'next/server'
+import { routing } from './i18n/routing'
 
 export const config = {
   matcher: [
@@ -9,58 +9,16 @@ export const config = {
   ],
 }
 
-// 不需要检查会话的路径
-const publicPaths = ['/login', '/dashboard']
-
 export async function middleware(request: NextRequest) {
-  // 先处理国际化路由
-  const intlMiddleware = createMiddleware(routing)
-
-  // 获取当前路径
-  const pathname = request.nextUrl.pathname
-
-  // 正确移除语言前缀 - 支持所有配置的语言
-  const localePattern = new RegExp(`^/(${routing.locales.join('|')})(?:/|$)`)
-  const pathnameWithoutLocale = pathname.replace(localePattern, '/')
-
-  console.log('原始路径:', pathname)
-  console.log('移除语言前缀后:', pathnameWithoutLocale)
-
-  const isPublicPath = publicPaths.some(
-    (path) =>
-      pathnameWithoutLocale === path ||
-      pathnameWithoutLocale.startsWith(`${path}/`)
-  )
-
-  console.log('是否公开路径:', isPublicPath, 'publicPaths:', publicPaths)
-
-  // 处理 Supabase 会话
+  // 处理 Supabase 会话和认证
   const supabaseResponse = await updateSession(request)
 
-  // 获取会话信息
-  const session = supabaseResponse?.cookies.get('sb-session')?.value
-
-  // 如果不是公开路径并且没有会话,重定向到dashboard
-  if (!isPublicPath && !session) {
-    // 获取当前语言
-    const locale = pathname.match(localePattern)?.[1] || routing.defaultLocale
-    console.log('重定向 - 语言:', locale)
-    // 构建重定向URL
-    const redirectUrl = new URL(`/${locale}/dashboard`, request.url)
-    redirectUrl.searchParams.set('redirectFrom', pathname)
-
-    return NextResponse.redirect(redirectUrl)
+  // 如果Supabase中间件返回了重定向响应，直接返回
+  if (supabaseResponse instanceof NextResponse) {
+    return supabaseResponse
   }
 
   // 应用国际化中间件
-  const response = intlMiddleware(request)
-
-  // 将 Supabase 的 cookie 转移到国际化中间件的响应中
-  if (supabaseResponse) {
-    supabaseResponse.cookies.getAll().forEach((cookie) => {
-      response.cookies.set(cookie.name, cookie.value)
-    })
-  }
-
-  return response
+  const intlMiddleware = createMiddleware(routing)
+  return intlMiddleware(request)
 }

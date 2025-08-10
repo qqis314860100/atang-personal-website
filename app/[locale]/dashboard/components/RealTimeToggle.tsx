@@ -1,13 +1,18 @@
 'use client'
 
-import { Pause, Wifi } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { useRealTime } from '@/app/components/providers/RealTimeProvider'
+import { ThemeText, ThemeTextXS } from '@/app/components/ui/theme-text'
 import { useI18n } from '@/app/hooks/use-i18n'
+import { Button } from '@/components/ui/button'
+import { getThemeClasses } from '@/lib/theme/colors'
+import { cn } from '@/lib/utils'
+import { Pause, Wifi } from 'lucide-react'
+import { useTheme } from 'next-themes'
 
 export function RealTimeToggle() {
   const { isEnabled, setIsEnabled, lastUpdate } = useRealTime()
   const t = useI18n()
+  const { theme } = useTheme()
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('zh-CN', {
@@ -18,7 +23,19 @@ export function RealTimeToggle() {
   }
 
   return (
-    <div className="flex items-center gap-3 p-3 bg-gray-800/50 rounded-lg backdrop-blur-sm border border-gray-700/50">
+    <div
+      className={cn(
+        'flex items-center gap-3 p-3  rounded-lg backdrop-blur-sm border border-gray-700/50',
+        getThemeClasses(
+          'bg-gray-800/50',
+          (theme as 'light' | 'dark') || 'light',
+          {
+            card: 'glass',
+            border: 'primary',
+          }
+        )
+      )}
+    >
       <Button
         variant={isEnabled ? 'default' : 'secondary'}
         size="sm"
@@ -32,16 +49,19 @@ export function RealTimeToggle() {
         <div className="relative z-10 flex items-center gap-2">
           {isEnabled ? (
             <>
-              <span className="text-white  animate-pulse animate-infinite">
+              <ThemeText
+                variant="primary"
+                className="animate-pulse animate-infinite text-md text-white"
+              >
                 {t.dashboard('实时更新中')}
-              </span>
+              </ThemeText>
             </>
           ) : (
             <>
               <Pause className="w-4 h-4 text-gray-300" />
-              <span className="text-gray-300 font-medium">
+              <ThemeText variant="muted" weight="medium">
                 {t.dashboard('已暂停')}
-              </span>
+              </ThemeText>
             </>
           )}
         </div>
@@ -51,7 +71,7 @@ export function RealTimeToggle() {
         {/* 网络状态指示器 */}
         <div className="flex items-center gap-1">
           <Wifi className="w-3 h-3 text-green-400" />
-          <span className="text-gray-400">{t.dashboard('在线')}</span>
+          <ThemeTextXS variant="muted">{t.dashboard('在线')}</ThemeTextXS>
         </div>
 
         {/* 更新时间 */}
@@ -59,16 +79,18 @@ export function RealTimeToggle() {
           {isEnabled ? (
             <>
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              <span>
+              <ThemeTextXS variant="muted">
                 {t.dashboard('最后更新: {time}', {
                   params: { time: formatTime(lastUpdate) },
                 })}
-              </span>
+              </ThemeTextXS>
             </>
           ) : (
             <>
               <div className="w-2 h-2 bg-gray-400 rounded-full" />
-              <span>{t.dashboard('点击启用实时更新')}</span>
+              <ThemeTextXS variant="muted">
+                {t.dashboard('点击启用实时更新')}
+              </ThemeTextXS>
             </>
           )}
         </div>

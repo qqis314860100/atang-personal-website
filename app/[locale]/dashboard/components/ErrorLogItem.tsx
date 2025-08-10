@@ -1,10 +1,13 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
-import { AlertTriangle, Clock, MapPin, Monitor } from 'lucide-react'
-import { useCallback } from 'react'
-import toast from 'react-hot-toast'
+import { ThemeTextSM, ThemeTextXS } from '@/app/components/ui/theme-text'
 import { useI18n } from '@/app/hooks/use-i18n'
+import { Badge } from '@/components/ui/badge'
+import { getThemeClasses } from '@/lib/theme/colors'
+import { Clock, MapPin, Monitor } from 'lucide-react'
+import { useTheme } from 'next-themes'
+import React, { useCallback } from 'react'
+import toast from 'react-hot-toast'
 
 interface ErrorLog {
   id: string
@@ -45,10 +48,36 @@ export function ErrorLogItem({
   truncateMessage,
 }: ErrorLogItemProps) {
   const t = useI18n()
+  const { theme, systemTheme } = useTheme()
+  const currentTheme = (theme === 'system' ? systemTheme : theme) as
+    | 'light'
+    | 'dark'
+    | undefined
+
+  // 使用 useMemo 优化主题样式计算
+  const themeStyles = React.useMemo(() => {
+    const theme = currentTheme || 'light'
+    return {
+      mainCard: getThemeClasses('transition-all duration-300', theme, {
+        card: 'glass',
+        border: 'primary',
+        hover: 'primary',
+      }),
+      badge: getThemeClasses('', theme, {
+        card: 'secondary',
+        border: 'primary',
+        text: 'secondary',
+      }),
+    }
+  }, [currentTheme])
 
   const handleExpand = useCallback(() => {
-    onExpand(error.id)
-  }, [error.id, onExpand])
+    if (error.id && isExpanded) {
+      onExpand('')
+    } else {
+      onExpand(error.id)
+    }
+  }, [error.id, onExpand, isExpanded])
 
   const handleErrorClick = useCallback(
     (e: React.MouseEvent) => {
@@ -68,9 +97,9 @@ export function ErrorLogItem({
   )
 
   return (
-    <div className="space-y-1">
+    <>
       <div
-        className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 hover:bg-gray-700/30 transition-colors cursor-pointer"
+        className={`${themeStyles.mainCard}border rounded-lg p-6 hover:scale-[1.01] cursor-pointer`}
         onClick={handleExpand}
       >
         <div className="flex items-start justify-between">
@@ -85,12 +114,12 @@ export function ErrorLogItem({
                 {getSeverityIcon(error.severity)}
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-white">
+                <ThemeTextSM weight="medium" variant="primary">
                   {error.type}
-                </span>
+                </ThemeTextSM>
                 <Badge
                   variant="outline"
-                  className="text-xs bg-gray-700/50 border-gray-600 text-gray-300"
+                  className={`text-xs ${themeStyles.badge}`}
                 >
                   {error.count} {t.dashboard('次')}
                 </Badge>
@@ -98,26 +127,32 @@ export function ErrorLogItem({
             </div>
 
             <div className="ml-8">
-              <p className="text-sm text-gray-300 leading-relaxed">
+              <ThemeTextSM variant="secondary" className="leading-relaxed">
                 {truncateMessage(error.message)}
-              </p>
+              </ThemeTextSM>
 
-              <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+              <div className="flex items-center gap-4 mt-2">
                 <div className="flex items-center gap-1">
                   <MapPin className="w-3 h-3" />
-                  <span>{error.page}</span>
+                  <ThemeTextXS variant="tertiary">{error.page}</ThemeTextXS>
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
-                  <span>{formatTimestamp(error.timestamp)}</span>
+                  <ThemeTextXS variant="tertiary">
+                    {formatTimestamp(error.timestamp)}
+                  </ThemeTextXS>
                 </div>
                 <div className="flex items-center gap-1">
                   <Monitor className="w-3 h-3" />
-                  <span>{error.source || 'frontend'}</span>
+                  <ThemeTextXS variant="tertiary">
+                    {error.source || 'frontend'}
+                  </ThemeTextXS>
                 </div>
                 {error.traceId && (
                   <div className="flex items-center gap-1">
-                    <span className="font-mono text-xs">{error.traceId}</span>
+                    <ThemeTextXS variant="tertiary" className="font-mono">
+                      {error.traceId}
+                    </ThemeTextXS>
                   </div>
                 )}
               </div>
@@ -138,48 +173,59 @@ export function ErrorLogItem({
 
       {/* 展开的详细信息 */}
       {isExpanded && (
-        <div className="ml-4 p-4 bg-gray-800/20 border border-gray-700/30 rounded-lg space-y-4">
+        <div
+          className={`p-4 ${getThemeClasses(
+            'border rounded-lg space-y-4',
+            currentTheme || 'light',
+            {
+              card: 'secondary',
+              border: 'primary',
+            }
+          )}`}
+        >
           {/* 完整错误信息 */}
-          <div>
-            <h4 className="text-sm font-medium text-white mb-2">
+          <div className="flex flex-col gap-1">
+            <ThemeTextSM weight="medium" variant="primary" className="mb-2">
               {t.dashboard('错误详情')}
-            </h4>
+            </ThemeTextSM>
             <div className="space-y-2">
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">
+                <ThemeTextXS variant="muted">
                   {t.dashboard('错误类型:')}
-                </span>
-                <span className="text-gray-300 font-mono">{error.type}</span>
+                </ThemeTextXS>
+                <ThemeTextXS variant="secondary" className="font-mono">
+                  {error.type}
+                </ThemeTextXS>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">
+                <ThemeTextXS variant="muted">
                   {t.dashboard('错误消息:')}
-                </span>
-                <span className="text-gray-300">{error.message}</span>
+                </ThemeTextXS>
+                <ThemeTextXS variant="secondary">{error.message}</ThemeTextXS>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">
+                <ThemeTextXS variant="muted">
                   {t.dashboard('发生次数:')}
-                </span>
-                <span className="text-gray-300">
+                </ThemeTextXS>
+                <ThemeTextXS variant="secondary">
                   {error.count} {t.dashboard('次')}
-                </span>
+                </ThemeTextXS>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">
+                <ThemeTextXS variant="muted">
                   {t.dashboard('最后发生:')}
-                </span>
-                <span className="text-gray-300">
+                </ThemeTextXS>
+                <ThemeTextXS variant="secondary">
                   {formatTimestamp(error.timestamp)}
-                </span>
+                </ThemeTextXS>
               </div>
               <div className="flex justify-between text-xs">
-                <span className="text-gray-400">
+                <ThemeTextXS variant="muted">
                   {t.dashboard('严重程度:')}
-                </span>
-                <span className="text-gray-300 capitalize">
+                </ThemeTextXS>
+                <ThemeTextXS variant="secondary" className="capitalize">
                   {error.severity}
-                </span>
+                </ThemeTextXS>
               </div>
             </div>
           </div>
@@ -187,44 +233,56 @@ export function ErrorLogItem({
           {/* 堆栈跟踪 */}
           {error.stackTrace && (
             <div>
-              <h4 className="text-sm font-medium text-white mb-2">
+              <ThemeTextSM weight="medium" variant="primary" className="mb-2">
                 {t.dashboard('堆栈跟踪')}
-              </h4>
-              <pre className="text-xs text-gray-300 bg-gray-900/50 p-3 rounded border border-gray-700/50 overflow-x-auto">
+              </ThemeTextSM>
+              <pre
+                className={`text-xs p-3 rounded border overflow-x-auto ${getThemeClasses(
+                  '',
+                  currentTheme || 'light',
+                  {
+                    card: 'tertiary',
+                    border: 'primary',
+                    text: 'secondary',
+                  }
+                )}`}
+              >
                 {error.stackTrace}
               </pre>
             </div>
           )}
 
           {/* 上下文信息 */}
-          <div>
-            <h4 className="text-sm font-medium text-white mb-2">
+          <div className="flex flex-col gap-1">
+            <ThemeTextSM weight="medium" variant="primary" className="mb-2">
               {t.dashboard('上下文信息')}
-            </h4>
+            </ThemeTextSM>
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
-                <span className="text-gray-400">
+                <ThemeTextXS variant="muted">
                   {t.dashboard('页面路径:')}
-                </span>
-                <span className="text-gray-300 ml-2">{error.page}</span>
+                </ThemeTextXS>
+                <ThemeTextXS variant="secondary" className="ml-2">
+                  {error.page}
+                </ThemeTextXS>
               </div>
               <div>
-                <span className="text-gray-400">
+                <ThemeTextXS variant="muted">
                   {t.dashboard('错误来源:')}
-                </span>
-                <span className="text-gray-300 ml-2">
+                </ThemeTextXS>
+                <ThemeTextXS variant="secondary" className="ml-2">
                   {error.source || 'frontend'}
-                </span>
+                </ThemeTextXS>
               </div>
 
               {error.traceId && (
                 <div>
-                  <span className="text-gray-400">
+                  <ThemeTextXS variant="muted">
                     {t.dashboard('追踪ID:')}
-                  </span>
-                  <span className="text-gray-300 ml-2 font-mono">
+                  </ThemeTextXS>
+                  <ThemeTextXS variant="secondary" className="ml-2 font-mono">
                     {error.traceId}
-                  </span>
+                  </ThemeTextXS>
                 </div>
               )}
             </div>
@@ -232,33 +290,67 @@ export function ErrorLogItem({
 
           {/* 浏览器内核 */}
           {error.userAgent && (
-            <div>
-              <h4 className="text-sm font-medium text-white mb-2">
+            <div className="flex gap-2 items-center">
+              <ThemeTextSM weight="medium" variant="primary" className="mb-2">
                 {t.dashboard('浏览器内核')}
-              </h4>
-              <p className="text-xs text-gray-300 bg-gray-900/50 p-3 rounded border border-gray-700/50 break-all">
+              </ThemeTextSM>
+              <ThemeTextXS
+                variant="secondary"
+                className={`p-3 rounded border break-all ${getThemeClasses(
+                  '',
+                  currentTheme || 'light',
+                  {
+                    card: 'tertiary',
+                    border: 'primary',
+                  }
+                )}`}
+              >
                 {error.userAgent}
-              </p>
+              </ThemeTextXS>
             </div>
           )}
 
           {/* 操作按钮 */}
-          <div className="flex items-center gap-2 pt-2 border-t border-gray-700/50">
+          <div
+            className={`flex items-center gap-2 pt-2 border-t ${getThemeClasses(
+              '',
+              currentTheme || 'light',
+              {
+                border: 'primary',
+              }
+            )}`}
+          >
             <button
               onClick={handleErrorClick}
-              className="px-3 py-1 bg-blue-500/20 text-blue-400 text-xs rounded hover:bg-blue-500/30 transition-colors cursor-pointer"
+              className={`px-3 py-1 text-xs rounded transition-colors cursor-pointer ${getThemeClasses(
+                'hover:scale-105',
+                currentTheme || 'light',
+                {
+                  card: 'primary',
+                  text: 'primary',
+                  hover: 'secondary',
+                }
+              )}`}
             >
               {t.dashboard('查看完整详情')}
             </button>
             <button
               onClick={handleCopyError}
-              className="px-3 cursor-pointer hover:text-white py-1 bg-gray-700/50 text-gray-300 text-xs rounded hover:bg-gray-600/50 transition-colors"
+              className={`px-3 cursor-pointer py-1 text-xs rounded transition-colors hover:scale-105 ${getThemeClasses(
+                '',
+                currentTheme || 'light',
+                {
+                  card: 'secondary',
+                  text: 'secondary',
+                  hover: 'primary',
+                }
+              )}`}
             >
               {t.dashboard('复制错误信息')}
             </button>
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }

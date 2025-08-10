@@ -1,6 +1,7 @@
 'use client'
 
 import { create } from 'zustand'
+import { useCallback } from 'react'
 
 interface LoadingState {
   isLoading: boolean
@@ -21,7 +22,14 @@ export const useLoadingStore = create<LoadingState>((set) => ({
 
 // 便捷的hook
 export function useLoading() {
-  const { showLoading, hideLoading } = useLoadingStore()
+  // 使用 useCallback 确保函数引用稳定，不依赖 store 实例
+  const showLoading = useCallback((message?: string, subMessage?: string) => {
+    useLoadingStore.getState().showLoading(message, subMessage)
+  }, [])
+
+  const hideLoading = useCallback(() => {
+    useLoadingStore.getState().hideLoading()
+  }, [])
 
   return {
     showLoading,

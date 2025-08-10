@@ -1,8 +1,11 @@
 'use client'
 
-import { useState, ReactNode, useEffect } from 'react'
-import { Maximize2, Minimize2 } from 'lucide-react'
 import { useFullscreenAnimation } from '@/app/hooks/use-fullscreen-animation'
+import { ThemeCard } from '@/components/ui/theme-card'
+import { getThemeClasses } from '@/lib/theme/colors'
+import { Maximize2, Minimize2 } from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { ReactNode, useEffect } from 'react'
 
 interface FullscreenCardProps {
   title: ReactNode
@@ -11,6 +14,7 @@ interface FullscreenCardProps {
   className?: string
   header?: ReactNode
   footer?: ReactNode
+  variant?: 'default' | 'glass' | 'elevated' | 'bordered'
 }
 
 export function FullscreenCard({
@@ -20,7 +24,14 @@ export function FullscreenCard({
   className = '',
   header,
   footer,
+  variant = 'glass',
 }: FullscreenCardProps) {
+  const { theme, systemTheme } = useTheme()
+  const currentTheme = (theme === 'system' ? systemTheme : theme) as
+    | 'light'
+    | 'dark'
+    | undefined
+
   const {
     isFullscreen,
     isAnimating,
@@ -50,29 +61,65 @@ export function FullscreenCard({
     }
   }, [isFullscreen])
 
+  // 获取主题相关的样式类
+  const themeClasses = getThemeClasses(
+    'transition-all duration-300',
+    currentTheme || 'light',
+    {
+      card: variant === 'glass' ? 'glass' : 'primary',
+      border: 'primary',
+      gradient: 'primary',
+      shadow: 'glass',
+      hover: 'primary',
+    }
+  )
+
   return (
     <div
       className={`${
-        isFullscreen ? 'fixed inset-0 z-50 p-4 md:p-6 bg-gray-900/95' : ''
+        isFullscreen
+          ? 'fixed inset-0 z-50 p-4 md:p-6 bg-gray-900/95 dark:bg-gray-900/95'
+          : ''
       }`}
     >
-      <div
-        className={`bg-gray-900/50 border border-gray-800 rounded-lg h-[400px] flex flex-col ${className} ${getSizeClasses(
+      <ThemeCard
+        variant={variant}
+        className={`${themeClasses} h-[400px] flex flex-col ${className} ${getSizeClasses(
           'relative'
         )}`}
         style={getAnimationStyles()}
       >
-        <div className="flex items-center justify-between p-4 border-b border-gray-800/50">
-          <div className="flex items-center gap-3 text-lg font-semibold text-white">
+        <div
+          className={`flex items-center justify-between p-4 border-b ${getThemeClasses(
+            'transition-colors duration-200',
+            currentTheme || 'light',
+            {
+              border: 'primary',
+            }
+          )}`}
+        >
+          <div
+            className={`flex items-center gap-3 text-lg font-semibold ${getThemeClasses(
+              '',
+              currentTheme || 'light',
+              {
+                text: 'primary',
+              }
+            )}`}
+          >
             {title}
           </div>
           <div className="flex items-center gap-2">
             {actions}
             <button
               onClick={toggleFullscreen}
-              className={`p-2 rounded-md bg-gray-800/60 hover:bg-gray-700/60 text-gray-200 transition-all duration-200 ${
+              className={`p-2 rounded-md transition-all duration-200 ${
                 isAnimating ? 'scale-95' : ''
-              }`}
+              } ${getThemeClasses('hover:scale-105', currentTheme || 'light', {
+                card: 'secondary',
+                hover: 'primary',
+                text: 'primary',
+              })}`}
               title={isFullscreen ? '退出全屏' : '全屏'}
               disabled={isAnimating}
             >
@@ -86,21 +133,37 @@ export function FullscreenCard({
         </div>
 
         {header && (
-          <div className="flex-shrink-0 border-b border-gray-800/50">
+          <div
+            className={`flex-shrink-0 border-b ${getThemeClasses(
+              'transition-colors duration-200',
+              currentTheme || 'light',
+              {
+                border: 'primary',
+              }
+            )}`}
+          >
             {header}
           </div>
         )}
 
         <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto pr-2">{children}</div>
+          <div className="h-full overflow-y-auto p-2">{children}</div>
         </div>
 
         {footer && (
-          <div className="flex-shrink-0 border-t border-gray-800/50">
+          <div
+            className={`flex-shrink-0 border-t ${getThemeClasses(
+              'transition-colors duration-200',
+              currentTheme || 'light',
+              {
+                border: 'primary',
+              }
+            )}`}
+          >
             {footer}
           </div>
         )}
-      </div>
+      </ThemeCard>
     </div>
   )
 }

@@ -12,7 +12,7 @@ const siteMetadata = {
   github: 'https://github.com',
   avatar: '/images/avatar.png',
   headerNavLinks: [
-    { href: '/', title: 'Home' },
+    { href: '/home', title: 'Home' },
     { href: '/blog', title: '博客' },
   ],
   socialBanner:

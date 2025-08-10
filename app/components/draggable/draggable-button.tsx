@@ -1,8 +1,8 @@
 'use client'
 
-import { ReactNode } from 'react'
-import { cn } from '@/utils/utils'
 import { useDraggable } from '@/app/hooks/use-draggable'
+import { cn } from '@/lib/utils'
+import { ReactNode } from 'react'
 
 interface DraggableButtonProps {
   children: ReactNode

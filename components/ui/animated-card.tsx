@@ -1,8 +1,8 @@
 'use client'
 
-import React from 'react'
+import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
-import { cn } from '@/utils/utils'
+import React from 'react'
 
 interface AnimatedCardProps {
   children: React.ReactNode

@@ -1,6 +1,11 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  ThemeCard,
+  ThemeCardContent,
+  ThemeCardHeader,
+  ThemeCardTitle,
+} from '@/components/ui/theme-card'
 import { Badge } from '@/components/ui/badge'
 import { Users, Wifi, WifiOff } from 'lucide-react'
 import { useSocket } from '@/app/hooks/use-socket'
@@ -10,14 +15,17 @@ export default function OnlineVisitors() {
   const { isConnected, userCount } = useSocket()
 
   return (
-    <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-lg fixed z-50 top-24 right-6">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold flex items-center gap-2">
+    <ThemeCard
+      variant="glass"
+      className="bg-white/95 backdrop-blur-sm border-0 shadow-lg fixed z-50 top-24 right-6"
+    >
+      <ThemeCardHeader className="pb-3">
+        <ThemeCardTitle className="text-lg font-semibold flex items-center gap-2">
           <Users className="h-5 w-5" />
           在线访客
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+        </ThemeCardTitle>
+      </ThemeCardHeader>
+      <ThemeCardContent>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {isConnected ? (
@@ -33,7 +41,7 @@ export default function OnlineVisitors() {
             {userCount}
           </Badge>
         </div>
-      </CardContent>
-    </Card>
+      </ThemeCardContent>
+    </ThemeCard>
   )
 }

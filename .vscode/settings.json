@@ -1,4 +1,53 @@
 {
   "files.defaultLanguage": "",
-  "EnglishChineseDictionary.enableHover": true
+  "EnglishChineseDictionary.enableHover": true,
+
+  // 优化保存时的操作
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+
+  // 减少文件监听
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.next/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/.git/**": true,
+    "**/logs/**": true,
+    "**/*.tsbuildinfo": true
+  },
+
+  // 优化搜索排除
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.git": true,
+    "**/logs": true,
+    "**/*.tsbuildinfo": true,
+    "**/pnpm-lock.yaml": true
+  },
+
+  // 禁用不必要的功能
+  "typescript.suggest.autoImports": false,
+  "typescript.updateImportsOnFileMove.enabled": "never",
+
+  // 优化文件索引
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/logs": true,
+    "**/*.tsbuildinfo": true
+  }
 }

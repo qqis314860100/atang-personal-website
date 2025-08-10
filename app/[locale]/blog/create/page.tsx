@@ -4,7 +4,12 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  ThemeCard,
+  ThemeCardContent,
+  ThemeCardHeader,
+  ThemeCardTitle,
+} from '@/components/ui/theme-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Edit3,
@@ -205,14 +210,17 @@ export default function CreateBlogPage() {
           {/* 左侧：文章信息 */}
           <div className="lg:col-span-2 space-y-6 overflow-y-auto">
             {/* 文件上传 */}
-            <Card className="bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-gray-900 flex items-center gap-2">
+            <ThemeCard
+              variant="glass"
+              className="bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl"
+            >
+              <ThemeCardHeader>
+                <ThemeCardTitle className="text-gray-900 flex items-center gap-2">
                   <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
                   文件上传
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+                </ThemeCardTitle>
+              </ThemeCardHeader>
+              <ThemeCardContent>
                 <UploadArea
                   onUpload={handleFileUpload}
                   accept=".md"
@@ -237,18 +245,21 @@ export default function CreateBlogPage() {
                     </div>
                   }
                 />
-              </CardContent>
-            </Card>
+              </ThemeCardContent>
+            </ThemeCard>
 
             {/* 文章信息 */}
-            <Card className="bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-gray-900 flex items-center gap-2">
+            <ThemeCard
+              variant="glass"
+              className="bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl"
+            >
+              <ThemeCardHeader>
+                <ThemeCardTitle className="text-gray-900 flex items-center gap-2">
                   <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
                   文章信息
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </ThemeCardTitle>
+              </ThemeCardHeader>
+              <ThemeCardContent className="space-y-4">
                 {/* 标题 */}
                 <div className="space-y-2">
                   <Label htmlFor="title" className="text-gray-700 font-medium">
@@ -336,19 +347,22 @@ export default function CreateBlogPage() {
                     {isLoading ? '创建中...' : '创建文章'}
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </ThemeCardContent>
+            </ThemeCard>
           </div>
 
           {/* 右侧：内容编辑 */}
-          <Card className="lg:col-span-3 bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl flex flex-col">
-            <CardHeader>
-              <CardTitle className="text-gray-900 flex items-center gap-2">
+          <ThemeCard
+            variant="glass"
+            className="lg:col-span-3 bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl flex flex-col"
+          >
+            <ThemeCardHeader>
+              <ThemeCardTitle className="text-gray-900 flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
                 内容编辑
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col">
+              </ThemeCardTitle>
+            </ThemeCardHeader>
+            <ThemeCardContent className="flex-1 flex flex-col">
               <Tabs
                 value={activeTab}
                 onValueChange={setActiveTab}
@@ -407,8 +421,8 @@ export default function CreateBlogPage() {
                   </div>
                 </TabsContent>
               </Tabs>
-            </CardContent>
-          </Card>
+            </ThemeCardContent>
+          </ThemeCard>
         </SubtractNavBreadcrumbContainer>
       </div>
     </SubtractNavContainer>

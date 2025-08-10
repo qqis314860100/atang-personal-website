@@ -1,25 +1,23 @@
 'use client'
 
-import { Pagination } from '@/app/components/pagination/pagination'
-import { AlertTriangle } from 'lucide-react'
-import { useMemo } from 'react'
+import { ThemeText, ThemeTextSM } from '@/app/components/ui/theme-text'
+import { useI18n } from '@/app/hooks/use-i18n'
+import { getThemeClasses } from '@/lib/theme/colors'
+import { useTheme } from 'next-themes'
 import { ErrorLogItem } from './ErrorLogItem'
 import {
   ErrorLog,
-  PAGINATION_CONFIG,
-  paginateData,
+  formatTimestamp,
   getSeverityColor,
   getSeverityIcon,
-  formatTimestamp,
   truncateMessage,
 } from './ErrorLogs.utils'
-import { useI18n } from '@/app/hooks/use-i18n'
 
 interface ErrorLogsListProps {
   data: ErrorLog[]
   expandedError: string | null
-  isLoading?: boolean // API加载状态
-  onErrorExpand: (errorId: string | null) => void
+  isLoading?: boolean
+  onErrorExpand: (errorId: string) => void
   onErrorClick: (errorId: string) => void
 }
 
@@ -31,41 +29,74 @@ export function ErrorLogsList({
   onErrorClick,
 }: ErrorLogsListProps) {
   const t = useI18n()
+  const { theme, systemTheme } = useTheme()
+  const currentTheme = (theme === 'system' ? systemTheme : theme) as
+    | 'light'
+    | 'dark'
+    | undefined
+
+  // 获取主题相关的样式类
+  const themeClasses = getThemeClasses(
+    'transition-all duration-300',
+    currentTheme || 'light',
+    {
+      card: 'glass',
+      border: 'primary',
+      text: 'secondary',
+    }
+  )
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-32">
+        <div
+          className={`w-6 h-6 border-2 rounded-full animate-spin ${getThemeClasses(
+            '',
+            currentTheme || 'light',
+            {
+              border: 'error',
+            }
+          )}`}
+        ></div>
+      </div>
+    )
+  }
+
+  if (data.length === 0) {
+    return (
+      <div
+        className={`flex flex-col items-center justify-center h-32 text-center ${themeClasses}`}
+      >
+        <ThemeText
+          size="lg"
+          weight="medium"
+          variant="secondary"
+          className="mb-2"
+        >
+          {t.dashboard('暂无错误日志')}
+        </ThemeText>
+        <ThemeTextSM variant="muted">
+          {t.dashboard('当前筛选条件下没有找到相关的错误日志')}
+        </ThemeTextSM>
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-0 h-full">
-      {/* 日志列表 */}
-      <div className="space-y-1 min-h-[400px] h-full">
-        {data.length > 0 ? (
-          data.map((error) => {
-            const isExpanded = expandedError === error.id
-
-            return (
-              <ErrorLogItem
-                key={error.id}
-                error={error}
-                isExpanded={isExpanded}
-                onExpand={onErrorExpand}
-                onErrorClick={onErrorClick}
-                getSeverityColor={getSeverityColor}
-                getSeverityIcon={getSeverityIcon}
-                formatTimestamp={formatTimestamp}
-                truncateMessage={truncateMessage}
-              />
-            )
-          })
-        ) : (
-          <div className="text-center py-12 text-gray-400">
-            <AlertTriangle className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg font-medium mb-2">
-              {t.dashboard('暂无错误日志')}
-            </p>
-            <p className="text-sm">
-              {t.dashboard('当前筛选条件下没有找到相关的错误日志')}
-            </p>
-          </div>
-        )}
-      </div>
+    <div className="space-y-2">
+      {data.map((error) => (
+        <ErrorLogItem
+          key={error.id}
+          error={error}
+          isExpanded={expandedError === error.id}
+          onExpand={onErrorExpand}
+          onErrorClick={onErrorClick}
+          getSeverityColor={getSeverityColor}
+          getSeverityIcon={getSeverityIcon}
+          formatTimestamp={formatTimestamp}
+          truncateMessage={truncateMessage}
+        />
+      ))}
     </div>
   )
 }

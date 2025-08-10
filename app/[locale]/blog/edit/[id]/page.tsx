@@ -6,7 +6,12 @@ import { useRouter } from '@/i18n/navigation'
 import { useLocale } from 'next-intl'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  ThemeCard,
+  ThemeCardContent,
+  ThemeCardHeader,
+  ThemeCardTitle,
+} from '@/components/ui/theme-card'
 import { AnimatedButton } from '@/components/ui/animated-card'
 import { ArrowLeft, Save, X, Loader2, Shield } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -196,14 +201,17 @@ const EditBlog = () => {
           {/* 左侧：文章信息 */}
           <div className="lg:col-span-2 space-y-6 overflow-y-auto">
             {/* Title */}
-            <Card className="bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-gray-900 flex items-center gap-2">
+            <ThemeCard
+              variant="glass"
+              className="bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl"
+            >
+              <ThemeCardHeader>
+                <ThemeCardTitle className="text-gray-900 flex items-center gap-2">
                   <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
                   文章标题
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+                </ThemeCardTitle>
+              </ThemeCardHeader>
+              <ThemeCardContent>
                 <Input
                   placeholder="输入文章标题..."
                   value={formData.title}
@@ -213,18 +221,21 @@ const EditBlog = () => {
                   className="text-lg font-medium border-gray-200 focus:border-blue-500 focus:ring-blue-500 rounded-xl"
                   required
                 />
-              </CardContent>
-            </Card>
+              </ThemeCardContent>
+            </ThemeCard>
 
             {/* Category */}
-            <Card className="bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-gray-900 flex items-center gap-2">
+            <ThemeCard
+              variant="glass"
+              className="bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl"
+            >
+              <ThemeCardHeader>
+                <ThemeCardTitle className="text-gray-900 flex items-center gap-2">
                   <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
                   文章分类
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+                </ThemeCardTitle>
+              </ThemeCardHeader>
+              <ThemeCardContent>
                 <Select
                   value={formData.categoryId}
                   onValueChange={(value) =>
@@ -242,18 +253,21 @@ const EditBlog = () => {
                     ))}
                   </SelectContent>
                 </Select>
-              </CardContent>
-            </Card>
+              </ThemeCardContent>
+            </ThemeCard>
 
             {/* 操作按钮 */}
-            <Card className="bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-gray-900 flex items-center gap-2">
+            <ThemeCard
+              variant="glass"
+              className="bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl"
+            >
+              <ThemeCardHeader>
+                <ThemeCardTitle className="text-gray-900 flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-600 rounded-full"></div>
                   操作
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </ThemeCardTitle>
+              </ThemeCardHeader>
+              <ThemeCardContent className="space-y-4">
                 <div className="flex items-center justify-end gap-4">
                   <Button
                     variant="outline"
@@ -272,19 +286,22 @@ const EditBlog = () => {
                     {isSubmitting ? '保存中...' : '更新文章'}
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
+              </ThemeCardContent>
+            </ThemeCard>
           </div>
 
           {/* 右侧：内容编辑 */}
-          <Card className="lg:col-span-3 bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl flex flex-col">
-            <CardHeader>
-              <CardTitle className="text-gray-900 flex items-center gap-2">
+          <ThemeCard
+            variant="glass"
+            className="lg:col-span-3 bg-white/98 backdrop-blur-sm border border-gray-200/50 shadow-sm hover:shadow-md transition-all duration-300 rounded-2xl flex flex-col"
+          >
+            <ThemeCardHeader>
+              <ThemeCardTitle className="text-gray-900 flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
                 文章内容
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col">
+              </ThemeCardTitle>
+            </ThemeCardHeader>
+            <ThemeCardContent className="flex-1 flex flex-col">
               <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
                 <Textarea
                   placeholder="在这里编写Markdown内容..."
@@ -296,8 +313,8 @@ const EditBlog = () => {
                   required
                 />
               </form>
-            </CardContent>
-          </Card>
+            </ThemeCardContent>
+          </ThemeCard>
         </SubtractNavBreadcrumbContainer>
       </div>
     </SubtractNavContainer>

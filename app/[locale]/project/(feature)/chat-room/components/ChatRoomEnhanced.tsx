@@ -1,7 +1,12 @@
 'use client'
 
 import { useState, useCallback, memo, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  ThemeCard,
+  ThemeCardContent,
+  ThemeCardHeader,
+  ThemeCardTitle,
+} from '@/components/ui/theme-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MessageCircle, Users, Wifi, WifiOff } from 'lucide-react'
 import { useSocket } from '@/app/hooks/use-socket'
@@ -73,18 +78,21 @@ export function ChatRoomEnhanced() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* 聊天区域 */}
           <div className="lg:col-span-3">
-            <Card className="h-[calc(100vh-130px)] border-0 bg-white rounded-2xl flex flex-col shadow-lg gap-0">
+            <ThemeCard
+              variant="glass"
+              className="h-[calc(100vh-130px)] border-0 bg-white rounded-2xl flex flex-col shadow-lg gap-0"
+            >
               {/* 聊天头部 - 微信风格 */}
-              <CardHeader className="pb-3 border-b border-gray-100 bg-white rounded-t-2xl">
+              <ThemeCardHeader className="pb-3 border-b border-gray-100 bg-white rounded-t-2xl">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
                       <MessageCircle className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg font-semibold text-gray-900">
+                      <ThemeCardTitle className="text-lg font-semibold text-gray-900">
                         公共聊天室
-                      </CardTitle>
+                      </ThemeCardTitle>
                       <p className="text-sm text-gray-500 flex items-center gap-2">
                         {isConnected ? (
                           <>
@@ -108,10 +116,10 @@ export function ChatRoomEnhanced() {
                     {userCount} 人在线
                   </Badge>
                 </div>
-              </CardHeader>
+              </ThemeCardHeader>
 
               {/* 消息区域 */}
-              <CardContent className="p-0 h-full flex flex-col bg-gray-50">
+              <ThemeCardContent className="p-0 h-full flex flex-col bg-gray-50">
                 {/* 消息列表 */}
                 <MemoizedMessageList
                   messages={messages}
@@ -127,8 +135,8 @@ export function ChatRoomEnhanced() {
                   isConnected={isConnected}
                   isLoading={isLoading}
                 />
-              </CardContent>
-            </Card>
+              </ThemeCardContent>
+            </ThemeCard>
           </div>
 
           {/* 侧边栏 */}
@@ -154,23 +162,29 @@ export function ChatRoomEnhanced() {
               </TabsList>
 
               <TabsContent value="users" className="mt-4">
-                <Card className="border-0 shadow-lg rounded-2xl">
-                  <CardContent className="p-4">
+                <ThemeCard
+                  variant="glass"
+                  className="border-0 shadow-lg rounded-2xl"
+                >
+                  <ThemeCardContent className="p-4">
                     <MemoizedOnlineUsersList users={onlineUsers} />
-                  </CardContent>
-                </Card>
+                  </ThemeCardContent>
+                </ThemeCard>
               </TabsContent>
 
               <TabsContent value="settings" className="mt-4">
-                <Card className="border-0 shadow-lg rounded-2xl">
-                  <CardContent className="p-4">
+                <ThemeCard
+                  variant="glass"
+                  className="border-0 shadow-lg rounded-2xl"
+                >
+                  <ThemeCardContent className="p-4">
                     <MemoizedChatSettings
                       isConnected={isConnected}
                       myIp={myIp}
                       onReconnect={handleReconnect}
                     />
-                  </CardContent>
-                </Card>
+                  </ThemeCardContent>
+                </ThemeCard>
               </TabsContent>
             </Tabs>
           </div>

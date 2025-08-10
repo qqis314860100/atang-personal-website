@@ -1,6 +1,6 @@
 'use client'
 
-import { cn } from '@/utils/utils'
+import { cn } from '@/lib/utils'
 
 interface SkeletonProps {
   className?: string
