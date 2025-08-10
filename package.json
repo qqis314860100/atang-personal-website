@@ -36,7 +36,8 @@
     "analyze": "ANALYZE=true next build",
     "optimize": "node scripts/optimize-performance.js",
     "optimize:win": "node scripts/optimize-performance-win.js",
-    "clean": "rm -rf .next node_modules/.cache tsconfig.tsbuildinfo logs/*.log"
+    "clean": "rm -rf .next node_modules/.cache tsconfig.tsbuildinfo logs/*.log",
+    "clear-cache": "node scripts/clear-cache.js"
   },
   "prisma": {
     "schema": "lib/prisma/schema.prisma"

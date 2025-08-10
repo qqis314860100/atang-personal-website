@@ -1,7 +1,7 @@
-import { createServer } from 'http'
-import { Server } from 'socket.io'
 import cluster from 'cluster'
+import { createServer } from 'http'
 import os from 'os'
+import { Server } from 'socket.io'
 import { IpUtils } from './ip-utils.js'
 
 // 生产环境使用集群模式
@@ -61,6 +61,13 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
   // 存储在线用户
   const onlineUsers = new Map()
 
+  // 用户状态跟踪
+  const userStatus = new Map()
+
+  // 连接频率限制
+  const connectionRateLimit = new Map()
+  const maxConnectionsPerMinute = 10
+
   // 心跳检测
   let heartbeatInterval
   if (process.env.NODE_ENV === 'production') {
@@ -69,13 +76,55 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
     }, 30000) // 每30秒记录一次
   }
 
+  // 定期清理连接频率限制
+  setInterval(() => {
+    const now = Date.now()
+    const windowStart = now - 60000 // 1分钟窗口
+
+    for (const [ip, connections] of connectionRateLimit.entries()) {
+      const validConnections = connections.filter((time) => time > windowStart)
+      if (validConnections.length === 0) {
+        connectionRateLimit.delete(ip)
+      } else {
+        connectionRateLimit.set(ip, validConnections)
+      }
+    }
+  }, 60000) // 每分钟清理一次
+
   // Socket 连接处理
   io.on('connection', async (socket) => {
-    console.log(`用户连接: ${socket.id} (进程: ${process.pid})`)
-
-    // 获取用户真实IP地址
+    // 检查连接频率限制
     const clientIp = IpUtils.getClientIp(socket)
     const normalizedIp = IpUtils.normalizeIp(clientIp)
+
+    if (normalizedIp !== 'localhost' && normalizedIp !== '::1') {
+      const now = Date.now()
+      const windowStart = now - 60000 // 1分钟窗口
+
+      if (!connectionRateLimit.has(normalizedIp)) {
+        connectionRateLimit.set(normalizedIp, [])
+      }
+
+      const connections = connectionRateLimit.get(normalizedIp)
+      const validConnections = connections.filter((time) => time > windowStart)
+
+      if (validConnections.length >= maxConnectionsPerMinute) {
+        console.log(`⚠️ IP ${normalizedIp} 连接过于频繁，拒绝连接`)
+        socket.disconnect(true)
+        return
+      }
+
+      validConnections.push(now)
+      connectionRateLimit.set(normalizedIp, validConnections)
+    }
+
+    console.log(`用户连接: ${socket.id} (进程: ${process.pid})`)
+
+    // 初始化用户状态
+    userStatus.set(socket.id, 'connecting')
+    console.log(`🔗 用户状态初始化: ${socket.id} (状态: connecting)`)
+
+    // 获取用户真实IP地址（已在上面获取过）
     console.log(
       `用户 ${socket.id} 的IP地址: ${clientIp} -> 标准化: ${normalizedIp}`
     )
@@ -97,25 +146,45 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
     // 自动处理用户加入（连接时自动加入）
     const handleUserJoin = () => {
       // 检查用户是否已经存在
-      if (!onlineUsers.has(socket.id)) {
-        const userData = {
-          id: socket.id,
-          username: finalIp, // 使用finalIp而不是clientIp
-          timestamp: new Date(),
-          processId: process.pid,
-        }
-
-        onlineUsers.set(socket.id, userData)
-
-        // 广播用户加入消息
-        socket.broadcast.emit('user_joined', {
-          id: socket.id,
-          username: finalIp,
-          timestamp: new Date(),
-        })
-
-        console.log(`用户 ${finalIp} 加入聊天室，当前在线: ${onlineUsers.size}`)
+      if (onlineUsers.has(socket.id)) {
+        console.log(`用户 ${finalIp} 已经存在，跳过重复加入`)
+        return
       }
+
+      // 检查用户状态
+      const currentStatus = userStatus.get(socket.id)
+      if (currentStatus === 'joining' || currentStatus === 'joined') {
+        console.log(`用户 ${finalIp} 状态为 ${currentStatus}，跳过重复加入`)
+        return
+      }
+
+      // 设置用户状态为正在加入
+      userStatus.set(socket.id, 'joining')
+      console.log(`🔄 开始处理用户加入: ${finalIp} (状态: joining)`)
+
+      const userData = {
+        id: socket.id,
+        username: finalIp, // 使用finalIp而不是clientIp
+        timestamp: new Date(),
+        processId: process.pid,
+      }
+
+      onlineUsers.set(socket.id, userData)
+
+      // 设置用户状态为已加入
+      userStatus.set(socket.id, 'joined')
+      console.log(`✅ 用户状态更新: ${finalIp} (状态: joined)`)
+
+      // 广播用户加入消息
+      socket.broadcast.emit('user_joined', {
+        id: socket.id,
+        username: finalIp,
+        timestamp: new Date(),
+      })
+
+      console.log(
+        `🎉 用户 ${finalIp} 成功加入聊天室，当前在线: ${onlineUsers.size}`
+      )
 
       // 发送在线用户列表给当前用户
       const usersList = Array.from(onlineUsers.values())
@@ -154,7 +223,7 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
         console.log(`✅ 基本IP信息发送完成: ${finalIp}`)
       }
 
-      // IP信息获取完成后，自动加入聊天室
+      // IP信息获取完成后，自动加入聊天室（只加入一次）
       console.log(`🔄 IP信息获取完成，用户: ${finalIp}，开始加入聊天室`)
       try {
         handleUserJoin()
@@ -164,9 +233,14 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
       }
     }
 
-    // 用户加入聊天室（手动触发）
+    // 用户加入聊天室（手动触发）- 防止重复加入
     socket.on('join', (data) => {
-      console.log(`📝 收到join事件，用户: ${finalIp}`)
+      console.log(`📝 收到手动join事件，用户: ${finalIp}`)
+      if (onlineUsers.has(socket.id)) {
+        console.log(`⚠️ 用户 ${finalIp} 已经在线，忽略重复join请求`)
+        return
+      }
+      console.log(`🔄 手动触发用户加入: ${finalIp}`)
       handleUserJoin()
     })
 
@@ -174,9 +248,13 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
     console.log(`🎯 准备初始化用户: ${finalIp}`)
     initializeUser().catch((error) => {
       console.error(`❌ 初始化用户失败: ${finalIp}`, error)
-      // 如果初始化失败，至少尝试加入聊天室
-      console.log(`🔄 尝试直接加入聊天室: ${finalIp}`)
-      handleUserJoin()
+      // 如果初始化失败，尝试加入聊天室（但检查是否已经存在）
+      if (!onlineUsers.has(socket.id)) {
+        console.log(`🔄 尝试直接加入聊天室: ${finalIp}`)
+        handleUserJoin()
+      } else {
+        console.log(`✅ 用户 ${finalIp} 已经在线，无需重复加入`)
+      }
     })
 
     // 发送消息
@@ -209,6 +287,9 @@ if (cluster.isPrimary && process.env.NODE_ENV === 'production') {
       // 从在线用户列表中移除
       if (onlineUsers.has(socket.id)) {
         onlineUsers.delete(socket.id)
+
+        // 清理用户状态
+        userStatus.delete(socket.id)
 
         // 广播用户离开消息
         socket.broadcast.emit('user_left', {

@@ -2,23 +2,8 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { signInSchema, TSignInSchema } from '@/schemas/signInSchema'
-import {
-  useSignIn,
-  useRegister,
-  useForgotPassword,
-  useStableUser,
-} from '@/lib/query-hook/use-auth'
-import { useSearchParams } from 'next/navigation'
-import { useRouter } from '@/i18n/navigation'
-import { useLocale } from 'next-intl'
-import Link from 'next/link'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Card,
   CardContent,
@@ -27,26 +12,52 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ReloadIcon, ArrowLeftIcon } from '@radix-ui/react-icons'
+import { useRouter } from '@/i18n/navigation'
+import { useSafeSearchParams } from '@/lib/hooks/use-safe-search-params'
+import {
+  useForgotPassword,
+  useRegister,
+  useSignIn,
+  useStableUser,
+} from '@/lib/query-hook/use-auth'
 import { registerSchema, TRegisterSchema } from '@/schemas/registerSchema'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle, CheckCircle2 } from 'lucide-react'
+import { signInSchema, TSignInSchema } from '@/schemas/signInSchema'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { ArrowLeftIcon, ReloadIcon } from '@radix-ui/react-icons'
+import { CheckCircle2 } from 'lucide-react'
+import { useLocale } from 'next-intl'
+import Link from 'next/link'
+import { useCallback, useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState('login')
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const { get: getSearchParam, mounted: paramsMounted } = useSafeSearchParams()
   const locale = useLocale()
-  const reason = searchParams.get('reason')
 
-  const redirectTo = searchParams.get('redirectTo') || '/'
+  // 安全地获取搜索参数
+  const reason = getSearchParam('reason')
+  const redirectTo = getSearchParam('redirectTo') || '/'
+
   const { user, isLoading } = useStableUser()
 
   // 使用 React Query hooks
   const signInMutation = useSignIn()
   const registerMutation = useRegister()
   const forgotPasswordMutation = useForgotPassword()
+
+  // 防止水合不一致
+  useEffect(() => {
+    setMounted(true)
+    return () => {
+      setMounted(false)
+    }
+  }, [])
 
   // 登录表单
   const {
@@ -62,48 +73,63 @@ export default function LoginPage() {
     formState: { errors: registerErrors },
   } = useForm<TRegisterSchema>({ resolver: zodResolver(registerSchema) })
 
-  // 处理登录
-  const handleSignIn = async (data: TSignInSchema) => {
-    try {
-      const result = await signInMutation.mutateAsync({ data, locale })
+  // 处理登录 - 使用 useCallback 优化性能
+  const handleSignIn = useCallback(
+    async (data: TSignInSchema) => {
+      if (!mounted || !paramsMounted) return
 
-      if (result.status === 'success') {
-        // 登录成功后重定向到之前尝试访问的页面
-        router.push(redirectTo)
+      try {
+        const result = await signInMutation.mutateAsync({ data, locale })
+
+        if (result.status === 'success' && mounted) {
+          // 登录成功后重定向到之前尝试访问的页面
+          router.push(redirectTo)
+        }
+      } catch (error) {
+        console.error('登录失败:', error)
       }
-    } catch (error) {
-      console.error('登录失败:', error)
-    }
-  }
+    },
+    [mounted, paramsMounted, signInMutation, locale, router, redirectTo]
+  )
 
-  // 处理注册
-  const handleRegister = async (data: TRegisterSchema) => {
-    try {
-      const result = await registerMutation.mutateAsync(data)
+  // 处理注册 - 使用 useCallback 优化性能
+  const handleRegister = useCallback(
+    async (data: TRegisterSchema) => {
+      if (!mounted || !paramsMounted) return
 
-      if (result.status === 'success') {
-        setActiveTab('login')
+      try {
+        const result = await registerMutation.mutateAsync(data)
+
+        if (result.status === 'success' && mounted) {
+          setActiveTab('login')
+        }
+      } catch (error) {
+        console.error('注册失败:', error)
       }
-    } catch (error) {
-      console.error('注册失败:', error)
-    }
-  }
+    },
+    [mounted, paramsMounted, registerMutation]
+  )
 
-  // 处理忘记密码
-  const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    const email = formData.get('email') as string
+  // 处理忘记密码 - 使用 useCallback 优化性能
+  const handleForgotPassword = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      if (!mounted || !paramsMounted) return
 
-    try {
-      await forgotPasswordMutation.mutateAsync(email)
-    } catch (error) {
-      console.error('发送重置密码邮件失败:', error)
-    }
-  }
+      e.preventDefault()
+      const formData = new FormData(e.currentTarget)
+      const email = formData.get('email') as string
 
-  // 如果正在加载，显示加载状态
-  if (isLoading) {
+      try {
+        await forgotPasswordMutation.mutateAsync(email)
+      } catch (error) {
+        console.error('发送重置密码邮件失败:', error)
+      }
+    },
+    [mounted, paramsMounted, forgotPasswordMutation]
+  )
+
+  // 如果未挂载或正在加载，显示加载状态
+  if (!mounted || !paramsMounted || isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>

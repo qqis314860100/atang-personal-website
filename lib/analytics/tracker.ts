@@ -39,27 +39,43 @@ class AnalyticsTracker {
     if (!this.isTracking) return
 
     try {
+      // 验证事件数据
+      if (!event || !event.type) {
+        console.warn('Analytics tracking: 无效的事件数据', event)
+        return
+      }
+
+      // 构建请求体
+      const requestBody = {
+        ...event,
+        sessionId: this.sessionId,
+        userId: this.userId,
+        userAgent: this.deviceInfo.userAgent,
+        ipAddress: this.deviceInfo.ipAddress,
+        deviceType: this.deviceInfo.deviceType,
+        browser: this.deviceInfo.browser,
+        os: this.deviceInfo.os,
+        screenResolution: this.deviceInfo.screenResolution,
+        language: this.deviceInfo.language,
+      }
+
+      // 验证请求体不为空
+      if (Object.keys(requestBody).length === 0) {
+        console.warn('Analytics tracking: 请求体为空')
+        return
+      }
+
       const response = await fetch('/api/analytics/track', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...event,
-          sessionId: this.sessionId,
-          userId: this.userId,
-          userAgent: this.deviceInfo.userAgent,
-          ipAddress: this.deviceInfo.ipAddress,
-          deviceType: this.deviceInfo.deviceType,
-          browser: this.deviceInfo.browser,
-          os: this.deviceInfo.os,
-          screenResolution: this.deviceInfo.screenResolution,
-          language: this.deviceInfo.language,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
       if (!response.ok) {
-        console.warn('Analytics tracking failed:', response.statusText)
+        const errorText = await response.text()
+        console.warn('Analytics tracking failed:', response.status, errorText)
       }
     } catch (error) {
       console.warn('Analytics tracking error:', error)
@@ -397,21 +413,59 @@ class AnalyticsTracker {
 // 创建单例实例
 export const analyticsTracker = new AnalyticsTracker()
 
-// 自动错误追踪
-if (typeof window !== 'undefined') {
-  window.addEventListener('error', (event) => {
-    analyticsTracker.trackError(event.error, window.location.pathname, {
-      filename: event.filename,
-      lineno: event.lineno,
-      colno: event.colno,
-    })
-  })
+// 自动错误追踪 - 使用安全的初始化方式
+let errorListenersInitialized = false
 
-  window.addEventListener('unhandledrejection', (event) => {
-    analyticsTracker.trackError(
-      new Error(event.reason?.message || 'Unhandled Promise Rejection'),
-      window.location.pathname,
-      { reason: event.reason }
-    )
-  })
+function initializeErrorListeners() {
+  if (typeof window === 'undefined' || errorListenersInitialized) return
+
+  try {
+    window.addEventListener('error', (event) => {
+      // 检查是否是Next.js开发工具错误
+      if (
+        event.error &&
+        event.error.message &&
+        event.error.message.includes('callback is no longer runnable')
+      ) {
+        return // 忽略Next.js开发工具错误
+      }
+
+      analyticsTracker.trackError(event.error, window.location.pathname, {
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+      })
+    })
+
+    window.addEventListener('unhandledrejection', (event) => {
+      // 检查是否是Next.js开发工具错误
+      if (
+        event.reason &&
+        event.reason.message &&
+        event.reason.message.includes('callback is no longer runnable')
+      ) {
+        return // 忽略Next.js开发工具错误
+      }
+
+      analyticsTracker.trackError(
+        new Error(event.reason?.message || 'Unhandled Promise Rejection'),
+        window.location.pathname,
+        { reason: event.reason }
+      )
+    })
+
+    errorListenersInitialized = true
+  } catch (error) {
+    console.warn('埋点错误监听器初始化失败:', error)
+  }
+}
+
+// 延迟初始化，避免在模块加载时立即执行
+if (typeof window !== 'undefined') {
+  // 使用 requestIdleCallback 或 setTimeout 延迟初始化
+  if (window.requestIdleCallback) {
+    window.requestIdleCallback(() => initializeErrorListeners())
+  } else {
+    setTimeout(initializeErrorListeners, 100)
+  }
 }

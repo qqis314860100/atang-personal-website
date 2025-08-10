@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma/client'
+import { NextRequest, NextResponse } from 'next/server'
 
 // 辅助函数：将包含 BigInt 的对象转换为可序列化的对象
 function serializeBigInts(obj: any): any {
@@ -41,11 +41,30 @@ export async function GET(
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '100')
     const offset = parseInt(searchParams.get('offset') || '0')
+    const hot = searchParams.get('hot') === 'true'
+
+    // 构建查询条件
+    const where = {
+      videoId: resolvedParams.id,
+    }
+
+    // 构建排序条件
+    let orderBy: any = {}
+
+    if (hot) {
+      // 热门弹幕：按点赞数或发送频率排序
+      // 这里可以根据实际需求调整排序逻辑
+      orderBy = [
+        { createdAt: 'desc' }, // 优先显示最新的
+        { id: 'desc' }, // 其次按ID排序
+      ]
+    } else {
+      // 普通弹幕：按时间顺序排序，确保历史弹幕能按正确时间显示
+      orderBy = { timeMs: 'asc' }
+    }
 
     const danmaku = await prisma.danmaku.findMany({
-      where: {
-        videoId: resolvedParams.id,
-      },
+      where,
       include: {
         user: {
           select: {
@@ -55,7 +74,7 @@ export async function GET(
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy,
       take: limit,
       skip: offset,
     })

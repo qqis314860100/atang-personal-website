@@ -120,6 +120,7 @@ const ThemeCard = React.forwardRef<HTMLDivElement, ThemeCardProps>(
             }
           : undefined,
         className: cardClasses,
+        onClick: props.onClick,
       }
 
       return (
@@ -128,7 +129,6 @@ const ThemeCard = React.forwardRef<HTMLDivElement, ThemeCardProps>(
         </motion.div>
       )
     }
-
     // 否则使用普通的 div
     return (
       <div ref={ref} data-slot="theme-card" className={cardClasses} {...props}>

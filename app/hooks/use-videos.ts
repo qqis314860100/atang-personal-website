@@ -1,10 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  VideoService,
-  VideoData,
   CreateVideoData,
   UpdateVideoData,
+  VideoData,
+  VideoService,
 } from '@/lib/services/video-service'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 // 查询键常量
 export const videoKeys = {
@@ -40,11 +40,33 @@ export function useVideos(
 
 // 获取单个视频
 export function useVideo(id: string) {
+  console.log('🎬 useVideo hook 被调用:', { id, hasId: !!id })
+
   return useQuery({
     queryKey: videoKeys.detail(id),
-    queryFn: () => VideoService.getVideo(id),
+    queryFn: async () => {
+      console.log('🚀 开始执行视频数据获取，ID:', id)
+      try {
+        const result = await VideoService.getVideo(id)
+        console.log('✅ 视频数据获取成功:', result)
+        if (!result) {
+          throw new Error(`视频不存在或已被删除: ${id}`)
+        }
+        return result
+      } catch (error) {
+        console.error('❌ 视频数据获取失败:', error)
+        // 确保错误被正确抛出
+        if (error instanceof Error) {
+          throw error
+        } else {
+          throw new Error(`未知错误: ${String(error)}`)
+        }
+      }
+    },
     enabled: !!id,
     staleTime: 10 * 60 * 1000, // 10分钟
+    retry: 3, // 增加重试次数
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   })
 }
 

@@ -978,7 +978,7 @@ export const zhToEnCache: Record<string, { namespace: Namespace; key: string }> 
   },
   "auth.登录": {
     "namespace": "auth",
-    "key": "login.button"
+    "key": "signIn"
   },
   "登录中...": {
     "namespace": "auth",

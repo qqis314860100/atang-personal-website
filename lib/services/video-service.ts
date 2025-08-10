@@ -72,16 +72,31 @@ export class VideoService {
 
   // 获取单个视频
   static async getVideo(id: string): Promise<VideoData | null> {
-    const response = await fetch(`/api/videos/${id}`)
+    console.log('🌐 VideoService.getVideo 被调用，ID:', id)
+    console.log('🌐 请求URL:', `/api/videos/${id}`)
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null
+    try {
+      const response = await fetch(`/api/videos/${id}`)
+      console.log('🌐 API 响应状态:', response.status, response.statusText)
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log('🌐 视频不存在 (404)')
+          return null
+        }
+        console.error('🌐 API 请求失败:', response.status, response.statusText)
+        throw new Error(
+          `获取视频失败: ${response.status} ${response.statusText}`
+        )
       }
-      throw new Error('获取视频失败')
-    }
 
-    return response.json()
+      const data = await response.json()
+      console.log('🌐 API 响应数据:', data)
+      return data
+    } catch (error) {
+      console.error('🌐 VideoService.getVideo 执行失败:', error)
+      throw error
+    }
   }
 
   // 创建视频

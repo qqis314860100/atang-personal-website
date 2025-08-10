@@ -1,32 +1,36 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useCreateVideo } from '@/app/hooks/use-videos'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { Textarea } from '@/components/ui/textarea'
+import { useStableUser } from '@/lib/query-hook/use-auth'
+import { simpleVideoThumbnailService } from '@/lib/services/video-thumbnail-simple'
+import { createClient } from '@/lib/supabase/client'
 import {
+  AlertCircle,
+  Clock,
+  FileVideo,
+  Settings,
   Upload,
   X,
-  FileVideo,
-  Clock,
-  Eye,
-  Settings,
-  Check,
-  AlertCircle,
 } from 'lucide-react'
-import { useCreateVideo } from '@/app/hooks/use-videos'
-import { simpleVideoThumbnailService } from '@/lib/services/video-thumbnail-simple'
-import { useStableUser } from '@/lib/query-hook/use-auth'
-import { createClient } from '@/lib/supabase/client'
+import { useEffect, useRef, useState } from 'react'
+import toast from 'react-hot-toast'
+import { v4 as uuidv4 } from 'uuid'
+
+// 文件大小限制常量 (100MB)
+const MAX_FILE_SIZE = 100 * 1024 * 1024 // 100MB in bytes
+const MAX_FILE_SIZE_MB = 100 // 100MB
 
 interface VideoUploadModalProps {
   isOpen: boolean
@@ -34,11 +38,13 @@ interface VideoUploadModalProps {
 }
 
 export function VideoUploadModal({ isOpen, onClose }: VideoUploadModalProps) {
+  const [mounted, setMounted] = useState(false)
   const [uploadStep, setUploadStep] = useState<
     'upload' | 'details' | 'processing'
   >('upload')
   const [uploadProgress, setUploadProgress] = useState(0)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [fileError, setFileError] = useState<string | null>(null)
   const [videoDetails, setVideoDetails] = useState({
     title: '',
     description: '',
@@ -55,8 +61,53 @@ export function VideoUploadModal({ isOpen, onClose }: VideoUploadModalProps) {
   } | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const createVideo = useCreateVideo()
   const { user } = useStableUser()
+
+  // 组件挂载和卸载管理
+  useEffect(() => {
+    setMounted(true)
+
+    return () => {
+      setMounted(false)
+      // 清理进度定时器
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current)
+        progressIntervalRef.current = null
+      }
+    }
+  }, [])
+
+  // 安全的setState函数
+  const safeSetState = (setter: any, value: any) => {
+    if (mounted) {
+      setter(value)
+    }
+  }
+
+  // 格式化文件大小
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
+
+  // 验证文件大小
+  const validateFileSize = (file: File): boolean => {
+    if (file.size > MAX_FILE_SIZE) {
+      setFileError(
+        `文件大小超出限制！最大允许 ${MAX_FILE_SIZE_MB}MB，当前文件 ${formatFileSize(
+          file.size
+        )}`
+      )
+      return false
+    }
+    setFileError(null)
+    return true
+  }
 
   // 处理文件选择
   const handleFileSelect = async (
@@ -64,12 +115,21 @@ export function VideoUploadModal({ isOpen, onClose }: VideoUploadModalProps) {
   ) => {
     const file = event.target.files?.[0]
     if (file && file.type.startsWith('video/')) {
-      setSelectedFile(file)
+      // 验证文件大小
+      if (!validateFileSize(file)) {
+        return
+      }
+
+      if (!mounted) return
+
+      safeSetState(setSelectedFile, file)
 
       try {
         // 获取视频信息
         const info = await simpleVideoThumbnailService.getVideoInfo(file)
-        setVideoInfo(info)
+        if (mounted) {
+          safeSetState(setVideoInfo, info)
+        }
 
         // 生成缩略图
         const thumbnailBlob =
@@ -83,19 +143,25 @@ export function VideoUploadModal({ isOpen, onClose }: VideoUploadModalProps) {
         const thumbnailBase64 = await simpleVideoThumbnailService.blobToBase64(
           thumbnailBlob
         )
-        setThumbnail(thumbnailBase64)
+
+        if (mounted) {
+          safeSetState(setThumbnail, thumbnailBase64)
+        }
 
         // 自动设置标题
         const fileName = file.name.replace(/\.[^/.]+$/, '')
-        setVideoDetails((prev) => ({
-          ...prev,
-          title: fileName,
-        }))
-
-        setUploadStep('details')
+        if (mounted) {
+          setVideoDetails((prev) => ({
+            ...prev,
+            title: fileName,
+          }))
+          safeSetState(setUploadStep, 'details')
+        }
       } catch (error) {
         console.error('处理视频文件失败:', error)
-        setUploadStep('details')
+        if (mounted) {
+          safeSetState(setUploadStep, 'details')
+        }
       }
     }
   }
@@ -105,12 +171,21 @@ export function VideoUploadModal({ isOpen, onClose }: VideoUploadModalProps) {
     event.preventDefault()
     const file = event.dataTransfer.files[0]
     if (file && file.type.startsWith('video/')) {
-      setSelectedFile(file)
+      // 验证文件大小
+      if (!validateFileSize(file)) {
+        return
+      }
+
+      if (!mounted) return
+
+      safeSetState(setSelectedFile, file)
 
       try {
         // 获取视频信息
         const info = await simpleVideoThumbnailService.getVideoInfo(file)
-        setVideoInfo(info)
+        if (mounted) {
+          safeSetState(setVideoInfo, info)
+        }
 
         // 生成缩略图
         const thumbnailBlob =
@@ -124,19 +199,25 @@ export function VideoUploadModal({ isOpen, onClose }: VideoUploadModalProps) {
         const thumbnailBase64 = await simpleVideoThumbnailService.blobToBase64(
           thumbnailBlob
         )
-        setThumbnail(thumbnailBase64)
+
+        if (mounted) {
+          safeSetState(setThumbnail, thumbnailBase64)
+        }
 
         // 自动设置标题
         const fileName = file.name.replace(/\.[^/.]+$/, '')
-        setVideoDetails((prev) => ({
-          ...prev,
-          title: fileName,
-        }))
-
-        setUploadStep('details')
+        if (mounted) {
+          setVideoDetails((prev) => ({
+            ...prev,
+            title: fileName,
+          }))
+          safeSetState(setUploadStep, 'details')
+        }
       } catch (error) {
         console.error('处理视频文件失败:', error)
-        setUploadStep('details')
+        if (mounted) {
+          safeSetState(setUploadStep, 'details')
+        }
       }
     }
   }
@@ -172,46 +253,43 @@ export function VideoUploadModal({ isOpen, onClose }: VideoUploadModalProps) {
     }
   }
 
-  // 模拟上传进度
-  const simulateUpload = () => {
-    setUploadStep('processing')
-    setUploadProgress(0)
-
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval)
-          return 100
-        }
-        return prev + 10
-      })
-    }, 200)
-
-    // 模拟上传完成
-    setTimeout(() => {
-      clearInterval(interval)
-      setUploadProgress(100)
-      // 这里应该调用实际的视频创建API
-      handleCreateVideo()
-    }, 2000)
-  }
-
   // 创建视频
   const handleCreateVideo = async () => {
-    if (!selectedFile || !user) return
+    if (!selectedFile || !user || !mounted) return
 
-    setUploadStep('processing')
-    setUploadProgress(0)
+    safeSetState(setUploadStep, 'processing')
+    safeSetState(setUploadProgress, 0)
+
+    // 模拟进度更新
+    progressIntervalRef.current = setInterval(() => {
+      if (mounted) {
+        setUploadProgress((prev) => {
+          if (prev >= 90) return prev
+          return prev + Math.random() * 10
+        })
+      }
+    }, 500)
 
     try {
       // 1. 获取 supabase client
       const supabase = createClient()
       if (!supabase) throw new Error('Supabase client 初始化失败')
 
-      // 2. 构造存储路径
-      const filePath = `video/${Date.now()}_${selectedFile.name}`
+      // 2. 构造存储路径 - 使用安全的文件名
+      const originalName = selectedFile.name
+      const extension = originalName.split('.').pop() || 'mp4'
+      const safeFileName = `${uuidv4()}.${extension}`
 
-      // 3. 上传到 supabase
+      const filePath = `video/${safeFileName}`
+
+      console.log('开始上传文件:', {
+        fileName: selectedFile.name,
+        fileSize: selectedFile.size,
+        fileType: selectedFile.type,
+        filePath: filePath,
+      })
+
+      // 3. 简化上传逻辑，移除可能导致问题的配置
       const { data, error } = await supabase.storage
         .from('upload')
         .upload(filePath, selectedFile, {
@@ -219,7 +297,12 @@ export function VideoUploadModal({ isOpen, onClose }: VideoUploadModalProps) {
           upsert: false,
         })
 
-      if (error) throw error
+      if (error) {
+        console.error('上传错误:', error)
+        throw error
+      }
+
+      console.log('文件上传成功:', data)
 
       // 4. 获取公开访问链接
       const { data: publicUrlData } = supabase.storage
@@ -227,8 +310,10 @@ export function VideoUploadModal({ isOpen, onClose }: VideoUploadModalProps) {
         .getPublicUrl(filePath)
       const videoUrl = publicUrlData?.publicUrl
 
+      console.log('获取到视频URL:', videoUrl)
+
       // 5. 创建视频记录
-      await createVideo.mutateAsync({
+      const videoResult = await createVideo.mutateAsync({
         title: videoDetails.title,
         description: videoDetails.description,
         url: videoUrl,
@@ -240,35 +325,65 @@ export function VideoUploadModal({ isOpen, onClose }: VideoUploadModalProps) {
         // isPublic 字段如需支持可在后端/接口层扩展
       })
 
-      // 6. 重置状态
-      setSelectedFile(null)
-      setVideoDetails({
-        title: '',
-        description: '',
-        category: '',
-        tags: [],
-        isPublic: true,
-      })
-      setThumbnail(null)
-      setVideoInfo(null)
-      setUploadStep('upload')
-      setUploadProgress(0)
-      onClose()
-    } catch (error: any) {
-      setUploadStep('details')
-      setUploadProgress(0)
-      console.error('创建视频失败:', error)
-      alert('上传失败：' + (error?.message || error))
-    }
-  }
+      console.log('视频记录创建成功:', videoResult)
 
-  // 格式化文件大小
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+      // 6. 完成进度
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current)
+        progressIntervalRef.current = null
+      }
+
+      if (mounted) {
+        safeSetState(setUploadProgress, 100)
+
+        // 等待一秒显示完成状态
+        setTimeout(() => {
+          if (mounted) {
+            // 7. 重置状态
+            safeSetState(setSelectedFile, null)
+            safeSetState(setVideoDetails, {
+              title: '',
+              description: '',
+              category: '',
+              tags: [],
+              isPublic: true,
+            })
+            safeSetState(setThumbnail, null)
+            safeSetState(setVideoInfo, null)
+            safeSetState(setUploadStep, 'upload')
+            safeSetState(setUploadProgress, 0)
+            onClose()
+
+            // 8. 显示成功消息
+            toast.success('视频上传成功！')
+          }
+        }, 1000)
+      }
+    } catch (error: any) {
+      console.error('创建视频失败:', error)
+
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current)
+        progressIntervalRef.current = null
+      }
+
+      if (mounted) {
+        safeSetState(setUploadStep, 'details')
+        safeSetState(setUploadProgress, 0)
+
+        // 显示详细的错误信息
+        let errorMessage = '上传失败'
+        if (error.message) {
+          errorMessage += ': ' + error.message
+        } else if (error.error_description) {
+          errorMessage += ': ' + error.error_description
+        } else if (typeof error === 'string') {
+          errorMessage += ': ' + error
+        }
+        console.log('上传失败:', error)
+        toast.error(errorMessage)
+      }
+    }
   }
 
   return (
@@ -293,8 +408,27 @@ export function VideoUploadModal({ isOpen, onClose }: VideoUploadModalProps) {
               </div>
             ) : (
               <>
+                {/* 文件大小错误提示 */}
+                {fileError && (
+                  <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <AlertCircle className="h-5 w-5 text-red-500" />
+                      <span className="text-red-700 font-medium">
+                        {fileError}
+                      </span>
+                    </div>
+                    <p className="text-red-600 text-sm mt-2">
+                      建议：压缩视频文件或使用较低分辨率
+                    </p>
+                  </div>
+                )}
+
                 <div
-                  className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-blue-500 transition-all duration-300 cursor-pointer bg-gradient-to-br from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100"
+                  className={`border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 cursor-pointer bg-gradient-to-br ${
+                    fileError
+                      ? 'border-red-300 from-red-50 to-red-100'
+                      : 'border-gray-300 from-gray-50 to-gray-100 hover:border-blue-500 hover:from-blue-50 hover:to-blue-100'
+                  }`}
                   onClick={() => fileInputRef.current?.click()}
                   onDrop={handleDrop}
                   onDragOver={handleDragOver}
@@ -304,7 +438,7 @@ export function VideoUploadModal({ isOpen, onClose }: VideoUploadModalProps) {
                     拖拽视频文件到此处或点击选择
                   </h3>
                   <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                    支持 MP4, AVI, MOV, WMV 等格式，最大 500MB
+                    支持 MP4, AVI, MOV, WMV 等格式，最大 {MAX_FILE_SIZE_MB}MB
                   </p>
                   <Button variant="outline" size="lg" className="bg-white">
                     <FileVideo className="h-5 w-5 mr-2" />
@@ -325,9 +459,27 @@ export function VideoUploadModal({ isOpen, onClose }: VideoUploadModalProps) {
 
         {uploadStep === 'details' && selectedFile && (
           <div className="space-y-4">
-            <div className="flex items-center space-x-4 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
-              <div className="p-3 bg-blue-100 rounded-full">
-                <FileVideo className="h-8 w-8 text-blue-600" />
+            <div
+              className={`flex items-center space-x-4 p-6 rounded-xl border ${
+                selectedFile.size > MAX_FILE_SIZE
+                  ? 'bg-gradient-to-r from-red-50 to-orange-50 border-red-200'
+                  : 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200'
+              }`}
+            >
+              <div
+                className={`p-3 rounded-full ${
+                  selectedFile.size > MAX_FILE_SIZE
+                    ? 'bg-red-100'
+                    : 'bg-blue-100'
+                }`}
+              >
+                <FileVideo
+                  className={`h-8 w-8 ${
+                    selectedFile.size > MAX_FILE_SIZE
+                      ? 'text-red-600'
+                      : 'text-blue-600'
+                  }`}
+                />
               </div>
               <div className="flex-1">
                 <h4 className="font-semibold text-gray-900 text-lg">
@@ -336,12 +488,25 @@ export function VideoUploadModal({ isOpen, onClose }: VideoUploadModalProps) {
                 <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
                   <span className="flex items-center space-x-1">
                     <Clock className="h-4 w-4" />
-                    <span>{formatFileSize(selectedFile.size)}</span>
+                    <span
+                      className={
+                        selectedFile.size > MAX_FILE_SIZE
+                          ? 'text-red-600 font-medium'
+                          : ''
+                      }
+                    >
+                      {formatFileSize(selectedFile.size)}
+                    </span>
                   </span>
                   <span className="flex items-center space-x-1">
                     <Settings className="h-4 w-4" />
                     <span>{selectedFile.type}</span>
                   </span>
+                  {selectedFile.size > MAX_FILE_SIZE && (
+                    <Badge variant="destructive" className="text-xs">
+                      超出限制
+                    </Badge>
+                  )}
                 </div>
               </div>
               <Button
@@ -515,12 +680,19 @@ export function VideoUploadModal({ isOpen, onClose }: VideoUploadModalProps) {
                 取消
               </Button>
               <Button
-                onClick={simulateUpload}
-                disabled={!videoDetails.title.trim()}
-                className="px-8 bg-blue-600 hover:bg-blue-700"
+                onClick={handleCreateVideo}
+                disabled={
+                  !videoDetails.title.trim() ||
+                  selectedFile.size > MAX_FILE_SIZE
+                }
+                className={`px-8 ${
+                  selectedFile.size > MAX_FILE_SIZE
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-blue-600 hover:bg-blue-700'
+                }`}
               >
                 <Upload className="h-4 w-4 mr-2" />
-                开始上传
+                {selectedFile.size > MAX_FILE_SIZE ? '文件过大' : '开始上传'}
               </Button>
             </div>
           </div>

@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react'
 import { useStableUser } from '@/lib/query-hook/use-auth'
+import React from 'react'
 
 // 用户角色枚举
 export enum UserRole {
@@ -37,28 +37,29 @@ const rolePermissions: Record<UserRole, Permission[]> = {
 export function usePermissions() {
   const { user, isLoading } = useStableUser()
 
-  // 获取用户角色（默认为普通用户）
-  const getUserRole = (): UserRole => {
+  // 使用 useMemo 缓存计算结果，避免重复计算
+  const userRole = React.useMemo((): UserRole => {
     if (!user) return UserRole.USER
-
-    // 从用户数据中获取角色，默认为普通用户
     return user.isAdmin ? UserRole.ADMIN : UserRole.USER
-  }
+  }, [user?.isAdmin])
+
+  const permissions = React.useMemo(() => {
+    return rolePermissions[userRole]
+  }, [userRole])
 
   // 检查用户是否有特定权限
-  const hasPermission = (permission: Permission): boolean => {
-    if (!user) return false
-
-    const userRole = getUserRole()
-    const permissions = rolePermissions[userRole]
-
-    return permissions.includes(permission)
-  }
+  const hasPermission = React.useCallback(
+    (permission: Permission): boolean => {
+      if (!user) return false
+      return permissions.includes(permission)
+    },
+    [user, permissions]
+  )
 
   // 检查用户是否为管理员
-  const isAdmin = (): boolean => {
-    return getUserRole() === UserRole.ADMIN
-  }
+  const isAdmin = React.useCallback((): boolean => {
+    return userRole === UserRole.ADMIN
+  }, [userRole])
 
   // 博客相关权限检查
   const canReadBlog = (): boolean => hasPermission(Permission.READ_BLOG)
@@ -71,7 +72,7 @@ export function usePermissions() {
   return {
     user,
     isLoading,
-    getUserRole,
+    getUserRole: () => userRole, // 保持向后兼容
     hasPermission,
     isAdmin,
     canReadBlog,

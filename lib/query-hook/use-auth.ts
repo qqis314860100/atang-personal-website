@@ -1,15 +1,18 @@
 'use client'
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { register, resendVerificationEmail, signIn } from '@/app/actions/auth'
 import { queryKeys } from '@/lib/query-hook'
-import { signIn, register, resendVerificationEmail } from '@/app/actions/auth'
-import { TSignInSchema } from '@/schemas/signInSchema'
+import { createClient } from '@/lib/supabase/client'
 import { TRegisterSchema } from '@/schemas/registerSchema'
+import { TSignInSchema } from '@/schemas/signInSchema'
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
+import { useEffect } from 'react'
 import toast from 'react-hot-toast'
-import { keepPreviousData } from '@tanstack/react-query'
-import { checkDatabaseHealthFromClient } from '@/lib/utils/client-db-check'
 // 定义用户类型
 export interface TUser {
   id: string
@@ -38,21 +41,15 @@ export function useStableUser() {
     queryKey: queryKeys.user.session(),
     queryFn: async (): Promise<TUser | null> => {
       try {
-        // 检查数据库连接状态（客户端安全）
-        const dbHealth = await checkDatabaseHealthFromClient()
-        if (dbHealth.status !== 'healthy') {
-          console.warn('⚠️ 数据库连接异常:', dbHealth.message)
-          if (dbHealth.error) {
-            console.error('数据库错误:', dbHealth.error)
-          }
-        }
-
         // 安全检查
         const client = createClient()
         if (!client) {
           console.warn('⚠️ Supabase 客户端未初始化')
           return null
         }
+
+        // 移除数据库健康检查，直接获取用户数据
+        // 数据库健康检查可能导致不必要的错误
 
         // 获取当前用户会话
         const {
@@ -95,7 +92,22 @@ export function useStableUser() {
       } catch (error) {
         // 捕获所有可能的错误
         console.error('❌ 用户数据获取失败:', error)
-        // 返回 null，让 React Query 使用缓存数据
+
+        // 如果是网络错误或数据库连接问题，尝试使用缓存数据
+        if (error instanceof Error) {
+          const errorMessage = error.message.toLowerCase()
+          if (
+            errorMessage.includes('network') ||
+            errorMessage.includes('connection') ||
+            errorMessage.includes('timeout') ||
+            errorMessage.includes('fetch')
+          ) {
+            console.warn('⚠️ 网络连接问题，尝试使用缓存数据')
+            return null // 让 React Query 使用缓存数据
+          }
+        }
+
+        // 对于其他错误，也返回 null 使用缓存数据
         return null
       }
     },

@@ -1,21 +1,6 @@
 /* 视频播放器样式 */
 
-/* 弹幕滚动动画 */
-@keyframes danmaku-scroll {
-  from {
-    transform: translateX(100%);
-  }
-
-  to {
-    transform: translateX(-100%);
-  }
-}
-
-.animate-danmaku-scroll {
-  animation: danmaku-scroll 12s linear forwards;
-}
-
-/* 弹幕样式优化 */
+/* 弹幕基础样式 */
 .danmaku-item {
   text-shadow:
     1px 1px 0 rgba(0, 0, 0, 0.8),
@@ -28,6 +13,23 @@
   user-select: none;
   font-size: 14px;
   line-height: 1.2;
+}
+
+/* 弹幕背景优化 */
+.danmaku-item {
+  background: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 4px 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* 弹幕悬停效果 */
+.danmaku-item:hover {
+  background: rgba(0, 0, 0, 0.8) !important;
+  transform: scale(1.05);
+  transition: all 0.2s ease;
 }
 
 /* 视频控制栏渐变 */
@@ -336,4 +338,80 @@
   .danmaku-input {
     padding: 0.5rem;
   }
+}
+
+/* 进度条时间显示 */
+.hover-time-indicator {
+  position: absolute;
+  top: -40px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1000;
+  transform: translateX(-50%);
+}
+
+.hover-time-indicator::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.8);
+}
+
+/* 骨架屏动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* 骨架屏脉冲动画优化 */
+@keyframes skeletonPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: skeletonPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 骨架屏渐变背景动画 */
+@keyframes skeletonShimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f0f0f0 25%,
+    #e0e0e0 50%,
+    #f0f0f0 75%
+  );
+  background-size: 200px 100%;
+  animation: skeletonShimmer 1.5s infinite;
 }

@@ -148,7 +148,7 @@ export class DanmakuService {
     limit = 10
   ): Promise<DanmakuData[]> {
     const response = await fetch(
-      `/api/videos/${videoId}/danmaku/hot?limit=${limit}`
+      `/api/videos/${videoId}/danmaku?hot=true&limit=${limit}`
     )
 
     if (!response.ok) {

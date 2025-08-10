@@ -1,49 +1,126 @@
 // components/ErrorBoundary.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Button } from './ui/button'
-import { Alert, AlertDescription, AlertTitle } from './ui/alert'
-import { AlertCircle, RefreshCcw } from 'lucide-react'
+import React, { Component, ErrorInfo, ReactNode } from 'react'
 
-interface ErrorBoundaryProps {
-  children: React.ReactNode
+interface Props {
+  children: ReactNode
+  fallback?: ReactNode
 }
 
-export function ErrorBoundary({ children }: ErrorBoundaryProps) {
-  const [hasError, setHasError] = useState(false)
+interface State {
+  hasError: boolean
+  error?: Error
+}
 
-  useEffect(() => {
-    // 监听全局未捕获的错误
-    const handleError = (event: ErrorEvent) => {
-      // 检查是否是会话相关错误
-      if (
-        event.error &&
-        event.error.message &&
-        (event.error.message.includes('Auth session missing') ||
-          event.error.message.includes('JWT expired') ||
-          event.error.message.includes('Invalid JWT'))
-      ) {
-        setHasError(true)
-        // 防止错误继续传播
-        event.preventDefault()
-      }
+export class ErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(error: Error): State {
+    // 更新状态，下次渲染时显示错误UI
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // 记录错误信息
+    console.error('ErrorBoundary caught an error:', error, errorInfo)
+
+    // 检查是否是Next.js开发工具错误
+    if (
+      error.message.includes('callback is no longer runnable') ||
+      error.message.includes('use-app-dev-rendering-indicator') ||
+      error.message.includes('use-action-queue') ||
+      error.message.includes('next-devtools') ||
+      error.message.includes('app-router')
+    ) {
+      console.warn('检测到Next.js开发工具错误，忽略此错误:', {
+        error: error.message,
+        errorInfo,
+      })
+      // 对于Next.js开发工具错误，不显示错误UI
+      this.setState({ hasError: false })
+      return
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // 自定义错误UI
+      return (
+        this.props.fallback || (
+          <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-6">
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="flex-shrink-0">
+                  <svg
+                    className="h-8 w-8 text-red-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    出现了一些问题
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    页面遇到了一个错误，请刷新页面重试
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <button
+                  onClick={() => window.location.reload()}
+                  className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  刷新页面
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      )
     }
 
-    // 监听未处理的 Promise 拒绝
-    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      // 检查是否是会话相关错误
-      if (
-        event.reason &&
-        event.reason.message &&
-        (event.reason.message.includes('Auth session missing') ||
-          event.reason.message.includes('JWT expired') ||
-          event.reason.message.includes('Invalid JWT'))
-      ) {
-        setHasError(true)
-        // 防止错误继续传播
+    return this.props.children
+  }
+}
+
+// 函数式错误边界Hook
+export function useErrorHandler() {
+  const [error, setError] = React.useState<Error | null>(null)
+
+  React.useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      // 检查是否是回调函数错误
+      if (event.error?.message?.includes('callback is no longer runnable')) {
+        console.warn('捕获到回调函数错误，忽略此错误')
         event.preventDefault()
+        return
       }
+
+      setError(event.error)
+    }
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      // 检查是否是回调函数相关的Promise拒绝
+      if (event.reason?.message?.includes('callback is no longer runnable')) {
+        console.warn('捕获到回调函数Promise拒绝，忽略此错误')
+        event.preventDefault()
+        return
+      }
+
+      setError(new Error(event.reason))
     }
 
     window.addEventListener('error', handleError)
@@ -55,50 +132,5 @@ export function ErrorBoundary({ children }: ErrorBoundaryProps) {
     }
   }, [])
 
-  // 如果检测到会话错误，显示恢复选项
-  if (hasError) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-50 p-4">
-        <div className="max-w-md w-full">
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>会话已过期</AlertTitle>
-            <AlertDescription>
-              您的登录会话已失效或过期。这可能是由于长时间未活动、手动删除
-              Cookie 或其他原因导致的。
-            </AlertDescription>
-          </Alert>
-
-          <div className="flex flex-col space-y-2">
-            <Button
-              onClick={() => {
-                // 刷新页面
-                window.location.reload()
-              }}
-              className="w-full"
-              variant="default"
-            >
-              <RefreshCcw className="mr-2 h-4 w-4" />
-              刷新页面
-            </Button>
-
-            <Button
-              onClick={() => {
-                // 使用原生方法重定向到登录页面
-                const currentPath = window.location.pathname
-                const locale = currentPath.split('/')[1] || 'zh'
-                window.location.href = `/${locale}/login?reason=session_expired`
-              }}
-              className="w-full"
-              variant="outline"
-            >
-              重新登录
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return <>{children}</>
+  return error
 }

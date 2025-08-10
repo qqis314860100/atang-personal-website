@@ -26,14 +26,25 @@ export async function updateSession(request: NextRequest) {
   )
 
   // 获取用户会话
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let user = null
+  try {
+    const {
+      data: { user: userData },
+    } = await supabase.auth.getUser()
+    user = userData
+  } catch (error) {
+    // 忽略认证错误，继续处理请求
+    console.log('Auth error in middleware:', error)
+    // 临时：在开发环境中跳过认证检查
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Development mode: skipping auth check')
+    }
+  }
 
   // 获取当前路径和语言
   const pathname = request.nextUrl.pathname
   const pathnameParts = pathname.split('/')
-  const locale = pathnameParts[1]
+  const locale = pathnameParts[1] || 'zh' // 默认语言
 
   // 定义公开路径（不需要认证）
   const publicPaths = [
@@ -52,8 +63,16 @@ export async function updateSession(request: NextRequest) {
   const pathWithoutLocale = pathname.replace(`/${locale}`, '') || '/'
 
   // 如果访问的是根路径（只有语言前缀），重定向到home
-  if (pathWithoutLocale === '/') {
+  if (pathWithoutLocale === '/' && locale) {
     const homeUrl = new URL(`/${locale}/home`, request.url)
+    console.log('Redirecting from', pathname, 'to', homeUrl.toString())
+    return NextResponse.redirect(homeUrl)
+  }
+
+  // 如果访问的是根路径且没有语言前缀，重定向到默认语言
+  if (pathname === '/') {
+    const homeUrl = new URL('/zh/home', request.url)
+    console.log('Redirecting from root to', homeUrl.toString())
     return NextResponse.redirect(homeUrl)
   }
 

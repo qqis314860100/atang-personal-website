@@ -1,18 +1,18 @@
 'use client'
 
+import { useSocketReadonly } from '@/app/hooks/use-socket'
+import { Badge } from '@/components/ui/badge'
 import {
   ThemeCard,
   ThemeCardContent,
   ThemeCardHeader,
   ThemeCardTitle,
 } from '@/components/ui/theme-card'
-import { Badge } from '@/components/ui/badge'
 import { Users, Wifi, WifiOff } from 'lucide-react'
-import { useSocket } from '@/app/hooks/use-socket'
 
 export default function OnlineVisitors() {
-  // 使用 Socket.IO WebSocket 获取实时数据
-  const { isConnected, userCount } = useSocket()
+  // 使用只读Socket状态，不触发连接逻辑
+  const { isConnected, userCount } = useSocketReadonly()
 
   return (
     <ThemeCard

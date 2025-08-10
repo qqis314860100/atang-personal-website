@@ -1,32 +1,24 @@
 'use client'
 
+import { useDanmakuList } from '@/app/hooks/use-danmaku'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   ThemeCard,
   ThemeCardContent,
   ThemeCardHeader,
   ThemeCardTitle,
 } from '@/components/ui/theme-card'
-import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { useDanmakuList, useHotDanmaku } from '@/app/hooks/use-danmaku'
-import {
-  MessageSquare,
-  TrendingUp,
-  Clock,
-  MoreVertical,
-  ChevronUp,
-} from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { MessageSquare } from 'lucide-react'
 
 interface DanmakuListProps {
   videoId?: string
+  onTimeJump?: (timeMs: number) => void // 添加时间跳转回调
 }
 
-export function DanmakuList({
-  videoId = 'example-video-id',
-}: DanmakuListProps) {
-  const { data: recentDanmaku = [] } = useDanmakuList(videoId, { limit: 50 })
-  const { data: hotDanmaku = [] } = useHotDanmaku(videoId, 10)
+export function DanmakuList({ videoId, onTimeJump }: DanmakuListProps) {
+  const { data: recentDanmaku = [] } = useDanmakuList(videoId || '', {
+    limit: 50,
+  })
 
   const formatTime = (timeMs: number) => {
     const seconds = Math.floor(timeMs / 1000)
@@ -51,6 +43,13 @@ export function DanmakuList({
     return 'Unknown'
   }
 
+  const handleDanmakuClick = (timeMs: number) => {
+    if (onTimeJump) {
+      console.log(`🎯 弹幕列表点击跳转: ${timeMs}ms (${formatTime(timeMs)})`)
+      onTimeJump(timeMs)
+    }
+  }
+
   return (
     <div className="space-y-4 mt-[64px] w-full max-w-4xl">
       {/* 弹幕列表 */}
@@ -66,6 +65,19 @@ export function DanmakuList({
         <ThemeCardContent className="p-0">
           <ScrollArea className="h-[550px]">
             <div className="p-4">
+              {/* 测试跳转按钮 */}
+              <div className="mb-4 p-2 bg-blue-50 rounded border border-blue-200">
+                <button
+                  onClick={() => handleDanmakuClick(30000)} // 30秒
+                  className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                >
+                  测试跳转到30秒
+                </button>
+                <span className="ml-2 text-xs text-gray-600">
+                  点击测试弹幕列表跳转功能
+                </span>
+              </div>
+
               {recentDanmaku.length > 0 ? (
                 <div className="space-y-1">
                   {/* 表头 */}
@@ -80,7 +92,9 @@ export function DanmakuList({
                     {recentDanmaku.map((danmaku: any) => (
                       <div
                         key={danmaku.id}
-                        className="grid grid-cols-12 gap-2 py-1.5 text-xs hover:bg-gray-50 rounded px-1"
+                        className="grid grid-cols-12 gap-2 py-1.5 text-xs hover:bg-gray-50 rounded px-1 cursor-pointer transition-colors duration-200 hover:bg-blue-50 hover:border-l-2 hover:border-l-blue-500"
+                        onClick={() => handleDanmakuClick(danmaku.timeMs)}
+                        title={`点击跳转到 ${formatTime(danmaku.timeMs)}`}
                       >
                         <div className="col-span-2 text-gray-600 font-mono">
                           {formatTime(danmaku.timeMs)}
@@ -98,18 +112,11 @@ export function DanmakuList({
               ) : (
                 <div className="text-center text-gray-500 py-8">
                   <MessageSquare className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm">暂无弹幕</p>
+                  <p>暂无弹幕</p>
                 </div>
               )}
             </div>
           </ScrollArea>
-
-          {/* 底部按钮 */}
-          <div className="p-4 border-t border-gray-200">
-            <Button variant="outline" className="w-full text-gray-600 text-sm">
-              查看历史弹幕
-            </Button>
-          </div>
         </ThemeCardContent>
       </ThemeCard>
     </div>

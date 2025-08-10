@@ -1,32 +1,32 @@
 'use client'
 
-import { useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { useDeleteVideo, useVideos } from '@/app/hooks/use-videos'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Link } from '@/i18n/navigation'
+import { formatDate, formatDuration, formatNumber } from '@/lib/utils'
 import {
-  Plus,
-  Search,
+  AlertCircle,
+  Calendar,
+  Clock,
+  Edit,
+  Eye,
+  FileVideo,
   Grid3X3,
   List,
-  Eye,
-  Edit,
+  MessageSquare,
+  Play,
+  RefreshCw,
+  Search,
   Trash2,
   Upload,
-  Play,
-  Clock,
-  MessageSquare,
-  RefreshCw,
-  AlertCircle,
-  FileVideo,
-  Calendar,
 } from 'lucide-react'
-import { useVideos, useDeleteVideo } from '@/app/hooks/use-videos'
-import { VideoUploadModal } from './VideoUploadModal'
-import { VideoEditModal } from './VideoEditModal'
-import { Link, useRouter } from '@/i18n/navigation'
+import { useState } from 'react'
 import toast from 'react-hot-toast'
+import { VideoEditModal } from './VideoEditModal'
+import { VideoUploadModal } from './VideoUploadModal'
 
 export function VideoManagerClient() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -35,8 +35,6 @@ export function VideoManagerClient() {
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [editingVideo, setEditingVideo] = useState<any>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [isNavigating, setIsNavigating] = useState(false)
-  const router = useRouter()
 
   // 获取视频列表
   const {
@@ -80,43 +78,6 @@ export function VideoManagerClient() {
     }
   }
 
-  // 格式化时间
-  const formatDuration = (seconds: number) => {
-    if (!seconds || seconds <= 0) return '0:00'
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.floor((seconds % 3600) / 60)
-    const secs = seconds % 60
-
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs
-        .toString()
-        .padStart(2, '0')}`
-    }
-    return `${minutes}:${secs.toString().padStart(2, '0')}`
-  }
-
-  // 格式化数字
-  const formatNumber = (num: number) => {
-    if (!num || num <= 0) return '0'
-    if (num >= 10000) {
-      return (num / 10000).toFixed(1) + '万'
-    }
-    return num.toLocaleString()
-  }
-
-  // 格式化日期
-  const formatDate = (date: Date) => {
-    const now = new Date()
-    const diffTime = Math.abs(now.getTime() - new Date(date).getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-    if (diffDays === 1) return '1天前'
-    if (diffDays < 7) return `${diffDays}天前`
-    if (diffDays < 30) return `${Math.ceil(diffDays / 7)}周前`
-    if (diffDays < 365) return `${Math.ceil(diffDays / 30)}个月前`
-    return `${Math.ceil(diffDays / 365)}年前`
-  }
-
   // 计算统计数据
   const stats = {
     totalVideos: videos.length,
@@ -130,7 +91,6 @@ export function VideoManagerClient() {
       0
     ),
   }
-  console.log('error', error)
 
   return (
     <div className="space-y-6">

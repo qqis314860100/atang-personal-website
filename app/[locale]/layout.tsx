@@ -10,6 +10,7 @@ import { UserStatePreloader } from '@/app/components/providers/UserStatePreloade
 import { ClientToaster } from '@/components/client-toaster'
 import { ClientTopLoader } from '@/components/client-toploader'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { GlobalErrorHandler } from '@/components/GlobalErrorHandler'
 import Header from '@/components/Header'
 import { RoutePrefetch } from '@/components/route-prefetch'
 import { GlobalStatusBar } from '@/components/ui/global-status-bar'
@@ -90,6 +91,7 @@ export default async function RootLayout({
         )}
       >
         <NextIntlClientProvider locale={locale}>
+          <GlobalErrorHandler />
           <ErrorBoundary>
             <QueryProvider>
               <RealTimeProvider>

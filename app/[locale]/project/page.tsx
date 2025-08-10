@@ -1,7 +1,5 @@
-import { Metadata } from 'next'
-import { getTranslations } from 'next-intl/server'
 import ProjectList from '@/app/[locale]/project/components/project-list'
-import OnlineVisitorsFixed from '@/app/[locale]/project/components/visitors-tips'
+import { getThemeClasses } from '@/lib/theme/colors'
 
 // export async function generateMetadata({
 //   params,
@@ -19,12 +17,15 @@ import OnlineVisitorsFixed from '@/app/[locale]/project/components/visitors-tips
 
 export default function ProjectPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div
+      className={getThemeClasses('min-h-screen', 'light', {
+        card: 'secondary',
+      })}
+    >
       {/* 主要内容区域 */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <ProjectList />
       </div>
-      <OnlineVisitorsFixed />
     </div>
   )
 }
