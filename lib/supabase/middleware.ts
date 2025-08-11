@@ -1,4 +1,6 @@
+import { routing } from '@/i18n/routing'
 import { createServerClient } from '@supabase/ssr'
+import { hasLocale } from 'next-intl'
 import { type NextRequest, NextResponse } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
@@ -41,10 +43,29 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // 获取当前路径和语言
+  // 获取当前路径和语言（仅当首段是受支持的语言时才视为 locale）
   const pathname = request.nextUrl.pathname
-  const pathnameParts = pathname.split('/')
-  const locale = pathnameParts[1] || 'zh' // 默认语言
+  const firstSegment = pathname.split('/')[1] || ''
+  const isSupportedLocale = hasLocale(routing.locales, firstSegment)
+  const locale = isSupportedLocale ? firstSegment : routing.defaultLocale
+
+  // 仅当存在受支持的语言前缀时才移除，否则保留原始路径
+  const pathWithoutLocale = isSupportedLocale
+    ? pathname.replace(`/${firstSegment}`, '') || '/'
+    : pathname
+
+  // 如果访问的是根路径（只有语言前缀），重定向到home（仅限受支持语言场景）
+  if (isSupportedLocale && pathWithoutLocale === '/' && firstSegment) {
+    const homeUrl = new URL(`/${locale}/home`, request.url)
+    console.log('Redirecting from', pathname, 'to', homeUrl.toString())
+    return NextResponse.redirect(homeUrl)
+  }
+
+  // 如果访问的是站点根路径且没有语言前缀，重定向到默认语言首页
+  if (pathname === '/') {
+    const homeUrl = new URL(`/${routing.defaultLocale}/home`, request.url)
+    return NextResponse.redirect(homeUrl)
+  }
 
   // 定义公开路径（不需要认证）
   const publicPaths = [
@@ -58,23 +79,6 @@ export async function updateSession(request: NextRequest) {
 
   // 定义需要认证的路径
   const protectedPaths = ['/user']
-
-  // 移除语言前缀的路径
-  const pathWithoutLocale = pathname.replace(`/${locale}`, '') || '/'
-
-  // 如果访问的是根路径（只有语言前缀），重定向到home
-  if (pathWithoutLocale === '/' && locale) {
-    const homeUrl = new URL(`/${locale}/home`, request.url)
-    console.log('Redirecting from', pathname, 'to', homeUrl.toString())
-    return NextResponse.redirect(homeUrl)
-  }
-
-  // 如果访问的是根路径且没有语言前缀，重定向到默认语言
-  if (pathname === '/') {
-    const homeUrl = new URL('/zh/home', request.url)
-    console.log('Redirecting from root to', homeUrl.toString())
-    return NextResponse.redirect(homeUrl)
-  }
 
   // 检查是否为公开路径
   const isPublicPath = publicPaths.some(
@@ -90,15 +94,15 @@ export async function updateSession(request: NextRequest) {
 
   // 认证逻辑
   if (isProtectedPath && !user) {
-    // 需要认证但未登录，重定向到登录页
-    const loginUrl = new URL(`/${locale}/login`, request.url)
+    // 需要认证但未登录，重定向到登录页（保持无前缀登录入口）
+    const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('redirectTo', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
-  if (user && pathWithoutLocale === '/login') {
-    // 已登录用户访问登录页，重定向到首页
-    const homeUrl = new URL(`/${locale}`, request.url)
+  // 已登录用户访问登录页，重定向到首页
+  if (user && (pathWithoutLocale === '/login' || pathname === '/login')) {
+    const homeUrl = new URL(`/${locale}/home`, request.url)
     return NextResponse.redirect(homeUrl)
   }
 

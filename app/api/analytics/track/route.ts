@@ -7,14 +7,14 @@ export async function POST(req: NextRequest) {
 
   try {
     // 记录请求信息
-    console.log(`📊 [${requestId}] Analytics API 请求:`, {
-      method: req.method,
-      url: req.url,
-      contentType: req.headers.get('content-type'),
-      contentLength: req.headers.get('content-length'),
-      userAgent: req.headers.get('user-agent'),
-      referer: req.headers.get('referer'),
-    })
+    // console.log(`📊 [${requestId}] Analytics API 请求:`, {
+    //   method: req.method,
+    //   url: req.url,
+    //   contentType: req.headers.get('content-type'),
+    //   contentLength: req.headers.get('content-length'),
+    //   userAgent: req.headers.get('user-agent'),
+    //   referer: req.headers.get('referer'),
+    // })
 
     // 检查请求体是否为空
     const contentType = req.headers.get('content-type')

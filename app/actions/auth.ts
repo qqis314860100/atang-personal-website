@@ -1,8 +1,8 @@
 'use server'
 
+import { createAdminClient } from '@/lib/supabase/server'
 import { registerSchema, type TRegisterSchema } from '@/schemas/registerSchema'
 import { signInSchema, TSignInSchema } from '@/schemas/signInSchema'
-import { createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export const register = async (credentials: TRegisterSchema) => {
@@ -59,6 +59,7 @@ export const register = async (credentials: TRegisterSchema) => {
 
   // 在supabase的私有auth.user表中创建一个新的认证用户，它不会自动在UserProfile表中创建对应的用户资料
   // auth.users表的结构固定了，主要包含id,email,encrypted_password等核心认证信息,Supabase 提供了 raw_user_meta_data 这个“杂物间”存储额外信息（如用户名、头像url等）
+
   const { error: signUpError, data: signUpData } = await supabase.auth.signUp({
     email: email,
     password: password,

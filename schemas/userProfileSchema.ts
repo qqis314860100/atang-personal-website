@@ -1,9 +1,9 @@
 import { z } from 'zod'
 
 export const userProfileSchema = z.object({
-  username: z.string().min(1, { message: 'Name is required' }),
-  email: z.string().email({ message: 'Invalid email address' }),
-  avatar: z.string().url({ message: 'Invalid avatar URL' }),
+  username: z.string().min(1, { message: '用户名不能为空' }),
+  email: z.string().email({ message: '邮箱格式不正确' }),
+  avatar: z.string().url({ message: '头像URL格式不正确' }),
   gender: z.string().optional(),
   // 个性签名
   signature: z.string().optional(),

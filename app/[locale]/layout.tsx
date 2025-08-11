@@ -1,4 +1,5 @@
 import ChatRoomTrigger from '@/app/components/ai-agent'
+import Header from '@/app/components/Nav/Header'
 import { AnalyticsProvider } from '@/app/components/providers/AnalyticsProvider'
 import { AuthListener } from '@/app/components/providers/AuthListener'
 import { LoadingProvider } from '@/app/components/providers/LoadingProvider'
@@ -11,7 +12,6 @@ import { ClientToaster } from '@/components/client-toaster'
 import { ClientTopLoader } from '@/components/client-toploader'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { GlobalErrorHandler } from '@/components/GlobalErrorHandler'
-import Header from '@/components/Header'
 import { RoutePrefetch } from '@/components/route-prefetch'
 import { GlobalStatusBar } from '@/components/ui/global-status-bar'
 import siteMetadata from '@/data/siteMetadata'
@@ -21,6 +21,7 @@ import { NextIntlClientProvider, hasLocale } from 'next-intl'
 import { notFound } from 'next/navigation'
 import '../globals.css'
 
+import MainWrapper from '@/app/components/layout/MainWrapper'
 import { cn } from '@/lib/utils'
 import { fontSans } from '@/utils/fonts'
 import Picture from './picture'
@@ -116,10 +117,9 @@ export default async function RootLayout({
 
                           {/* 内容区域 - Header 和主体融合 */}
                           <div className="relative h-full flex flex-col">
+                            {/* 登录页不显示 Header：由登录页自身决定全屏 */}
                             <Header />
-                            <main className="flex-1 overflow-y-auto h-[calc(100vh-64px)] bg-transparent">
-                              {children}
-                            </main>
+                            <MainWrapper>{children}</MainWrapper>
                           </div>
 
                           <RoutePrefetch>
