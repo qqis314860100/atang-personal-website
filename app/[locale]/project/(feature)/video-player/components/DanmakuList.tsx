@@ -51,7 +51,7 @@ export function DanmakuList({ videoId, onTimeJump }: DanmakuListProps) {
   }
 
   return (
-    <div className="space-y-4 mt-[64px] w-full max-w-4xl">
+    <div className="space-y-4 mt-[64px] w-full">
       {/* 弹幕列表 */}
       <ThemeCard variant="glass" className="w-full">
         <ThemeCardHeader className="pb-0">
@@ -64,7 +64,7 @@ export function DanmakuList({ videoId, onTimeJump }: DanmakuListProps) {
         </ThemeCardHeader>
         <ThemeCardContent className="p-0">
           <ScrollArea className="h-[550px]">
-            <div className="p-4">
+            <div className="pl-2">
               {/* 测试跳转按钮 */}
               <div className="mb-4 p-2 bg-blue-50 rounded border border-blue-200">
                 <button
@@ -81,10 +81,10 @@ export function DanmakuList({ videoId, onTimeJump }: DanmakuListProps) {
               {recentDanmaku.length > 0 ? (
                 <div className="space-y-1">
                   {/* 表头 */}
-                  <div className="grid grid-cols-12 gap-2 pb-2 border-b border-gray-200 text-xs font-medium text-gray-600">
+                  <div className="grid grid-cols-13 gap-2 pb-2 border-b border-gray-200 text-xs font-medium text-gray-600">
                     <div className="col-span-2">时间</div>
                     <div className="col-span-6 ">弹幕内容</div>
-                    <div className="col-span-3 ">发送时间</div>
+                    <div className="col-span-4 ">发送时间</div>
                   </div>
 
                   {/* 弹幕列表 */}
@@ -92,14 +92,14 @@ export function DanmakuList({ videoId, onTimeJump }: DanmakuListProps) {
                     {recentDanmaku.map((danmaku: any) => (
                       <div
                         key={danmaku.id}
-                        className="grid grid-cols-12 gap-2 py-1.5 text-xs hover:bg-gray-50 rounded px-1 cursor-pointer transition-colors duration-200 hover:bg-blue-50 hover:border-l-2 hover:border-l-blue-500"
+                        className="grid grid-cols-12 gap-2 py-1.5 text-xs rounded px-1 cursor-pointer transition-colors duration-200 hover:bg-blue-50 hover:border-l-2 hover:border-l-blue-500"
                         onClick={() => handleDanmakuClick(danmaku.timeMs)}
                         title={`点击跳转到 ${formatTime(danmaku.timeMs)}`}
                       >
                         <div className="col-span-2 text-gray-600 font-mono">
                           {formatTime(danmaku.timeMs)}
                         </div>
-                        <div className="col-span-6 text-gray-900 break-words leading-tight text-ellipsis overflow-hidden whitespace-nowrap">
+                        <div className="col-span-7 text-gray-900 break-words leading-tight text-ellipsis overflow-hidden whitespace-nowrap">
                           {danmaku.content}
                         </div>
                         <div className="col-span-3 text-gray-500 text-xs ">

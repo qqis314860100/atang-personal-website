@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { DanmakuList } from './components/DanmakuList'
+import NoVideoIDErrot from './components/NoVideoIDErrot'
 import { VideoInfo } from './components/VideoInfo'
 import { VideoPlayer } from './components/VideoPlayer'
 import { VideoPlayerSkeleton } from './components/VideoPlayerSkeleton'
@@ -17,6 +18,7 @@ export default function VideoPlayerPage({
 }: VideoPlayerPageProps) {
   const [videoId, setVideoId] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
+  const [isSearching, setIsSearching] = useState(true) // 标记是否正在搜索参数
   const videoPlayerRef = useRef<{ jumpToTime: (timeMs: number) => void }>(null)
 
   // 处理弹幕列表时间跳转
@@ -30,53 +32,83 @@ export default function VideoPlayerPage({
   // 处理搜索参数
   useEffect(() => {
     const fetchSearchParams = async () => {
-      const { id } = await searchParams
-      if (id) {
-        setVideoId(id)
-        // 保持 isLoading = true，等待视频加载完成
+      try {
+        setIsSearching(true)
+        const { id } = await searchParams
+        if (id) {
+          setVideoId(id)
+          console.log('📋 获取到 videoId:', id)
+        } else {
+          console.warn('⚠️ 未获取到 videoId')
+        }
+      } catch (error) {
+        console.error('❌ 获取搜索参数失败:', error)
+      } finally {
+        setIsSearching(false)
       }
     }
     fetchSearchParams()
   }, [searchParams])
 
-  // 显示骨架屏
-  if (isLoading) {
+  // 首屏显示骨架屏（正在获取 videoId 或正在加载视频）
+  if (isSearching || isLoading) {
     return (
-      <div className="animate-fadeIn">
-        <VideoPlayerSkeleton progress={50} stage="video" />
+      <div className="min-h-screen bg-gray-50 animate-fadeIn">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          {/* 添加调试信息 */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mb-4 p-4 bg-blue-100 border border-blue-300 rounded-lg">
+              <h3 className="font-bold text-blue-800 mb-2">🔍 调试信息</h3>
+              <div className="text-sm text-blue-700 space-y-1">
+                <p>videoId: {videoId || '未设置'}</p>
+                <p>isSearching: {isSearching ? 'true' : 'false'}</p>
+                <p>isLoading: {isLoading ? 'true' : 'false'}</p>
+                <p>
+                  阶段:{' '}
+                  {isSearching
+                    ? '获取videoId中...'
+                    : isLoading
+                    ? '获取视频资源中...'
+                    : '视频加载完成'}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* 当正在获取 videoId 时显示骨架屏 */}
+          {isSearching ? (
+            <VideoPlayerSkeleton stage="id" />
+          ) : (
+            /* 当正在加载视频时显示骨架屏，但VideoPlayer组件仍然渲染以触发数据加载 */
+            <div className="relative">
+              {/* 隐藏的VideoPlayer组件，用于触发useVideo hook和视频资源加载 */}
+              <div className="hidden">
+                <VideoPlayer
+                  ref={videoPlayerRef}
+                  videoId={videoId}
+                  onLoadingStateChange={({ isLoading, stage }) => {
+                    console.log('📊 加载状态变化:', { isLoading, stage })
+                    // 当视频加载完成时，隐藏骨架屏
+                    if (stage === 'complete') {
+                      console.log('🎉 视频加载完成，隐藏骨架屏')
+                      setTimeout(() => setIsLoading(false), 500)
+                    }
+                  }}
+                />
+              </div>
+
+              {/* 显示骨架屏 */}
+              <VideoPlayerSkeleton stage="video" />
+            </div>
+          )}
+        </div>
       </div>
     )
   }
 
   // 如果没有 videoId，显示错误状态
   if (!videoId) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center px-4">
-        <div className="text-center space-y-6 max-w-md">
-          <div className="text-8xl animate-bounce">⚠️</div>
-          <div className="space-y-3">
-            <h1 className="text-3xl font-bold text-gray-900">视频ID未提供</h1>
-            <p className="text-gray-600 leading-relaxed">
-              请确保从正确的链接访问此页面，或者检查URL参数是否正确。
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={() => window.history.back()}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5"
-            >
-              返回上一页
-            </button>
-            <button
-              onClick={() => (window.location.href = '/project/video-manage')}
-              className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5"
-            >
-              视频管理
-            </button>
-          </div>
-        </div>
-      </div>
-    )
+    return <NoVideoIDErrot />
   }
 
   return (
@@ -88,7 +120,16 @@ export default function VideoPlayerPage({
             <h3 className="font-bold text-blue-800 mb-2">🔍 调试信息</h3>
             <div className="text-sm text-blue-700 space-y-1">
               <p>videoId: {videoId || '未设置'}</p>
+              <p>isSearching: {isSearching ? 'true' : 'false'}</p>
               <p>isLoading: {isLoading ? 'true' : 'false'}</p>
+              <p>
+                阶段:{' '}
+                {isSearching
+                  ? '获取videoId中...'
+                  : isLoading
+                  ? '获取视频资源中...'
+                  : '视频加载完成'}
+              </p>
             </div>
           </div>
         )}
@@ -101,6 +142,7 @@ export default function VideoPlayerPage({
               ref={videoPlayerRef}
               videoId={videoId}
               onLoadingStateChange={({ isLoading, stage }) => {
+                console.log('📊 加载状态变化:', { isLoading, stage })
                 // 当视频加载完成时，隐藏骨架屏
                 if (stage === 'complete') {
                   console.log('🎉 视频加载完成，隐藏骨架屏')

@@ -1,10 +1,8 @@
 interface VideoPlayerSkeletonProps {
-  progress: number
   stage?: 'id' | 'video' | 'complete'
 }
 
 export function VideoPlayerSkeleton({
-  progress,
   stage = 'id',
 }: VideoPlayerSkeletonProps) {
   const getStageDescription = () => {
