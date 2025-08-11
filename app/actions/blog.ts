@@ -1,15 +1,15 @@
 'use server'
 
 import { prisma } from '@/lib/prisma/client'
-import { revalidatePath } from 'next/cache'
-import { z } from 'zod'
 import { createAdminClient } from '@/lib/supabase/server'
 import {
   createPostSchema,
-  updatePostSchema,
   TCreatePostSchema,
   TUpdatePostSchema,
+  updatePostSchema,
 } from '@/schemas/blogPostSchema'
+import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 
 // 博客文章接口 - 基于 Prisma schema
 export interface BlogPost {
@@ -90,14 +90,8 @@ export async function fetchBlogPosts({
           author: true,
           userId: true,
           createdAt: true,
-          updatedAt: true,
           viewCount: true,
-          body: true, // 获取 body 用于生成摘要
-          user: {
-            select: {
-              username: true,
-            },
-          },
+          body: true, // 仅用于生成摘要
           category: {
             select: {
               id: true,
@@ -124,11 +118,13 @@ export async function fetchBlogPosts({
         : '暂无内容'
 
       return {
-        ...post,
-        author: post.user?.username || post.author || '未知用户',
+        id: post.id,
+        title: post.title,
+        author: post.author || '未知用户',
+        createdAt: post.createdAt,
+        viewCount: post.viewCount,
         excerpt,
-        user: undefined, // 移除嵌套的 user 对象
-        body: undefined, // 移除 body 字段，只保留摘要
+        category: post.category,
       }
     })
 

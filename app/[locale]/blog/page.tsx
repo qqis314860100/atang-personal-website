@@ -23,11 +23,7 @@ import {
 } from '@/components/ui/select'
 import { ThemeCard } from '@/components/ui/theme-card'
 import { Link, useRouter } from '@/i18n/navigation'
-import {
-  useDeletePost,
-  usePopularPosts,
-  usePosts,
-} from '@/lib/query-hook/use-posts'
+import { useDeletePost, usePosts } from '@/lib/query-hook/use-posts'
 import { formatDate } from '@/lib/utils'
 import {
   BookOpen,
@@ -41,7 +37,6 @@ import {
   Plus,
   Search,
   Trash2,
-  TrendingUp,
   User,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -67,13 +62,14 @@ const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedCategory, setSelectedCategory] = useState('all')
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true)
   const router = useRouter()
   const { canEditBlog, canDeleteBlog } = usePermissions()
 
   // 使用 react-query hooks
   const {
     data: postsData,
-    isLoading,
+    isLoading: isLoadingPosts,
     refetch: refetchPosts,
   } = usePosts({
     page: currentPage,
@@ -86,13 +82,13 @@ const Blog = () => {
 
   // 搜索完成后显示结果
   useEffect(() => {
-    if (!isLoading && searchTerm.trim() && postsData?.posts) {
+    if (!isLoadingPosts && searchTerm.trim() && postsData?.posts) {
       toast.success(`找到 ${postsData.posts.length} 篇文章`, {
         id: 'search-posts',
       })
     }
-  }, [isLoading, searchTerm, postsData])
-  const { data: popularPosts = [] } = usePopularPosts(4)
+  }, [isLoadingPosts, searchTerm, postsData])
+
   const deletePostMutation = useDeletePost()
 
   const posts = postsData?.posts || []
@@ -100,6 +96,7 @@ const Blog = () => {
 
   // 加载分类数据
   const loadCategories = async () => {
+    setIsLoadingCategories(true)
     try {
       const categoriesResult = await fetchCategories()
       if (categoriesResult) {
@@ -110,6 +107,8 @@ const Blog = () => {
     } catch (error) {
       console.error('加载分类失败:', error)
       toast.error('加载分类失败')
+    } finally {
+      setIsLoadingCategories(false)
     }
   }
 
@@ -143,12 +142,14 @@ const Blog = () => {
 
     if (confirm('确定要删除这篇文章吗？此操作不可撤销。')) {
       try {
-        toast.loading('删除中...', { id: 'delete-post' })
+        showLoading('删除中...', '正在删除文章')
         await deletePostMutation.mutateAsync(id)
-        toast.success('文章删除成功', { id: 'delete-post' })
+        toast.success('文章删除成功')
+        hideLoading()
       } catch (error) {
         console.error('删除文章失败:', error)
-        toast.error('删除文章失败', { id: 'delete-post' })
+        toast.error('删除文章失败')
+        hideLoading()
       }
     }
   }
@@ -160,14 +161,14 @@ const Blog = () => {
       return
     }
     console.log('Navigating to edit page:', `/blog/edit/${id}`)
-    toast.loading('跳转中...', { id: 'edit-post' })
+    showLoading('跳转中...', '正在跳转到编辑页面')
     router.push(`/blog/edit/${id}`)
   }
 
   // 查看文章
   const handleView = (id: string) => {
     console.log('Navigating to view page:', `/blog/${id}`)
-    toast.loading('加载中...', { id: 'view-post' })
+    showLoading('加载中...', '正在加载文章详情')
     router.push(`/blog/${id}`)
   }
 
@@ -181,7 +182,7 @@ const Blog = () => {
   const handleSearchChange = (value: string) => {
     setSearchTerm(value)
     if (value.trim()) {
-      toast.loading('搜索中...', { id: 'search-posts' })
+      showLoading('搜索中...', '正在搜索相关文章')
     }
   }
 
@@ -209,10 +210,13 @@ const Blog = () => {
               <Select
                 value={selectedCategory}
                 onValueChange={handleCategoryChange}
+                disabled={isLoadingCategories}
               >
                 <SelectTrigger className="w-40">
                   <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="选择分类" />
+                  <SelectValue
+                    placeholder={isLoadingCategories ? '加载中...' : '选择分类'}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">全部分类</SelectItem>
@@ -230,6 +234,7 @@ const Blog = () => {
                 size="sm"
                 onClick={refreshData}
                 title="刷新"
+                disabled={isLoadingPosts}
               >
                 搜索
               </Button>
@@ -256,7 +261,7 @@ const Blog = () => {
           </div>
 
           {/* 加载状态 */}
-          {isLoading ? (
+          {isLoadingPosts ? (
             <BlogListSkeleton />
           ) : posts.length === 0 ? (
             <div className="text-center py-12">
@@ -288,7 +293,7 @@ const Blog = () => {
                         {/* 文章图片 - 使用分类图片 */}
                         <div className="md:w-1/3 aspect-video md:aspect-square rounded-t-lg md:rounded-l-lg md:rounded-t-none flex items-center justify-center overflow-hidden">
                           <CategoryImage
-                            categoryName={post.category?.name || ''}
+                            categoryName={post.category?.name || '默认'}
                             size="lg"
                             className="w-full h-full"
                           />
@@ -440,96 +445,60 @@ const Blog = () => {
           )}
         </div>
 
-        {/* 右侧边栏 */}
-        <div className="lg:col-span-1 space-y-8">
-          {/* 分类 */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <Filter className="h-5 w-5" />
-                分类
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <button
-                  onClick={() => handleCategoryChange('all')}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    selectedCategory === 'all'
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  全部分类
-                </button>
-                {categories.map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => handleCategoryChange(category.id)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      selectedCategory === category.id
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    {category.name}
-                    <span className="text-xs text-gray-400 ml-2">
-                      ({category.postCount || 0})
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 热门文章 */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                热门文章
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {popularPosts.length === 0 ? (
-                  <p className="text-sm text-gray-500 text-center py-4">
-                    暂无热门文章
-                  </p>
+        {/* 右侧边栏 - 固定定位 */}
+        <div className="lg:col-span-1">
+          {/* 分类 - 固定定位，垂直居中 */}
+          <div className="lg:fixed lg:top-1/2  lg:transform lg:-translate-y-1/2 lg:w-64 lg:z-10">
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <Filter className="h-5 w-5" />
+                  分类
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoadingCategories ? (
+                  <div className="space-y-2">
+                    {[...Array(5)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="h-8 bg-gray-200 animate-pulse rounded-lg"
+                      />
+                    ))}
+                  </div>
                 ) : (
-                  popularPosts.map((post) => (
-                    <div
-                      key={post.id}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                      onClick={() => handleView(post.id)}
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => handleCategoryChange('all')}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        selectedCategory === 'all'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
                     >
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center">
-                        {post.category ? (
-                          <CategoryImage
-                            categoryName={post.category.name}
-                            size="sm"
-                            className="w-full h-full"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-blue-200 to-blue-300 rounded-lg flex items-center justify-center">
-                            <BookOpen className="h-4 w-4 text-blue-600" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="text-sm font-medium text-gray-900 line-clamp-2 hover:text-blue-600">
-                          {post.title}
-                        </h4>
-                        <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                          <span>{formatDate(post.createdAt)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))
+                      全部分类
+                    </button>
+                    {categories.map((category) => (
+                      <button
+                        key={category.id}
+                        onClick={() => handleCategoryChange(category.id)}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          selectedCategory === category.id
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        {category.name}
+                        <span className="text-xs text-gray-400 ml-2">
+                          ({category.postCount || 0})
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 )}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
