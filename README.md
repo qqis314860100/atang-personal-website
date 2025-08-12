@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# atang-personal-website
 
-## Getting Started
+我的个人网站，功能包含了博客系统、用户资料、视频管理、视频弹幕、deepseek ai助手、聊天室等功能。
 
-First, run the development server:
+## 技术栈
+
+- **前端**: Next.js + React
+- **后端**: Supabase + Prisma
+- **数据库**: PostgreSQL
+- **样式**: Tailwind CSS
+- **AI集成**: DeepSeek AI助手
+
+## 功能特性
+
+- 📝 博客系统
+- 👤 用户资料管理
+- 🎥 视频管理
+- 💬 视频弹幕系统
+- 🤖 AI助手集成
+- 💭 实时聊天室
+
+## 开始使用
+
+首先，运行开发服务器：
 
 ```bash
 npm run dev
-# or
+# 或者
 yarn dev
-# or
+# 或者
 pnpm dev
-# or
+# 或者
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+在浏览器中打开 [http://localhost:3000](http://localhost:3000) 查看结果。
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## 环境配置
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+1. 复制 `.env.local.example` 为 `.env.local`
+2. 配置必要的环境变量：
+   - Supabase 配置
+   - 数据库连接
+   - API 密钥等
 
-## Learn More
+## 部署
 
-To learn more about Next.js, take a look at the following resources:
+推荐使用 [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) 部署 Next.js 应用。
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+查看 [Next.js 部署文档](https://nextjs.org/docs/deployment) 了解更多详情。
