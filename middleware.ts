@@ -7,10 +7,9 @@ export const config = {
   matcher: [
     '/((?!api|_next/static|_next/image|images|assets|favicon.ico|sw.js|site.webmanifest).*)',
   ],
-  runtime: 'nodejs',
 }
 
-export async function middleware(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   try {
     if (
       process.env.NODE_ENV === 'production' &&
