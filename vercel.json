@@ -1,21 +1,3 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "framework": "nextjs",
-  "installCommand": "npm install",
-  "env": {
-    "OPENWEATHER_API_KEY": "@OPENWEATHER_API_KEY",
-    "DEEPSEEK_API_KEY": "@DEEPSEEK_API_KEY",
-    "DATABASE_URL": "@DATABASE_URL",
-    "DIRECT_URL": "@DIRECT_URL",
-    "NEXT_PUBLIC_SUPABASE_URL": "@NEXT_PUBLIC_SUPABASE_URL",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@NEXT_PUBLIC_SUPABASE_ANON_KEY",
-    "NEXT_PUBLIC_SUPABASE_SERVICE_ROLE": "@NEXT_PUBLIC_SUPABASE_SERVICE_ROLE"
-  },
-  "regions": ["hkg1"],
-  "functions": {
-    "app/api/**/*.ts": {
-      "maxDuration": 30
-    }
-  }
+
 }
