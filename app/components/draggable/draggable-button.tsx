@@ -2,7 +2,7 @@
 
 import { useDraggable } from '@/app/hooks/use-draggable'
 import { cn } from '@/lib/utils'
-import { ReactNode } from 'react'
+import { ReactNode, useRef } from 'react'
 
 interface DraggableButtonProps {
   children: ReactNode
@@ -32,14 +32,36 @@ export default function DraggableButton({
   onDragEnd,
   onDrag,
 }: DraggableButtonProps) {
+  const dragStartPosition = useRef<{ x: number; y: number } | null>(null)
+  const hasDragged = useRef(false)
+
   const { position, isDragging, handlers } = useDraggable({
     initialPosition,
     bounds,
     snapToEdges,
-    onDragStart,
-    onDragEnd,
+    onDragStart: () => {
+      hasDragged.current = false
+      dragStartPosition.current = { x: position.x, y: position.y }
+      onDragStart?.()
+    },
+    onDragEnd: (finalPosition) => {
+      // 检查是否真的拖动了（移动距离超过阈值）
+      if (dragStartPosition.current) {
+        const deltaX = Math.abs(finalPosition.x - dragStartPosition.current.x)
+        const deltaY = Math.abs(finalPosition.y - dragStartPosition.current.y)
+        hasDragged.current = deltaX > 5 || deltaY > 5
+      }
+      onDragEnd?.(finalPosition)
+    },
     onDrag,
   })
+
+  const handleClick = () => {
+    // 只有在没有拖动的情况下才触发点击事件
+    if (!hasDragged.current && onClick) {
+      onClick()
+    }
+  }
 
   return (
     <button
@@ -57,7 +79,7 @@ export default function DraggableButton({
           : 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)',
       }}
       {...handlers}
-      onClick={onClick}
+      onClick={handleClick}
       title="可拖拽按钮"
     >
       {children}

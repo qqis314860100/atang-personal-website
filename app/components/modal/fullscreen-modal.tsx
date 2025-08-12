@@ -169,7 +169,7 @@ export default function FullscreenModal({
     return 'scale-100 opacity-100 translate-y-0'
   }
 
-  if (!mounted || !isOpen) return null
+  if (!mounted) return null
 
   return (
     <>
@@ -187,6 +187,7 @@ export default function FullscreenModal({
             e.preventDefault()
           }
         }}
+        style={{ display: isOpen ? 'flex' : 'none' }}
       >
         {/* 弹窗主体 */}
         <div
