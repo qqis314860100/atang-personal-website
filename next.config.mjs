@@ -6,14 +6,7 @@ const withNextIntl = createNextIntlPlugin()
 const nextConfig = {
   // 移除无效的 experimental 选项
   experimental: {
-    // 移除不支持的 searchParams 配置
-    // 禁用一些可能导致问题的开发工具功能
-    instrumentationHook: false,
-    // 禁用开发工具以减少错误
-    devIndicators: {
-      buildActivity: false,
-      buildActivityPosition: 'bottom-right',
-    },
+    // 移除不支持的 searchParams 配置和无效的配置选项
   },
 
   // 生产环境启用浏览器源映射
