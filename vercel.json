@@ -3,23 +3,6 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "installCommand": "npm install",
-  "env": {
-    "OPENAI_API_KEY": "@openai-api-key",
-    "OPENWEATHER_API_KEY": "@openweather-api-key",
-    "DASHSCOPE_API_KEY": "@dashscope-api-key",
-    "DEEPSEEK_API_KEY": "@deepseek-api-key",
-    "ALICLOUD_APPCODE": "@alicloud-appcode",
-    "ALICLOUD_APPSECRET": "@alicloud-appsecret",
-    "NEXT_PUBLIC_IMAGE_DOMAINS": "@next-public-image-domains",
-    "BAIDU_SEARCH_API_KEY": "@baidu-search-api-key",
-    "BAIDU_SEARCH_SECRET_KEY": "@baidu-search-secret-key",
-    "BAIDU_SECRET_KEY": "@baidu-secret-key",
-    "DATABASE_URL": "@database-url",
-    "DIRECT_URL": "@direct-url",
-    "NEXT_PUBLIC_SUPABASE_URL": "@next-public-supabase-url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next-public-supabase-anon-key",
-    "NEXT_PUBLIC_SUPABASE_SERVICE_ROLE": "@next-public-supabase-service-role"
-  },
   "regions": ["sin1"],
   "functions": {
     "app/api/**/*.ts": {
