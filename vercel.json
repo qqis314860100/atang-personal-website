@@ -4,13 +4,13 @@
   "framework": "nextjs",
   "installCommand": "npm install",
   "env": {
-    "OPENWEATHER_API_KEY": "@openweather-api-key",
-    "DEEPSEEK_API_KEY": "@deepseek-api-key",
-    "DATABASE_URL": "@database-url",
-    "DIRECT_URL": "@direct-url",
-    "NEXT_PUBLIC_SUPABASE_URL": "@next-public-supabase-url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next-public-supabase-anon-key",
-    "NEXT_PUBLIC_SUPABASE_SERVICE_ROLE": "@next-public-supabase-service-role"
+    "OPENWEATHER_API_KEY": "@OPENWEATHER_API_KEY",
+    "DEEPSEEK_API_KEY": "@DEEPSEEK_API_KEY",
+    "DATABASE_URL": "@DATABASE_URL",
+    "DIRECT_URL": "@DIRECT_URL",
+    "NEXT_PUBLIC_SUPABASE_URL": "@NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "NEXT_PUBLIC_SUPABASE_SERVICE_ROLE": "@NEXT_PUBLIC_SUPABASE_SERVICE_ROLE"
   },
   "regions": ["hkg1"],
   "functions": {
