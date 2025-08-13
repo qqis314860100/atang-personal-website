@@ -26,5 +26,10 @@
   "switchLanguage": "Switch Language",
   "switchTheme": "Switch Theme",
   "chinese": "Chinese",
-  "english": "English"
+  "english": "English",
+  "errorLogs": {
+    "loading": "Loading error logs...",
+    "loadingFailed": "Failed to load error logs",
+    "retry": "Retry"
+  }
 }

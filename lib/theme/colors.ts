@@ -128,6 +128,9 @@ export function getThemeColor(
   theme: 'light' | 'dark' = 'light'
 ) {
   const colorGroup = themeColors[colorType] as any
+  if (!colorGroup || !colorGroup[theme]) {
+    return ''
+  }
   return colorGroup[theme][colorKey] || ''
 }
 

@@ -4,7 +4,7 @@ import { useI18n } from '@/app/hooks/use-i18n'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -178,6 +178,9 @@ export const Logon = () => {
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>登录</DialogTitle>
+          </DialogHeader>
           <AuthForms
             mode="dialog"
             variant="login"
@@ -191,6 +194,9 @@ export const Logon = () => {
       {/* 忘记密码对话框 */}
       <Dialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen}>
         <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>找回密码</DialogTitle>
+          </DialogHeader>
           <AuthForms
             mode="dialog"
             variant="forgot"
@@ -204,6 +210,9 @@ export const Logon = () => {
       {/* 注册账号对话框 */}
       <Dialog open={registerOpen} onOpenChange={setRegisterOpen}>
         <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>注册账号</DialogTitle>
+          </DialogHeader>
           <AuthForms
             mode="dialog"
             variant="register"

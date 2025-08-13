@@ -25,5 +25,10 @@
   "switchLanguage": "切换语言",
   "switchTheme": "切换主题",
   "chinese": "中文",
-  "english": "English"
+  "english": "English",
+  "errorLogs": {
+    "loading": "加载错误日志中...",
+    "loadingFailed": "加载错误日志失败",
+    "retry": "重试"
+  }
 }

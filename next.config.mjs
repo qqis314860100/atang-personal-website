@@ -1,26 +1,25 @@
-import createNextIntlPlugin from 'next-intl/plugin'
 import { spawn } from 'child_process'
-import path from 'path'
+import createNextIntlPlugin from 'next-intl/plugin'
 
 const withNextIntl = createNextIntlPlugin()
 
 // 在开发环境启动 i18n 文件监听服务
 if (process.env.NODE_ENV === 'development') {
   let i18nWatcher = null
-  
+
   const startI18nWatcher = () => {
     if (i18nWatcher) return
-    
+
     console.log('🔥 启动 i18n 热更新服务...')
     i18nWatcher = spawn('node', ['scripts/watch-i18n.cjs'], {
       stdio: 'inherit',
-      cwd: process.cwd()
+      cwd: process.cwd(),
     })
-    
+
     i18nWatcher.on('error', (error) => {
       console.error('❌ i18n 热更新服务启动失败:', error)
     })
-    
+
     i18nWatcher.on('exit', (code) => {
       if (code !== 0) {
         console.log(`⚠️  i18n 热更新服务退出，代码: ${code}`)
@@ -28,7 +27,7 @@ if (process.env.NODE_ENV === 'development') {
       i18nWatcher = null
     })
   }
-  
+
   // 优雅退出处理
   const cleanup = () => {
     if (i18nWatcher) {
@@ -37,11 +36,11 @@ if (process.env.NODE_ENV === 'development') {
       i18nWatcher = null
     }
   }
-  
+
   process.on('SIGINT', cleanup)
   process.on('SIGTERM', cleanup)
   process.on('exit', cleanup)
-  
+
   // 延迟启动，确保 Next.js 服务器先启动
   setTimeout(startI18nWatcher, 2000)
 }
@@ -54,7 +53,7 @@ const nextConfig = {
   },
 
   // 生产环境启用浏览器源映射
-  productionBrowserSourceMaps: true,
+  productionBrowserSourceMaps: false,
 
   // 更新为新的配置选项
   serverExternalPackages: [], // 替代 serverComponentsExternalPackages
