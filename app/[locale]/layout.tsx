@@ -14,6 +14,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { GlobalErrorHandler } from '@/components/GlobalErrorHandler'
 import { RoutePrefetch } from '@/components/route-prefetch'
 import { GlobalStatusBar } from '@/components/ui/global-status-bar'
+import HotReload from '@/components/HotReload'
 import siteMetadata from '@/data/siteMetadata'
 import { routing } from '@/i18n/routing'
 import { Metadata } from 'next'
@@ -127,6 +128,7 @@ export default async function RootLayout({
                           </RoutePrefetch>
                         </UserStatePreloader>
                         <ChatRoomTrigger />
+                        <HotReload />
                       </AnalyticsProvider>
                     </LoadingProvider>
                   </ThemeProvider>
