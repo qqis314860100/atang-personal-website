@@ -31,7 +31,8 @@ export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
   const [expandedMetric, setExpandedMetric] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'heatmap' | 'chart'>('list')
   const t = useI18n()
-  const { theme: currentTheme } = useTheme()
+  const { theme, resolvedTheme } = useTheme()
+  const currentTheme = (resolvedTheme || theme || 'light') as 'light' | 'dark'
 
   const METRIC_LABELS: Record<string, string> = {
     FCP: t.dashboard('FCP'),
@@ -145,9 +146,9 @@ export function PerformanceHeatmap({ data }: PerformanceHeatmapProps) {
                       <ThemeTextSM weight="medium" variant="primary">
                         {item.key}
                       </ThemeTextSM>
-                      <ThemeTextXS variant="tertiary">
+                      {/* <ThemeTextXS variant="tertiary">
                         {METRIC_LABELS[item.key]}
-                      </ThemeTextXS>
+                      </ThemeTextXS> */}
                     </div>
                   </div>
                   <div className="flex items-center gap-4">

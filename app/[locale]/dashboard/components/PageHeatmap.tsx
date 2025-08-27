@@ -36,7 +36,8 @@ export function PageHeatmap({ data }: PageHeatmapProps) {
   const [expandedPage, setExpandedPage] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'heatmap'>('list')
   const t = useI18n()
-  const { theme: currentTheme } = useTheme()
+  const { theme, resolvedTheme } = useTheme()
+  const currentTheme = (resolvedTheme || theme || 'light') as 'light' | 'dark'
 
   const getHeatmapColor = (intensity: number) => {
     if (intensity >= 0.8) return 'bg-red-500'

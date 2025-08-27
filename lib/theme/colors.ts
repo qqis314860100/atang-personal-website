@@ -129,9 +129,15 @@ export function getThemeColor(
 ) {
   const colorGroup = themeColors[colorType] as any
   if (!colorGroup || !colorGroup[theme]) {
+    console.warn(`Theme color not found: ${colorType}.${theme}.${colorKey}`)
     return ''
   }
-  return colorGroup[theme][colorKey] || ''
+  const color = colorGroup[theme][colorKey]
+  if (!color) {
+    console.warn(`Color key not found: ${colorType}.${theme}.${colorKey}`)
+    return ''
+  }
+  return color
 }
 
 // 获取完整的主题颜色类名

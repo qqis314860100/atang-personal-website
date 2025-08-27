@@ -66,13 +66,13 @@ export function ThemeText({
   variant = 'primary',
   className,
 }: ThemeTextProps) {
-  const { theme: currentTheme } = useTheme()
-  const theme = (currentTheme as 'light' | 'dark') || 'light'
+  const { theme, resolvedTheme } = useTheme()
+  const currentTheme = (resolvedTheme || theme || 'light') as 'light' | 'dark'
 
   const classes = cn(
     sizeClasses[size],
     weightClasses[weight],
-    themeColors[theme][variant],
+    themeColors[currentTheme][variant],
     className
   )
 

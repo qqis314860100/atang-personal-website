@@ -91,11 +91,8 @@ export function SearchFilterBar({
   isSearching = false, // 新增参数
 }: SearchFilterBarProps) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const { theme, systemTheme } = useTheme()
-  const currentTheme = (theme === 'system' ? systemTheme : theme) as
-    | 'light'
-    | 'dark'
-    | undefined
+  const { theme, resolvedTheme } = useTheme()
+  const currentTheme = (resolvedTheme || theme || 'light') as 'light' | 'dark'
 
   const handleSortChange = useCallback(
     (field: string) => {

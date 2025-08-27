@@ -29,11 +29,8 @@ export function ErrorLogsList({
   onErrorClick,
 }: ErrorLogsListProps) {
   const t = useI18n()
-  const { theme, systemTheme } = useTheme()
-  const currentTheme = (theme === 'system' ? systemTheme : theme) as
-    | 'light'
-    | 'dark'
-    | undefined
+  const { theme, resolvedTheme } = useTheme()
+  const currentTheme = (resolvedTheme || theme || 'light') as 'light' | 'dark'
 
   // 获取主题相关的样式类
   const themeClasses = getThemeClasses(

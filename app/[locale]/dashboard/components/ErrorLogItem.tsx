@@ -48,11 +48,8 @@ export function ErrorLogItem({
   truncateMessage,
 }: ErrorLogItemProps) {
   const t = useI18n()
-  const { theme, systemTheme } = useTheme()
-  const currentTheme = (theme === 'system' ? systemTheme : theme) as
-    | 'light'
-    | 'dark'
-    | undefined
+  const { theme, resolvedTheme } = useTheme()
+  const currentTheme = (resolvedTheme || theme || 'light') as 'light' | 'dark'
 
   // 使用 useMemo 优化主题样式计算
   const themeStyles = React.useMemo(() => {
